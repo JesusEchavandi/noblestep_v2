@@ -34,7 +34,7 @@ public class EcommerceAuthController : ControllerBase
 
     // POST: api/ecommerce/auth/register
     [HttpPost("register")]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("register")]
     public async Task<ActionResult<EcommerceAuthResponseDto>> Register([FromBody] EcommerceRegisterDto dto)
     {
         try

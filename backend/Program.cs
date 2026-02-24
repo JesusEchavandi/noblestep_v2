@@ -66,6 +66,20 @@ if (!isDev)
 // Configurar zona horaria peruana
 Environment.SetEnvironmentVariable("TZ", "America/Lima");
 
+// ── Compresión GZIP/Brotli ────────────────────────────────────────────────────
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+    options.MimeTypes = Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/json", "text/plain", "text/html" });
+});
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions>(o =>
+    o.Level = System.IO.Compression.CompressionLevel.Fastest);
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions>(o =>
+    o.Level = System.IO.Compression.CompressionLevel.Fastest);
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHttpClient("DniApi", client =>
@@ -140,6 +154,14 @@ builder.Services.AddRateLimiter(options =>
     {
         opt.PermitLimit = 60;
         opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    // Registro ecommerce: 5 por 10 minutos por IP
+    options.AddFixedWindowLimiter("register", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(10);
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
     });
@@ -284,6 +306,9 @@ else
         });
     }));
 }
+
+// ── Compresión — debe ir antes de CORS y rutas ────────────────────────────────
+app.UseResponseCompression();
 
 // ── HTTPS y HSTS (solo producción) ───────────────────────────────────────────
 if (!app.Environment.IsDevelopment())

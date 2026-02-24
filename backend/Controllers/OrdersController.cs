@@ -220,26 +220,47 @@ public class OrdersController : ControllerBase
     // GET: api/ecommerce/orders/my-orders
     [Authorize]
     [HttpGet("my-orders")]
-    public async Task<ActionResult<List<OrderResponseDto>>> GetMyOrders()
+    public async Task<ActionResult<List<OrderResponseDto>>> GetMyOrders(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         try
         {
+            if (pageSize > 50) pageSize = 50;
+            if (pageSize < 1) pageSize = 1;
+            if (page < 1) page = 1;
+
             var customerIdClaim = User.FindFirst("customerId");
             if (customerIdClaim == null || !int.TryParse(customerIdClaim.Value, out var customerId))
             {
                 return Unauthorized(new { message = "No autorizado" });
             }
 
-            var orders = await _context.Orders
+            var query = _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Product)
                 .Where(o => o.EcommerceCustomerId == customerId)
-                .OrderByDescending(o => o.OrderDate)
+                .OrderByDescending(o => o.OrderDate);
+
+            var total = await _context.Orders
+                .Where(o => o.EcommerceCustomerId == customerId)
+                .CountAsync();
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var response = orders.Select(MapOrderToDto).ToList();
 
-            return Ok(response);
+            return Ok(new
+            {
+                data = response,
+                page,
+                pageSize,
+                total,
+                totalPages = (int)Math.Ceiling((double)total / pageSize)
+            });
         }
         catch (Exception ex)
         {

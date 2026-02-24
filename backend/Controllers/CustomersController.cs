@@ -20,10 +20,23 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-        var customers = await _context.Customers
+        if (pageSize > 200) pageSize = 200;
+        if (pageSize < 1) pageSize = 1;
+        if (page < 1) page = 1;
+
+        var query = _context.Customers
             .Where(c => c.IsActive)
+            .OrderBy(c => c.FullName);
+
+        var total = await query.CountAsync();
+
+        var customers = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(c => new CustomerDto
             {
                 Id = c.Id,
@@ -35,7 +48,14 @@ public class CustomersController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(customers);
+        return Ok(new
+        {
+            data = customers,
+            page,
+            pageSize,
+            total,
+            totalPages = (int)Math.Ceiling((double)total / pageSize)
+        });
     }
 
     [HttpGet("{id}")]

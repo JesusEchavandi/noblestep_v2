@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface Notification {
@@ -19,17 +20,37 @@ export class NotificationService {
   private notifications$ = new BehaviorSubject<Notification[]>([]);
   private notificationId = 1;
   private lastOrderCount = -1;
-  private pollingInterval: any;
+  private pollingTimeout: any = null;
+
+  // Backoff progresivo: empieza en 30s, sube hasta 5 min en caso de errores consecutivos
+  private readonly BASE_INTERVAL_MS = 30_000;
+  private readonly MAX_INTERVAL_MS = 300_000;
+  private currentInterval = this.BASE_INTERVAL_MS;
+  private consecutiveErrors = 0;
+
+  constructor(private http: HttpClient) {}
 
   startOrderPolling(apiUrl: string, token: string): void {
-    if (this.pollingInterval) return;
-    this.pollingInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`${apiUrl}/admin/ecommerce-orders?status=Pending`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const orders = await res.json();
+    if (this.pollingTimeout) return;
+    this.schedulePoll(apiUrl, token);
+  }
+
+  private schedulePoll(apiUrl: string, token: string): void {
+    this.pollingTimeout = setTimeout(() => {
+      this.executePoll(apiUrl, token);
+    }, this.currentInterval);
+  }
+
+  private executePoll(apiUrl: string, token: string): void {
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http
+      .get<any[]>(`${apiUrl}/admin/ecommerce-orders?status=Pending`, { headers })
+      .subscribe({
+        next: (orders) => {
+          // Éxito: resetear backoff
+          this.consecutiveErrors = 0;
+          this.currentInterval = this.BASE_INTERVAL_MS;
+
           const count = orders.length;
           if (this.lastOrderCount !== -1 && count > this.lastOrderCount) {
             const newCount = count - this.lastOrderCount;
@@ -40,13 +61,37 @@ export class NotificationService {
             );
           }
           this.lastOrderCount = count;
+
+          // Reprogramar siguiente poll si el polling sigue activo
+          if (this.pollingTimeout !== null) {
+            this.pollingTimeout = null;
+            this.schedulePoll(apiUrl, token);
+          }
+        },
+        error: () => {
+          // Error: aplicar backoff progresivo (duplicar hasta máximo)
+          this.consecutiveErrors++;
+          this.currentInterval = Math.min(
+            this.currentInterval * 2,
+            this.MAX_INTERVAL_MS
+          );
+
+          if (this.pollingTimeout !== null) {
+            this.pollingTimeout = null;
+            this.schedulePoll(apiUrl, token);
+          }
         }
-      } catch {}
-    }, 30000);
+      });
   }
 
   stopOrderPolling(): void {
-    if (this.pollingInterval) { clearInterval(this.pollingInterval); this.pollingInterval = null; }
+    if (this.pollingTimeout) {
+      clearTimeout(this.pollingTimeout);
+      this.pollingTimeout = null;
+    }
+    this.currentInterval = this.BASE_INTERVAL_MS;
+    this.consecutiveErrors = 0;
+    this.lastOrderCount = -1;
   }
 
   // Shortcuts

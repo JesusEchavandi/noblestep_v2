@@ -21,13 +21,25 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SaleDto>>> GetSales()
+    public async Task<ActionResult<IEnumerable<SaleDto>>> GetSales(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-        var sales = await _context.Sales
+        if (pageSize > 100) pageSize = 100;
+        if (pageSize < 1) pageSize = 1;
+        if (page < 1) page = 1;
+
+        var query = _context.Sales
             .Include(s => s.Customer)
             .Include(s => s.SaleDetails)
             .ThenInclude(sd => sd.Product)
-            .OrderByDescending(s => s.SaleDate)
+            .OrderByDescending(s => s.SaleDate);
+
+        var total = await _context.Sales.CountAsync();
+
+        var sales = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(s => new SaleDto
             {
                 Id = s.Id,
@@ -47,7 +59,14 @@ public class SalesController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(sales);
+        return Ok(new
+        {
+            data = sales,
+            page,
+            pageSize,
+            total,
+            totalPages = (int)Math.Ceiling((double)total / pageSize)
+        });
     }
 
     [HttpGet("{id}")]

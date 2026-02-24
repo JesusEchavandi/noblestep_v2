@@ -20,11 +20,25 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 100)
     {
-        var products = await _context.Products
+        // Límite máximo para evitar abuso de memoria
+        if (pageSize > 200) pageSize = 200;
+        if (pageSize < 1) pageSize = 1;
+        if (page < 1) page = 1;
+
+        var query = _context.Products
             .Include(p => p.Category)
-            .Where(p => p.IsActive)
+            .Where(p => p.IsActive);
+
+        var total = await query.CountAsync();
+
+        var products = await query
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -42,7 +56,14 @@ public class ProductsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(products);
+        return Ok(new
+        {
+            data = products,
+            page,
+            pageSize,
+            total,
+            totalPages = (int)Math.Ceiling((double)total / pageSize)
+        });
     }
 
     [HttpGet("{id}")]
