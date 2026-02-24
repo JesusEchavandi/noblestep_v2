@@ -1,0 +1,383 @@
+<div class="checkout-page">
+
+  <!-- Header editorial -->
+  <div class="checkout-hero">
+    <div class="checkout-hero-inner">
+      <a routerLink="/cart" class="back-link">
+        <i class="fi fi-rr-arrow-left"></i> Volver al carrito
+      </a>
+      <div class="hero-brand">NobleStep</div>
+      <div class="hero-steps">
+        <span class="step done"><i class="fi fi-rr-check"></i> Carrito</span>
+        <span class="step-divider"></span>
+        <span class="step active"><i class="fi fi-rr-document"></i> Datos</span>
+        <span class="step-divider"></span>
+        <span class="step"><i class="fi fi-rr-shopping-bag"></i> Confirmación</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="checkout-body">
+
+    <!-- COLUMNA IZQUIERDA: Formulario -->
+    <div class="checkout-form-col">
+
+      <!-- SECCIÓN: Información de contacto -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fi fi-rr-user"></i></div>
+          <div>
+            <h2>Información de contacto</h2>
+            <p>Te contactaremos para coordinar tu pedido</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label>Nombre completo *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-user input-icon"></i>
+              <input type="text" [(ngModel)]="customerData.fullName" placeholder="Juan Pérez García" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>WhatsApp / Celular *</label>
+            <div class="input-wrap">
+              <i class="fi fi-brands-whatsapp input-icon green"></i>
+              <input type="tel" [(ngModel)]="customerData.phone" placeholder="987 654 321" maxlength="9" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Correo electrónico</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-envelope input-icon"></i>
+              <input type="email" [(ngModel)]="customerData.email" placeholder="correo@ejemplo.com" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Dirección de entrega -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fi fi-rr-marker"></i></div>
+          <div>
+            <h2>Dirección de entrega</h2>
+            <p>El costo de envío se cotiza por WhatsApp según tu distrito</p>
+          </div>
+        </div>
+
+        <!-- Aviso de cotización -->
+        <div class="shipping-notice">
+          <i class="fi fi-brands-whatsapp"></i>
+          <div>
+            <strong>Envío cotizable por WhatsApp</strong>
+            <span>Coordina el costo y fecha de entrega directamente con nosotros antes de confirmar</span>
+          </div>
+          <button class="wsp-quote-btn" (click)="cotizarEnvioWsp()">
+            Cotizar ahora <i class="fi fi-rr-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Ciudad *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-city input-icon"></i>
+              <input type="text" [(ngModel)]="customerData.city" placeholder="Lima" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Distrito *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-map-marker input-icon"></i>
+              <input type="text" [(ngModel)]="customerData.district" placeholder="Miraflores" />
+            </div>
+          </div>
+
+          <div class="field full">
+            <label>Dirección *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-home input-icon"></i>
+              <input type="text" [(ngModel)]="customerData.address" placeholder="Av. Principal 123, Dpto 4B" />
+            </div>
+          </div>
+
+          <div class="field full">
+            <label>Referencia (opcional)</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-info input-icon"></i>
+              <input type="text" [(ngModel)]="customerData.reference" placeholder="Frente al parque, casa de color azul..." />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Tipo de comprobante -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fi fi-rr-receipt"></i></div>
+          <div>
+            <h2>Comprobante de pago</h2>
+            <p>Selecciona el tipo de documento que necesitas</p>
+          </div>
+        </div>
+
+        <div class="invoice-tabs">
+          <button class="invoice-tab" [class.active]="invoiceType === 'Boleta'" (click)="invoiceType = 'Boleta'">
+            <i class="fi fi-rr-receipt"></i>
+            <span>Boleta</span>
+          </button>
+          <button class="invoice-tab" [class.active]="invoiceType === 'Factura'" (click)="invoiceType = 'Factura'">
+            <i class="fi fi-rr-building"></i>
+            <span>Factura</span>
+          </button>
+        </div>
+
+        <div class="form-grid" *ngIf="invoiceType === 'Factura'">
+          <div class="field full">
+            <label>Razón Social *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-building input-icon"></i>
+              <input type="text" [(ngModel)]="invoiceData.companyName" placeholder="Mi Empresa S.A.C." />
+            </div>
+          </div>
+          <div class="field">
+            <label>RUC *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-id-card input-icon"></i>
+              <input type="text" [(ngModel)]="invoiceData.companyRUC" placeholder="20123456789" maxlength="11" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Dirección fiscal</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-marker input-icon"></i>
+              <input type="text" [(ngModel)]="invoiceData.companyAddress" placeholder="Av. Fiscal 456" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: Método de pago -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fi fi-rr-credit-card"></i></div>
+          <div>
+            <h2>Método de pago</h2>
+            <p>Selecciona cómo realizarás el pago</p>
+          </div>
+        </div>
+
+        <div class="payment-grid">
+          <div class="payment-pill" [class.active]="paymentMethod === 'yape'" (click)="selectPaymentMethod('yape')">
+            <img src="/logo_yape.png" alt="Yape" class="pay-logo" />
+            <span>Yape</span>
+            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'yape'"></i>
+          </div>
+          <div class="payment-pill" [class.active]="paymentMethod === 'transfer'" (click)="selectPaymentMethod('transfer')">
+            <i class="fi fi-rr-bank"></i>
+            <span>Transferencia</span>
+            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'transfer'"></i>
+          </div>
+          <div class="payment-pill" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">
+            <i class="fi fi-rr-credit-card"></i>
+            <span>Tarjeta</span>
+            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'card'"></i>
+          </div>
+        </div>
+
+        <!-- Yape -->
+        <div class="payment-detail" *ngIf="paymentMethod === 'yape'">
+          <div class="pay-info-card yape">
+            <i class="fi fi-brands-whatsapp"></i>
+            <div>
+              <strong>Número Yape</strong>
+              <span>Envía el pago a: <b>999 999 999</b></span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Tu número de Yape *</label>
+            <div class="input-wrap">
+              <i class="fi fi-rr-phone input-icon"></i>
+              <input type="tel" [(ngModel)]="paymentData.yapePhone" placeholder="987 654 321" maxlength="9" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Comprobante de pago (captura) *</label>
+            <div class="upload-zone" (click)="fileInput.click()" [class.has-file]="paymentProofPreview">
+              <input #fileInput type="file" accept="image/*" (change)="onPaymentProofSelected($event)" hidden />
+              <ng-container *ngIf="!paymentProofPreview">
+                <i class="fi fi-rr-cloud-upload"></i>
+                <span>Subir captura de Yape</span>
+                <small>JPG, PNG — máx. 5MB</small>
+              </ng-container>
+              <ng-container *ngIf="paymentProofPreview">
+                <img [src]="paymentProofPreview" alt="Comprobante" class="proof-preview" />
+                <button class="remove-proof" (click)="$event.stopPropagation(); removePaymentProof()">
+                  <i class="fi fi-rr-cross-small"></i>
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transferencia -->
+        <div class="payment-detail" *ngIf="paymentMethod === 'transfer'">
+          <div class="pay-info-card transfer">
+            <i class="fi fi-rr-bank"></i>
+            <div>
+              <strong>Datos de transferencia BCP</strong>
+              <span>Cuenta: <b>194-12345678-0-12</b></span>
+              <span>CCI: <b>002-194-00123456780-12</b></span>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Banco de origen *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-bank input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.transferBank" placeholder="BCP, BBVA, Interbank..." />
+              </div>
+            </div>
+            <div class="field">
+              <label>Número de operación *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-hashtag input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.transferAccount" placeholder="123456789" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta -->
+        <div class="payment-detail" *ngIf="paymentMethod === 'card'">
+          <div class="pay-info-card card">
+            <i class="fi fi-rr-credit-card"></i>
+            <div>
+              <strong>Pago con tarjeta</strong>
+              <span>Visa, Mastercard y Amex aceptadas</span>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Número de tarjeta *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-credit-card input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" />
+              </div>
+            </div>
+            <div class="field full">
+              <label>Nombre en la tarjeta *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-user input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.cardName" placeholder="JUAN PÉREZ" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Vencimiento *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-calendar input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.cardExpiry" placeholder="MM/AA" maxlength="5" />
+              </div>
+            </div>
+            <div class="field">
+              <label>CVV *</label>
+              <div class="input-wrap">
+                <i class="fi fi-rr-lock input-icon"></i>
+                <input type="text" [(ngModel)]="paymentData.cardCvv" placeholder="123" maxlength="3" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Términos -->
+      <label class="terms-check">
+        <input type="checkbox" [(ngModel)]="termsAccepted" />
+        <span>Acepto los <a href="#" class="terms-link">términos y condiciones</a> y la <a href="#" class="terms-link">política de privacidad</a></span>
+      </label>
+
+    </div>
+
+    <!-- COLUMNA DERECHA: Resumen -->
+    <div class="summary-col">
+      <div class="summary-card">
+
+        <h3 class="summary-title">Resumen del pedido</h3>
+
+        <!-- Items -->
+        <div class="summary-items">
+          <div class="summary-item" *ngFor="let item of cartItems">
+            <div class="si-img">
+              <img [src]="getProductImage(item.product)" [alt]="item.product.name"
+                (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=70'" />
+              <span class="si-qty">{{ item.quantity }}</span>
+            </div>
+            <div class="si-info">
+              <span class="si-name">{{ item.product.name }}</span>
+            </div>
+            <span class="si-price">S/ {{ (item.product.salePrice * item.quantity) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <!-- Totales -->
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>S/ {{ getSubtotal() | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="summary-row shipping">
+          <span>
+            <i class="fi fi-rr-truck-side"></i> Envío
+          </span>
+          <span class="shipping-tag">Cotizar por WSP</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-total">
+          <span>Total</span>
+          <span>S/ {{ getSubtotal() | number:'1.2-2' }}</span>
+        </div>
+        <small class="total-note">+ costo de envío a coordinar</small>
+
+        <!-- CTA Principal: WhatsApp -->
+        <button class="btn-wsp-primary" (click)="cotizarPedidoCompleto()">
+          <i class="fi fi-brands-whatsapp"></i>
+          Coordinar pedido por WhatsApp
+        </button>
+
+        <!-- CTA Secundario: Confirmar online -->
+        <button class="btn-confirm"
+          [disabled]="!isFormValid() || !termsAccepted || processing"
+          (click)="processPayment()">
+          <span *ngIf="!processing">
+            <i class="fi fi-rr-check-circle"></i> Confirmar pedido
+          </span>
+          <span *ngIf="processing">
+            <i class="fi fi-rr-spinner"></i> Procesando...
+          </span>
+        </button>
+
+        <a routerLink="/cart" class="back-cart-link">
+          <i class="fi fi-rr-arrow-left"></i> Volver al carrito
+        </a>
+
+        <!-- Seguridad -->
+        <div class="security-row">
+          <span><i class="fi fi-rr-shield-check"></i> Datos protegidos</span>
+          <span><i class="fi fi-rr-lock"></i> Pago seguro</span>
+          <span><i class="fi fi-rr-headphones"></i> Soporte 24/7</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

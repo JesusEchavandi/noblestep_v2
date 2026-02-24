@@ -1,0 +1,168 @@
+<div class="cart-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="cart-header-section">
+      <a routerLink="/catalog" class="back-link">
+        <i class="fi fi-rr-arrow-left"></i> Seguir comprando
+      </a>
+      <div class="header-right">
+        <h1>Tu carrito</h1>
+        <span class="item-count" *ngIf="cartItems.length > 0">
+          {{ cartItems.length }} {{ cartItems.length === 1 ? 'producto' : 'productos' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <div class="empty-icon">
+        <i class="fi fi-rr-shopping-bag"></i>
+      </div>
+      <h2>Tu carrito está vacío</h2>
+      <p>Explora nuestro catálogo y encuentra el par perfecto para ti</p>
+      <a routerLink="/catalog" class="btn-shop">
+        <i class="fi fi-rr-grid"></i> Ver catálogo
+      </a>
+    </div>
+
+    <!-- Cart content -->
+    <div *ngIf="cartItems.length > 0" class="cart-layout">
+
+      <!-- ===== ITEMS PANEL ===== -->
+      <div class="items-panel">
+
+        <div class="items-head">
+          <span class="items-label">
+            <i class="fi fi-rr-list"></i> Productos en tu carrito
+          </span>
+          <button class="btn-clear" (click)="clearCart()">
+            <i class="fi fi-rr-trash"></i> Vaciar
+          </button>
+        </div>
+
+        <!-- Item row -->
+        <div class="cart-item" *ngFor="let item of cartItems; let i = index">
+
+          <!-- Imagen grande -->
+          <div class="item-img">
+            <img
+              [src]="getProductImage(item.product)"
+              [alt]="item.product.name"
+              (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&fit=crop'"
+            />
+          </div>
+
+          <!-- Info -->
+          <div class="item-info">
+            <span class="item-cat">{{ item.product.categoryName || 'Calzado' }}</span>
+            <h3 class="item-name">{{ item.product.name }}</h3>
+            <div class="item-stock-pill" [class.low]="item.product.stock < 5">
+              <i class="fi fi-rr-check-circle"></i>
+              {{ item.product.stock < 5 ? 'Últimas unidades' : 'En stock' }}
+            </div>
+          </div>
+
+          <!-- Qty + precio -->
+          <div class="item-actions">
+            <div class="item-qty">
+              <button class="qty-btn" (click)="updateQuantity(item.product.id, item.quantity - 1)" [disabled]="item.quantity <= 1">
+                <i class="fi fi-rr-minus-small"></i>
+              </button>
+              <span class="qty-val">{{ item.quantity }}</span>
+              <button class="qty-btn" (click)="updateQuantity(item.product.id, item.quantity + 1)" [disabled]="item.quantity >= item.product.stock">
+                <i class="fi fi-rr-plus-small"></i>
+              </button>
+            </div>
+            <div class="item-pricing">
+              <span class="subtotal">S/ {{ item.product.salePrice * item.quantity | number:'1.2-2' }}</span>
+              <span class="unit-price">S/ {{ item.product.salePrice | number:'1.2-2' }} c/u</span>
+            </div>
+          </div>
+
+          <!-- Eliminar -->
+          <button class="btn-remove" (click)="removeItem(item.product.id)" title="Eliminar producto">
+            <i class="fi fi-rr-cross-small"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- ===== SUMMARY PANEL ===== -->
+      <div class="summary-panel">
+        <div class="summary-card">
+
+          <h2 class="summary-title">Resumen del pedido</h2>
+
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span>Subtotal ({{ cartItems.length }} {{ cartItems.length === 1 ? 'producto' : 'productos' }})</span>
+              <span class="val">S/ {{ getSubtotal() | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Envío</span>
+              <span class="val free" *ngIf="getSubtotal() >= 100">
+                <i class="fi fi-rr-truck-side"></i> Gratis
+              </span>
+              <span class="val calc" *ngIf="getSubtotal() < 100">A calcular</span>
+            </div>
+          </div>
+
+          <!-- Barra envío gratis -->
+          <div class="free-ship-bar" *ngIf="getSubtotal() < 100">
+            <div class="bar-label">
+              <i class="fi fi-rr-truck-side"></i>
+              <span>Agrega <strong>S/ {{ (100 - getSubtotal()) | number:'1.2-2' }}</strong> más para envío gratis</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="(getSubtotal() / 100) * 100"></div>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-total">
+            <span>Total</span>
+            <span class="total-amount">S/ {{ getTotal() | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- CTA principal -->
+          <button (click)="checkout()" class="btn-checkout">
+            <i class="fi fi-rr-credit-card"></i>
+            Proceder al pago
+          </button>
+
+          <!-- WhatsApp -->
+          <button (click)="consultStock()" class="btn-whatsapp">
+            <i class="fi fi-brands-whatsapp"></i>
+            Consultar por WhatsApp
+          </button>
+
+          <!-- Métodos de pago -->
+          <div class="payment-methods">
+            <p class="payment-label">Métodos aceptados</p>
+            <div class="payment-icons">
+              <img src="/logo_yape.png" alt="Yape" class="yape-logo" />
+              <span class="pay-pill">
+                <i class="fi fi-rr-credit-card"></i> Tarjeta
+              </span>
+              <span class="pay-pill">
+                <i class="fi fi-rr-bank"></i> Transferencia
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Seguridad -->
+        <div class="secure-note">
+          <i class="fi fi-rr-shield-check"></i>
+          <span>Compra 100% segura · Datos protegidos</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

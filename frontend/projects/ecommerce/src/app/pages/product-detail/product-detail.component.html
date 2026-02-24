@@ -1,0 +1,234 @@
+<div class="pd-page">
+
+  <!-- Breadcrumb -->
+  <div class="pd-breadcrumb">
+    <div class="container">
+      <a routerLink="/home"><i class="fi fi-rr-home"></i> Inicio</a>
+      <i class="fi fi-rr-angle-right"></i>
+      <a routerLink="/catalog">Catálogo</a>
+      <i class="fi fi-rr-angle-right"></i>
+      <span *ngIf="product">{{ product.name }}</span>
+    </div>
+  </div>
+
+  <!-- Skeleton Loading -->
+  <div *ngIf="loading" class="container pd-skeleton">
+    <div class="skeleton-gallery">
+      <div class="skeleton-main"></div>
+      <div class="skeleton-thumbs">
+        <div class="skeleton-thumb" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </div>
+    <div class="skeleton-info">
+      <div class="skeleton-line w-30"></div>
+      <div class="skeleton-line w-80 h-lg"></div>
+      <div class="skeleton-line w-50"></div>
+      <div class="skeleton-line w-40 h-xl"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="container pd-error">
+    <div class="error-box">
+      <i class="fi fi-rr-box-open"></i>
+      <h2>Producto no encontrado</h2>
+      <p>El producto que buscas no está disponible o fue removido del catálogo.</p>
+      <a routerLink="/catalog" class="btn-dark"><i class="fi fi-rr-arrow-left"></i> Volver al catálogo</a>
+    </div>
+  </div>
+
+  <!-- Producto -->
+  <div *ngIf="product && !loading" class="container pd-layout">
+
+    <!-- ===== GALERÍA ===== -->
+    <div class="pd-gallery">
+
+      <!-- Miniaturas verticales -->
+      <div class="thumbs-rail">
+        <button
+          *ngFor="let img of galleryImages; let i = index"
+          class="thumb-btn"
+          [class.active]="activeImageIndex === i"
+          (click)="setActiveImage(i)">
+          <img [src]="img" [alt]="product.name + ' ' + (i+1)"
+            (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&q=60'" />
+        </button>
+      </div>
+
+      <!-- Imagen principal -->
+      <div class="main-img-wrap" (mousemove)="onZoomMove($event)" (mouseleave)="zoomActive=false" (mouseenter)="zoomActive=true">
+        <div class="badge-overlay" *ngIf="product.salePrice && product.salePrice < product.price">
+          <span class="badge-sale">-{{ getDiscountPercent() }}%</span>
+        </div>
+        <div class="badge-overlay top-right" *ngIf="product.stock <= 5 && product.stock > 0">
+          <span class="badge-low">Últimas {{ product.stock }}</span>
+        </div>
+        <img
+          [src]="galleryImages[activeImageIndex]"
+          [alt]="product.name"
+          class="main-img"
+          (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80'"
+          (click)="openLightbox()" />
+        <div class="zoom-hint"><i class="fi fi-rr-search-plus"></i> Clic para ampliar</div>
+      </div>
+
+      <!-- Lightbox -->
+      <div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
+        <button class="lightbox-close" (click)="closeLightbox()"><i class="fi fi-rr-cross"></i></button>
+        <button class="lightbox-prev" (click)="prevImage(); $event.stopPropagation()"><i class="fi fi-rr-angle-left"></i></button>
+        <img [src]="galleryImages[activeImageIndex]" [alt]="product.name" (click)="$event.stopPropagation()" />
+        <button class="lightbox-next" (click)="nextImage(); $event.stopPropagation()"><i class="fi fi-rr-angle-right"></i></button>
+      </div>
+    </div>
+
+    <!-- ===== INFO ===== -->
+    <div class="pd-info">
+
+      <!-- Badge categoría -->
+      <div class="cat-pill">
+        <i class="fi fi-rr-tag"></i> {{ product.categoryName }}
+      </div>
+
+      <!-- Título -->
+      <h1 class="pd-title">{{ product.name }}</h1>
+
+      <!-- Marca + código -->
+      <div class="pd-meta">
+        <span *ngIf="product.brand" class="meta-brand"><i class="fi fi-rr-star"></i> {{ product.brand }}</span>
+        <span class="meta-code">REF: #{{ product.id }}</span>
+      </div>
+
+      <!-- Precio -->
+      <div class="price-row">
+        <span class="price-main">S/ {{ (product.salePrice || product.price) | number:'1.2-2' }}</span>
+        <span *ngIf="product.salePrice && product.salePrice < product.price" class="price-old">
+          S/ {{ product.price | number:'1.2-2' }}
+        </span>
+        <span *ngIf="product.salePrice && product.salePrice < product.price" class="discount-chip">
+          Ahorras S/ {{ (product.price - product.salePrice) | number:'1.2-2' }}
+        </span>
+      </div>
+
+      <!-- Stock -->
+      <div class="stock-row" [ngClass]="{'stock-ok': product.stock > 5, 'stock-low': product.stock <= 5 && product.stock > 0, 'stock-out': product.stock === 0}">
+        <i class="fi" [ngClass]="product.stock > 0 ? 'fi-rr-check' : 'fi-rr-cross-circle'"></i>
+        <span *ngIf="product.stock > 5">En stock — disponible</span>
+        <span *ngIf="product.stock <= 5 && product.stock > 0">¡Solo quedan {{ product.stock }} unidades!</span>
+        <span *ngIf="product.stock === 0">Agotado temporalmente</span>
+      </div>
+
+      <!-- Selector de talla -->
+      <div class="size-section" *ngIf="(product.sizes || []).length > 0">
+        <div class="size-header">
+          <span class="size-label"><i class="fi fi-rr-ruler"></i> Talla</span>
+          <span class="size-selected" *ngIf="selectedSize">Seleccionada: <strong>{{ selectedSize }}</strong></span>
+          <span class="size-guide" *ngIf="!selectedSize">Elige una talla</span>
+        </div>
+        <div class="size-grid">
+          <button
+            *ngFor="let s of product.sizes"
+            class="size-chip"
+            [class.active]="selectedSize === s.size"
+            [disabled]="!s.available"
+            (click)="selectSize(s.size, s.variantId)">
+            {{ s.size }}
+          </button>
+        </div>
+        <p class="size-warn" *ngIf="(product.sizes || []).length > 1 && !selectedSize">
+          <i class="fi fi-rr-info"></i> Debes seleccionar una talla para continuar
+        </p>
+      </div>
+
+      <!-- Descripción -->
+      <div class="desc-section" *ngIf="product.description">
+        <p class="desc-text">{{ product.description }}</p>
+      </div>
+
+      <!-- Cantidad + Agregar al carrito -->
+      <div class="purchase-box" *ngIf="product.stock > 0">
+        <div class="qty-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
+              <i class="fi fi-rr-minus-small"></i>
+            </button>
+            <span class="qty-val">{{ quantity }}</span>
+            <button class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity >= product.stock">
+              <i class="fi fi-rr-plus-small"></i>
+            </button>
+          </div>
+          <span class="qty-total">= S/ {{ ((product.salePrice || product.price) * quantity) | number:'1.2-2' }}</span>
+        </div>
+
+        <button class="btn-add-cart" (click)="addToCart()"
+          [disabled]="((product.sizes || []).length > 1 && !selectedSize)">
+          <i class="fi fi-rr-shopping-bag"></i>
+          Agregar al carrito
+        </button>
+
+        <button class="btn-wsp" (click)="consultarPorWsp()">
+          <i class="fi fi-brands-whatsapp"></i>
+          Consultar por WhatsApp
+        </button>
+      </div>
+
+      <!-- Sin stock -->
+      <div class="out-of-stock-box" *ngIf="product.stock === 0">
+        <p><i class="fi fi-rr-exclamation"></i> Producto temporalmente agotado</p>
+        <button class="btn-wsp" (click)="consultarPorWsp()">
+          <i class="fi fi-brands-whatsapp"></i> Avisar cuando esté disponible
+        </button>
+        <a routerLink="/catalog" class="btn-outline-dark">
+          <i class="fi fi-rr-arrow-left"></i> Ver otros productos
+        </a>
+      </div>
+
+      <!-- Features -->
+      <div class="features-row">
+        <div class="feat-item">
+          <i class="fi fi-rr-truck-side"></i>
+          <div>
+            <strong>Envío a coordinar</strong>
+            <span>Cotiza por WhatsApp</span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <i class="fi fi-rr-shield-check"></i>
+          <div>
+            <strong>Garantía</strong>
+            <span>Producto original</span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <i class="fi fi-rr-credit-card"></i>
+          <div>
+            <strong>Pagos</strong>
+            <span>Yape, transferencia</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Productos relacionados -->
+  <div *ngIf="product && !loading && relatedProducts.length > 0" class="related-section">
+    <div class="container">
+      <h2 class="related-title">También te puede interesar</h2>
+      <div class="related-grid">
+        <a *ngFor="let rel of relatedProducts | slice:0:4"
+          [routerLink]="['/product', rel.id]" class="related-card">
+          <div class="rel-img-wrap">
+            <img [src]="getProductImage(rel)" [alt]="rel.name"
+              (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80'" />
+          </div>
+          <div class="rel-info">
+            <span class="rel-name">{{ rel.name }}</span>
+            <span class="rel-price">S/ {{ (rel.salePrice || rel.price) | number:'1.2-2' }}</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
