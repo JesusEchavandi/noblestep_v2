@@ -11,8 +11,59 @@ using NobleStep.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Variables de entorno (sobreescriben appsettings en producción) ────────────
+// En producción, configurar estas variables de entorno en el servidor/VPS:
+//   NOBLESTEP_DB_CONNECTION   → cadena de conexión MySQL completa
+//   NOBLESTEP_JWT_SECRET      → clave secreta JWT (mínimo 32 caracteres)
+//   NOBLESTEP_SMTP_PASSWORD   → contraseña de app Gmail
+//   NOBLESTEP_API_TOKEN       → token de ApiConsulta.pe
+//   NOBLESTEP_FRONTEND_URL    → URL del frontend ecommerce (ej: https://tudominio.com)
+//   NOBLESTEP_CORS_ORIGINS    → dominios permitidos separados por coma
+var isDev = builder.Environment.IsDevelopment();
+
+// Sobreescribir cadena de conexión si existe la variable de entorno
+var envDbConnection = Environment.GetEnvironmentVariable("NOBLESTEP_DB_CONNECTION");
+if (!string.IsNullOrWhiteSpace(envDbConnection))
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = envDbConnection;
+
+// Sobreescribir JWT SecretKey
+var envJwtSecret = Environment.GetEnvironmentVariable("NOBLESTEP_JWT_SECRET");
+if (!string.IsNullOrWhiteSpace(envJwtSecret))
+    builder.Configuration["JwtSettings:SecretKey"] = envJwtSecret;
+
+// Sobreescribir SMTP Password
+var envSmtpPassword = Environment.GetEnvironmentVariable("NOBLESTEP_SMTP_PASSWORD");
+if (!string.IsNullOrWhiteSpace(envSmtpPassword))
+    builder.Configuration["Email:SmtpPassword"] = envSmtpPassword;
+
+// Sobreescribir token de ApiConsulta
+var envApiToken = Environment.GetEnvironmentVariable("NOBLESTEP_API_TOKEN");
+if (!string.IsNullOrWhiteSpace(envApiToken))
+    builder.Configuration["ApiConsulta:Token"] = envApiToken;
+
+// Sobreescribir FrontendUrl
+var envFrontendUrl = Environment.GetEnvironmentVariable("NOBLESTEP_FRONTEND_URL");
+if (!string.IsNullOrWhiteSpace(envFrontendUrl))
+    builder.Configuration["App:FrontendUrl"] = envFrontendUrl;
+
+// Sobreescribir CORS origins
+var envCorsOrigins = Environment.GetEnvironmentVariable("NOBLESTEP_CORS_ORIGINS");
+if (!string.IsNullOrWhiteSpace(envCorsOrigins))
+    builder.Configuration["Cors:AllowedOrigins"] = envCorsOrigins;
+
+// ── Validar secretos críticos en producción ───────────────────────────────────
+if (!isDev)
+{
+    var jwtSecretCheck = builder.Configuration["JwtSettings:SecretKey"];
+    if (string.IsNullOrWhiteSpace(jwtSecretCheck) || jwtSecretCheck.Length < 32)
+        throw new InvalidOperationException("NOBLESTEP_JWT_SECRET debe tener al menos 32 caracteres en producción.");
+
+    var dbCheck = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(dbCheck))
+        throw new InvalidOperationException("NOBLESTEP_DB_CONNECTION no está configurado en producción.");
+}
+
 // Configurar zona horaria peruana
-TimeZoneInfo peruTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time"); // UTC-5 (Perú)
 Environment.SetEnvironmentVariable("TZ", "America/Lima");
 
 // Add services to the container.
@@ -105,23 +156,39 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        // TEMPORAL: Permitir todos los orígenes de Vercel para debugging
-        policy.SetIsOriginAllowed(origin =>
+        if (isDev)
         {
-            if (string.IsNullOrEmpty(origin)) return false;
+            // Development: permitir localhost en cualquier puerto
+            policy.SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                var uri = new Uri(origin);
+                return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        }
+        else
+        {
+            // Producción: solo dominios explícitos definidos en NOBLESTEP_CORS_ORIGINS
+            // Ejemplo: "https://noblestep.com,https://admin.noblestep.com"
+            var allowedOriginsRaw = builder.Configuration["Cors:AllowedOrigins"] ?? "";
+            var allowedOrigins = allowedOriginsRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(o => !string.IsNullOrWhiteSpace(o))
+                .ToArray();
 
-            var uri = new Uri(origin);
-            var isLocalhost = uri.Host == "localhost" || uri.Host == "127.0.0.1";
-            // Permitir Vercel para deploy de prueba
-            // TODO: Limitar a dominios específicos antes de ir a producción real
-            var isVercel = uri.Host.EndsWith(".vercel.app");
+            if (allowedOrigins.Length == 0)
+                throw new InvalidOperationException("NOBLESTEP_CORS_ORIGINS no está configurado en producción.");
 
-            return isLocalhost || isVercel;
-        })
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()
-        .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        }
     });
 });
 
@@ -216,6 +283,13 @@ else
             correlationId
         });
     }));
+}
+
+// ── HTTPS y HSTS (solo producción) ───────────────────────────────────────────
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+    app.UseHsts();
 }
 
 // Swagger solo disponible en Development
