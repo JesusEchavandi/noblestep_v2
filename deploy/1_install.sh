@@ -14,8 +14,11 @@ echo "================================================"
 echo ""
 echo "[1/7] Actualizando sistema..."
 sudo apt update
-# Upgrade sin dotnet para evitar conflictos (se instala después por separado)
-sudo apt upgrade -y --exclude='dotnet*' --exclude='aspnet*' --exclude='netstandard*'
+# Marcar paquetes dotnet en hold para evitar conflictos durante el upgrade
+sudo apt-mark hold dotnet-host dotnet-host-8.0 netstandard-targeting-pack-2.1 netstandard-targeting-pack-2.1-8.0 aspnetcore-runtime-8.0 dotnet-runtime-8.0 2>/dev/null || true
+sudo apt upgrade -y
+# Desmarcar hold después del upgrade
+sudo apt-mark unhold dotnet-host dotnet-host-8.0 netstandard-targeting-pack-2.1 netstandard-targeting-pack-2.1-8.0 aspnetcore-runtime-8.0 dotnet-runtime-8.0 2>/dev/null || true
 
 # --- Nginx ---
 echo ""
