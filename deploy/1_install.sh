@@ -35,10 +35,10 @@ sudo systemctl enable mysql
 # Configurar usuario de MySQL para NobleStep
 echo ""
 echo "[3.1] Configurando base de datos NobleStep..."
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS noblestep_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'noblestep'@'localhost' IDENTIFIED BY 'L4grimas';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON noblestep_db.* TO 'noblestep'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
+sudo mysql -u root -p'rootpass123' -e "CREATE DATABASE IF NOT EXISTS noblestep_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
+sudo mysql -u root -p'rootpass123' -e "CREATE USER IF NOT EXISTS 'noblestep'@'localhost' IDENTIFIED BY 'L4grimas';" 2>/dev/null || true
+sudo mysql -u root -p'rootpass123' -e "GRANT ALL PRIVILEGES ON noblestep_db.* TO 'noblestep'@'localhost';" 2>/dev/null || true
+sudo mysql -u root -p'rootpass123' -e "FLUSH PRIVILEGES;" 2>/dev/null || true
 echo "  ✅ Base de datos lista: noblestep_db"
 
 # --- Node.js 20 ---
