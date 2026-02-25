@@ -285,6 +285,11 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // ── Filtro global de soft delete para Orders ─────────────────────────────
+        // Los registros con IsDeleted = true nunca aparecen en consultas normales.
+        // Para consultas administrativas que necesiten ver eliminados, usar IgnoreQueryFilters().
+        modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
+
         // Seed initial data
         SeedData(modelBuilder);
     }

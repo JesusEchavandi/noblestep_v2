@@ -29,6 +29,31 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            return BadRequest(new { message = "Refresh token requerido" });
+
+        var result = await _authService.RefreshAsync(dto.RefreshToken);
+
+        if (result == null)
+            return Unauthorized(new { message = "Refresh token inválido o expirado" });
+
+        return Ok(result);
+    }
+
+    [HttpPost("revoke")]
+    [Authorize]
+    public async Task<IActionResult> Revoke([FromBody] RefreshTokenDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            return BadRequest(new { message = "Refresh token requerido" });
+
+        await _authService.RevokeAsync(dto.RefreshToken);
+        return Ok(new { message = "Sesión cerrada exitosamente" });
+    }
+
     [HttpPost("register")]
     [Authorize(Roles = "Administrator")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)

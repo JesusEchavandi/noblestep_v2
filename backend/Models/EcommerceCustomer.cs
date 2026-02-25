@@ -17,6 +17,10 @@ public class EcommerceCustomer
     public DateTime? PasswordResetExpires { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    // Refresh Token
+    public string? RefreshTokenHash { get; set; }
+    public DateTime? RefreshTokenExpires { get; set; }
     
     // Navigation properties
     public ICollection<Order> Orders { get; set; } = new List<Order>();

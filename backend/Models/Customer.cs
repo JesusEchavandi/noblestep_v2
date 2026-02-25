@@ -9,7 +9,10 @@ public class Customer
     public string Email { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+    public DateTime? UpdatedAt { get; set; }
+    /// <summary>Username del admin que creó el registro.</summary>
+    public string? CreatedBy { get; set; }
+
     // Navigation property
     public ICollection<Sale> Sales { get; set; } = new List<Sale>();
 }

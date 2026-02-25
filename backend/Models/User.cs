@@ -10,4 +10,11 @@ public class User
     public string Role { get; set; } = "Seller"; // Administrator or Seller
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    /// <summary>Username del admin que creó este usuario.</summary>
+    public string? CreatedBy { get; set; }
+
+    // Refresh Token
+    public string? RefreshTokenHash { get; set; }
+    public DateTime? RefreshTokenExpires { get; set; }
 }

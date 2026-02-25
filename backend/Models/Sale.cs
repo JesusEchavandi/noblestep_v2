@@ -9,6 +9,9 @@ public class Sale
     public decimal Total { get; set; }
     public string Status { get; set; } = "Completed";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    /// <summary>Username del usuario que registró la venta.</summary>
+    public string? CreatedBy { get; set; }
 
     // Navigation properties
     public Customer Customer { get; set; } = null!;

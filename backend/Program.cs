@@ -8,8 +8,31 @@ using Microsoft.OpenApi.Models;
 using NobleStep.Api.Data;
 using NobleStep.Api.Helpers;
 using NobleStep.Api.Services;
+using Serilog;
+using Serilog.Events;
+
+// ── Bootstrap logger (captura errores antes de que DI esté listo) ─────────────
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
+Log.Information("Iniciando NobleStep API...");
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Serilog — configuración desde appsettings + enriquecedores ───────────────
+builder.Host.UseSerilog((ctx, services, configuration) => configuration
+    .ReadFrom.Configuration(ctx.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .Enrich.WithProperty("Application", "NobleStepAPI")
+    .Enrich.WithProperty("Environment", ctx.HostingEnvironment.EnvironmentName));
 
 // ── Variables de entorno (sobreescriben appsettings en producción) ────────────
 // En producción, configurar estas variables de entorno en el servidor/VPS:
@@ -168,6 +191,14 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
+// ── Caché en memoria para catálogo público ────────────────────────────────────
+// Usado por ShopController para reducir queries a la BD en endpoints de alta lectura.
+// En producción considerar IDistributedCache (Redis) cuando escale a múltiples instancias.
+builder.Services.AddMemoryCache();
+
+// ── Response Cache (cabeceras Cache-Control) ──────────────────────────────────
+builder.Services.AddResponseCaching();
+
 // Register Services
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
@@ -307,15 +338,60 @@ else
     }));
 }
 
+// ── Serilog request logging estructurado ─────────────────────────────────────
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? "");
+        var correlationId = httpContext.Items["CorrelationId"]?.ToString() ?? "";
+        diagnosticContext.Set("CorrelationId", correlationId);
+    };
+});
+
 // ── Compresión — debe ir antes de CORS y rutas ────────────────────────────────
 app.UseResponseCompression();
 
-// ── HTTPS y HSTS (solo producción) ───────────────────────────────────────────
-if (!app.Environment.IsDevelopment())
+// ── Cookies: SameSite y Secure ────────────────────────────────────────────────
+// NOTA: Esta API usa autenticación basada exclusivamente en JWT enviado en el
+// header Authorization (Bearer). No se usan cookies de sesión ni de autenticación.
+// Por lo tanto, la configuración de SameSite y Secure en cookies no aplica.
+// Si en el futuro se implementan cookies (ej: refresh token en cookie HttpOnly),
+// se debe agregar aquí: builder.Services.ConfigureApplicationCookie(o => {
+//   o.Cookie.SameSite = SameSiteMode.Strict;
+//   o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+// });
+
+// ── Cabeceras de seguridad HTTP ───────────────────────────────────────────────
+app.Use(async (ctx, next) =>
 {
-    app.UseHttpsRedirection();
-    app.UseHsts();
-}
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
+    ctx.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+    ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    ctx.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    ctx.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: https:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none';";
+    await next();
+});
+
+// ── HTTPS y HSTS (solo producción con dominio/SSL) ───────────────────────────
+// Deshabilitado: el VPS usa HTTP puro con IP (sin SSL por ahora).
+// Cuando se agregue un dominio con certificado SSL, descomentar estas líneas:
+// if (!app.Environment.IsDevelopment())
+// {
+//     app.UseHttpsRedirection();
+//     app.UseHsts();
+// }
 
 // Swagger solo disponible en Development
 if (app.Environment.IsDevelopment())
@@ -328,12 +404,26 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Health check endpoint
-app.MapGet("/api/health", () => Results.Ok(new { 
-    status = "healthy", 
-    timestamp = DateTime.UtcNow,
-    environment = app.Environment.EnvironmentName 
-}));
+// ── Health check endpoint (protegido: solo localhost en producción) ───────────
+app.MapGet("/api/health", (HttpContext ctx) =>
+{
+    var isLocal = ctx.Connection.RemoteIpAddress != null &&
+                  (ctx.Connection.RemoteIpAddress.ToString() == "127.0.0.1" ||
+                   ctx.Connection.RemoteIpAddress.ToString() == "::1");
+
+    if (!app.Environment.IsDevelopment() && !isLocal)
+        return Results.StatusCode(404);
+
+    return Results.Ok(new {
+        status = "healthy",
+        timestamp = DateTime.UtcNow,
+        environment = app.Environment.EnvironmentName,
+        version = "1.0.0"
+    });
+}).ExcludeFromDescription();
+
+// ── Response Caching middleware ───────────────────────────────────────────────
+app.UseResponseCaching();
 
 // CORS must be before authentication and authorization
 app.UseCors("AllowAngular");
@@ -345,4 +435,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
+
+} // end try
+catch (Exception ex)
+{
+    Log.Fatal(ex, "La aplicación falló durante el inicio.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 

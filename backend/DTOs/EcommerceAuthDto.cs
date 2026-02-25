@@ -1,16 +1,34 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace NobleStep.Api.DTOs;
 
 public class EcommerceRegisterDto
 {
+    [Required(ErrorMessage = "El email es requerido")]
+    [EmailAddress(ErrorMessage = "Email inválido")]
+    [MaxLength(100)]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "La contraseña es requerida")]
+    [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+    [MaxLength(100)]
     public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "El nombre completo es requerido")]
+    [MaxLength(100)]
     public string FullName { get; set; } = string.Empty;
+
+    [MaxLength(20)]
     public string? Phone { get; set; }
 }
 
 public class EcommerceLoginDto
 {
+    [Required(ErrorMessage = "El email es requerido")]
+    [EmailAddress(ErrorMessage = "Email inválido")]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "La contraseña es requerida")]
     public string Password { get; set; } = string.Empty;
 }
 

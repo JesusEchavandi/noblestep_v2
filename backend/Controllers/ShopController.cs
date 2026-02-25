@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
 
@@ -12,11 +13,18 @@ public class ShopController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ShopController> _logger;
+    private readonly IMemoryCache _cache;
 
-    public ShopController(AppDbContext context, ILogger<ShopController> logger)
+    // Tiempos de caché por endpoint
+    private static readonly TimeSpan CatalogCacheDuration  = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan FeaturedCacheDuration = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan CategoriesCacheDuration = TimeSpan.FromMinutes(15);
+
+    public ShopController(AppDbContext context, ILogger<ShopController> logger, IMemoryCache cache)
     {
         _context = context;
         _logger = logger;
+        _cache = cache;
     }
 
     // GET: api/shop/products
@@ -140,9 +148,6 @@ public class ShopController : ControllerBase
                 }).ToList()
             };
 
-            if (product == null)
-                return NotFound(new { message = "Producto no encontrado" });
-
             return Ok(product);
         }
         catch (Exception ex)
@@ -158,6 +163,10 @@ public class ShopController : ControllerBase
     {
         try
         {
+            const string cacheKey = "shop:categories";
+            if (_cache.TryGetValue(cacheKey, out List<CategoryShopDto>? cached) && cached != null)
+                return Ok(cached);
+
             var categories = await _context.Categories
                 .Where(c => c.Products.Any(p => p.IsActive && p.Stock > 0))
                 .Select(c => new CategoryShopDto
@@ -170,6 +179,7 @@ public class ShopController : ControllerBase
                 .OrderBy(c => c.Name)
                 .ToListAsync();
 
+            _cache.Set(cacheKey, categories, CategoriesCacheDuration);
             return Ok(categories);
         }
         catch (Exception ex)
@@ -187,6 +197,10 @@ public class ShopController : ControllerBase
         try
         {
             if (limit <= 0 || limit > 50) limit = 8;
+
+            var cacheKey = $"shop:featured:{limit}";
+            if (_cache.TryGetValue(cacheKey, out List<ProductShopDto>? cached) && cached != null)
+                return Ok(cached);
 
             var rawFeatured = await _context.Products
                 .Include(p => p.Category)
@@ -226,6 +240,7 @@ public class ShopController : ControllerBase
                 .Take(limit)
                 .ToList();
 
+            _cache.Set(cacheKey, products, FeaturedCacheDuration);
             return Ok(products);
         }
         catch (Exception ex)
