@@ -13,7 +13,9 @@ echo "================================================"
 # --- Actualizar sistema ---
 echo ""
 echo "[1/7] Actualizando sistema..."
-sudo apt update && sudo apt upgrade -y
+sudo apt update
+# Upgrade sin dotnet para evitar conflictos (se instala después por separado)
+sudo apt upgrade -y --exclude='dotnet*' --exclude='aspnet*' --exclude='netstandard*'
 
 # --- Nginx ---
 echo ""
@@ -46,11 +48,17 @@ echo "  ✅ Node $(node -v) instalado"
 # --- .NET 8 ---
 echo ""
 echo "[5/7] Instalando .NET 8..."
-wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-rm packages-microsoft-prod.deb
+# Eliminar paquetes conflictivos de .NET si existen
+sudo apt remove -y dotnet-host dotnet-host-8.0 netstandard-targeting-pack-2.1 netstandard-targeting-pack-2.1-8.0 2>/dev/null || true
+sudo apt autoremove -y 2>/dev/null || true
+# Registrar repo de Microsoft si no está
+if [ ! -f /etc/apt/sources.list.d/microsoft-prod.list ]; then
+    wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+    sudo dpkg -i packages-microsoft-prod.deb
+    rm packages-microsoft-prod.deb
+fi
 sudo apt update
-sudo apt install dotnet-sdk-8.0 -y
+sudo apt install -y dotnet-sdk-8.0
 echo "  ✅ .NET $(dotnet --version) instalado"
 
 # --- Directorios de la app ---
