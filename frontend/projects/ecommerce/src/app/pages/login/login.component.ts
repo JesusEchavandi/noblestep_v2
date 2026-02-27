@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EcommerceAuthService } from '../../services/ecommerce-auth.service';
 import { NotificationService } from '../../services/notification.service';
+import { finalize, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -473,16 +474,34 @@ export class LoginComponent implements OnInit {
       password: this.formData.password,
       fullName: this.formData.fullName,
       phone: this.formData.phone
-    }).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.notificationService.success('¡Cuenta creada exitosamente!');
-        this.router.navigate([this.returnUrl]);
-      },
-      error: (error) => {
-        this.loading = false;
-        this.notificationService.error(error.error?.message || 'Error al crear la cuenta');
-      }
+    })
+      .pipe(
+        timeout(15000),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.success('¡Cuenta creada exitosamente!');
+          this.redirectToLoginAfterRegister();
+        },
+        error: (error) => {
+          const message = error?.name === 'TimeoutError'
+            ? 'El registro está tardando demasiado. Inténtalo nuevamente.'
+            : (error.error?.message || 'Error al crear la cuenta');
+          this.notificationService.error(message);
+        }
+      });
+  }
+
+  private redirectToLoginAfterRegister() {
+    this.loading = false;
+    this.isLogin = true;
+    this.confirmPassword = '';
+    this.notificationService.info('Cuenta creada. Inicia sesión para continuar.');
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.returnUrl }
     });
   }
 
