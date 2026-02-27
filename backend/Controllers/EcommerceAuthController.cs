@@ -35,10 +35,15 @@ public class EcommerceAuthController : ControllerBase
     // POST: api/ecommerce/auth/register
     [HttpPost("register")]
     [EnableRateLimiting("register")]
-    public async Task<ActionResult<EcommerceAuthResponseDto>> Register([FromBody] EcommerceRegisterDto dto)
+    public async Task<ActionResult<EcommerceAuthResponseDto>> Register([FromBody] EcommerceRegisterDto? dto)
     {
         try
         {
+            if (dto == null)
+            {
+                return BadRequest(new { message = "Datos de registro inválidos" });
+            }
+
             // Validaciones
             if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains("@"))
             {
@@ -127,10 +132,15 @@ public class EcommerceAuthController : ControllerBase
     // POST: api/ecommerce/auth/login
     [HttpPost("login")]
     [EnableRateLimiting("login")]
-    public async Task<ActionResult<EcommerceAuthResponseDto>> Login([FromBody] EcommerceLoginDto dto)
+    public async Task<ActionResult<EcommerceAuthResponseDto>> Login([FromBody] EcommerceLoginDto? dto)
     {
         try
         {
+            if (dto == null)
+            {
+                return BadRequest(new { message = "Datos de login inválidos" });
+            }
+
             // Validaciones
             if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
             {
