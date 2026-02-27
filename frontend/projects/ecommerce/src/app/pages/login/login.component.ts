@@ -476,7 +476,7 @@ export class LoginComponent implements OnInit {
       phone: this.formData.phone
     })
       .pipe(
-        timeout(15000),
+        timeout(30000),
         finalize(() => {
           this.loading = false;
         })
@@ -484,13 +484,16 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notificationService.success('¡Cuenta creada exitosamente!');
-          this.redirectToLoginAfterRegister();
+          this.router.navigate([this.returnUrl]);
         },
         error: (error) => {
-          const message = error?.name === 'TimeoutError'
-            ? 'El registro está tardando demasiado. Inténtalo nuevamente.'
-            : (error.error?.message || 'Error al crear la cuenta');
-          this.notificationService.error(message);
+          if (error?.name === 'TimeoutError') {
+            this.notificationService.error('El servidor está tardando. Inténtalo nuevamente en un momento.');
+          } else if (error?.status === 429) {
+            this.notificationService.error('Demasiados intentos de registro. Espera unos minutos e inténtalo nuevamente.');
+          } else {
+            this.notificationService.error(error.error?.message || 'Error al crear la cuenta');
+          }
         }
       });
   }

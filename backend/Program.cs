@@ -180,10 +180,10 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
     });
-    // Registro ecommerce: 5 por 10 minutos por IP
+    // Registro ecommerce: 20 por 10 minutos por IP
     options.AddFixedWindowLimiter("register", opt =>
     {
-        opt.PermitLimit = 5;
+        opt.PermitLimit = 20;
         opt.Window = TimeSpan.FromMinutes(10);
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
