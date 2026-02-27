@@ -376,6 +376,8 @@ public class EmailService : IEmailService
         using var smtpClient = new SmtpClient(smtpHost, smtpPort);
         smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
         smtpClient.EnableSsl = true;
+        var timeoutSeconds = int.TryParse(_configuration["Email:SmtpTimeoutSeconds"], out var seconds) ? seconds : 10;
+        smtpClient.Timeout = Math.Max(1, timeoutSeconds) * 1000;
 
         await smtpClient.SendMailAsync(message);
         _logger.LogInformation("Email enviado exitosamente a {Email}", toEmail);

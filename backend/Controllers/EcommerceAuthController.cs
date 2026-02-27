@@ -19,17 +19,20 @@ public class EcommerceAuthController : ControllerBase
     private readonly TokenService _tokenService;
     private readonly IEmailService _emailService;
     private readonly ILogger<EcommerceAuthController> _logger;
+    private readonly IConfiguration _configuration;
 
     public EcommerceAuthController(
         AppDbContext context,
         TokenService tokenService,
         IEmailService emailService,
-        ILogger<EcommerceAuthController> logger)
+        ILogger<EcommerceAuthController> logger,
+        IConfiguration configuration)
     {
         _context = context;
         _tokenService = tokenService;
         _emailService = emailService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     // POST: api/ecommerce/auth/register
@@ -88,15 +91,18 @@ public class EcommerceAuthController : ControllerBase
             _context.EcommerceCustomers.Add(customer);
             await _context.SaveChangesAsync();
 
-            // Enviar email de bienvenida
-            try
+            // Enviar email de bienvenida de forma no bloqueante
+            _ = Task.Run(async () =>
             {
-                await _emailService.SendWelcomeEmailAsync(customer.Email, customer.FullName);
-            }
-            catch (Exception emailEx)
-            {
-                _logger.LogWarning(emailEx, "No se pudo enviar email de bienvenida a {Email}", customer.Email);
-            }
+                try
+                {
+                    await _emailService.SendWelcomeEmailAsync(customer.Email, customer.FullName);
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogWarning(emailEx, "No se pudo enviar email de bienvenida a {Email}", customer.Email);
+                }
+            });
 
             // Generar token JWT
             var token = _tokenService.GenerateEcommerceToken(customer);
