@@ -524,6 +524,43 @@ public class EcommerceAuthController : ControllerBase
         }
     }
 
+    // POST: api/ecommerce/auth/set-cookie
+    // Activa cuando tengas HTTPS + dominio propio: establece el JWT en una cookie HttpOnly.
+    // En producción con SSL: Auth:UseCookieAuth = true, Auth:CookieSecure = true
+    [Authorize]
+    [HttpPost("set-cookie")]
+    public IActionResult SetCookie()
+    {
+        var useCookie = _configuration.GetValue<bool>("Auth:UseCookieAuth");
+        if (!useCookie)
+            return BadRequest(new { message = "Cookie auth no está habilitado en este entorno" });
+
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        if (string.IsNullOrWhiteSpace(token))
+            return BadRequest(new { message = "Token requerido" });
+
+        var secure = _configuration.GetValue<bool>("Auth:CookieSecure");
+        var sameSite = _configuration.GetValue<string>("Auth:CookieSameSite") ?? "Lax";
+        var domain = _configuration.GetValue<string>("Auth:CookieDomain");
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = secure,
+            SameSite = sameSite == "Strict" ? SameSiteMode.Strict
+                      : sameSite == "None" ? SameSiteMode.None
+                      : SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(7),
+            Path = "/"
+        };
+
+        if (!string.IsNullOrWhiteSpace(domain))
+            cookieOptions.Domain = domain;
+
+        Response.Cookies.Append("ecommerce_token", token, cookieOptions);
+        return Ok(new { message = "Cookie establecida correctamente" });
+    }
+
     private int? GetCustomerIdFromToken()
     {
         var customerIdClaim = User.FindFirst("customerId");
