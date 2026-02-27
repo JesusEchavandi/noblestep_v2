@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 export interface EcommerceCustomer {
   id: number;
@@ -18,6 +19,8 @@ export interface EcommerceCustomer {
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
+  refreshTokenExpires: Date;
   customer: EcommerceCustomer;
 }
 
@@ -49,12 +52,12 @@ export class EcommerceAuthService {
   private apiUrl = `${environment.apiUrl}/ecommerce/auth`;
   private currentCustomerSubject = new BehaviorSubject<EcommerceCustomer | null>(null);
   public currentCustomer$ = this.currentCustomerSubject.asObservable();
-  
+
   private tokenKey = 'ecommerce_token';
   private customerKey = 'ecommerce_customer';
+  private refreshTokenKey = 'ecommerce_refresh_token';
 
-  constructor(private http: HttpClient) {
-    // Cargar datos del localStorage al iniciar
+  constructor(private http: HttpClient, private router: Router) {
     this.loadFromStorage();
   }
 
@@ -92,7 +95,20 @@ export class EcommerceAuthService {
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.customerKey);
+    localStorage.removeItem(this.refreshTokenKey);
     this.currentCustomerSubject.next(null);
+    this.router.navigate(['/login']);
+  }
+
+  refreshToken(): Observable<AuthResponse> {
+    const token = this.getRefreshToken();
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken: token }).pipe(
+      tap(response => this.handleAuthResponse(response))
+    );
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.refreshTokenKey);
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -124,6 +140,9 @@ export class EcommerceAuthService {
   private handleAuthResponse(response: AuthResponse) {
     localStorage.setItem(this.tokenKey, response.token);
     localStorage.setItem(this.customerKey, JSON.stringify(response.customer));
+    if (response.refreshToken) {
+      localStorage.setItem(this.refreshTokenKey, response.refreshToken);
+    }
     this.currentCustomerSubject.next(response.customer);
   }
 

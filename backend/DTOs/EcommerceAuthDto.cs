@@ -35,7 +35,15 @@ public class EcommerceLoginDto
 public class EcommerceAuthResponseDto
 {
     public string Token { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public DateTime RefreshTokenExpires { get; set; }
     public EcommerceCustomerDto Customer { get; set; } = null!;
+}
+
+public class EcommerceRefreshTokenDto
+{
+    [Required(ErrorMessage = "El refresh token es requerido")]
+    public string RefreshToken { get; set; } = string.Empty;
 }
 
 public class EcommerceCustomerDto

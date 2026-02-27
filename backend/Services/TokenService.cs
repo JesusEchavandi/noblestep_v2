@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -75,5 +76,16 @@ public class TokenService
     public DateTime GetTokenExpiration()
     {
         return DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
+    }
+
+    /// <summary>
+    /// Genera un refresh token seguro (token plano para el cliente + hash SHA256 para la BD).
+    /// </summary>
+    public (string token, string hash, DateTime expires) GenerateEcommerceRefreshToken()
+    {
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+        var expires = DateTime.UtcNow.AddDays(30);
+        return (token, hash, expires);
     }
 }

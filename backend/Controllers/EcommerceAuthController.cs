@@ -89,7 +89,20 @@ public class EcommerceAuthController : ControllerBase
             };
 
             _context.EcommerceCustomers.Add(customer);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx) when (
+                dbEx.InnerException?.Message.Contains("Duplicate entry") == true ||
+                dbEx.InnerException?.Message.Contains("UNIQUE constraint") == true ||
+                dbEx.InnerException?.Message.Contains("unique_email") == true ||
+                dbEx.InnerException?.Message.Contains("IX_") == true)
+            {
+                _logger.LogWarning("Intento de registro con email duplicado (race condition): {Email}", dto.Email);
+                return BadRequest(new { message = "Este email ya está registrado" });
+            }
 
             // Enviar email de bienvenida de forma no bloqueante
             _ = Task.Run(async () =>
@@ -104,12 +117,19 @@ public class EcommerceAuthController : ControllerBase
                 }
             });
 
-            // Generar token JWT
+            // Generar token JWT + Refresh Token
             var token = _tokenService.GenerateEcommerceToken(customer);
+            var (refreshToken, refreshHash, refreshExpires) = _tokenService.GenerateEcommerceRefreshToken();
+
+            customer.RefreshTokenHash = refreshHash;
+            customer.RefreshTokenExpires = refreshExpires;
+            await _context.SaveChangesAsync();
 
             var response = new EcommerceAuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
+                RefreshTokenExpires = refreshExpires,
                 Customer = new EcommerceCustomerDto
                 {
                     Id = customer.Id,
@@ -173,12 +193,20 @@ public class EcommerceAuthController : ControllerBase
                 return Unauthorized(new { message = "Email o contraseña incorrectos" });
             }
 
-            // Generar token JWT
+            // Generar token JWT + Refresh Token
             var token = _tokenService.GenerateEcommerceToken(customer);
+            var (refreshToken, refreshHash, refreshExpires) = _tokenService.GenerateEcommerceRefreshToken();
+
+            customer.RefreshTokenHash = refreshHash;
+            customer.RefreshTokenExpires = refreshExpires;
+            customer.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
 
             var response = new EcommerceAuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
+                RefreshTokenExpires = refreshExpires,
                 Customer = new EcommerceCustomerDto
                 {
                     Id = customer.Id,
@@ -200,6 +228,101 @@ public class EcommerceAuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error durante el login");
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    // POST: api/ecommerce/auth/refresh-token
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<EcommerceAuthResponseDto>> RefreshToken([FromBody] EcommerceRefreshTokenDto dto)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return BadRequest(new { message = "Refresh token inválido" });
+
+            var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dto.RefreshToken)));
+
+            var customer = await _context.EcommerceCustomers
+                .FirstOrDefaultAsync(c => c.RefreshTokenHash == tokenHash);
+
+            if (customer == null)
+                return Unauthorized(new { message = "Refresh token inválido" });
+
+            if (!customer.IsActive)
+                return Unauthorized(new { message = "Esta cuenta está desactivada" });
+
+            if (customer.RefreshTokenExpires == null || customer.RefreshTokenExpires < DateTime.UtcNow)
+                return Unauthorized(new { message = "Refresh token expirado, inicia sesión nuevamente" });
+
+            // Rotación: generar nuevo refresh token (invalida el anterior)
+            var newJwt = _tokenService.GenerateEcommerceToken(customer);
+            var (newRefreshToken, newRefreshHash, newRefreshExpires) = _tokenService.GenerateEcommerceRefreshToken();
+
+            customer.RefreshTokenHash = newRefreshHash;
+            customer.RefreshTokenExpires = newRefreshExpires;
+            customer.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var response = new EcommerceAuthResponseDto
+            {
+                Token = newJwt,
+                RefreshToken = newRefreshToken,
+                RefreshTokenExpires = newRefreshExpires,
+                Customer = new EcommerceCustomerDto
+                {
+                    Id = customer.Id,
+                    Email = customer.Email,
+                    FullName = customer.FullName,
+                    Phone = customer.Phone,
+                    DocumentNumber = customer.DocumentNumber,
+                    Address = customer.Address,
+                    City = customer.City,
+                    District = customer.District,
+                    EmailVerified = customer.EmailVerified,
+                    CreatedAt = customer.CreatedAt
+                }
+            };
+
+            _logger.LogInformation("Refresh token rotado para: {Email}", customer.Email);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en refresh-token");
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    // POST: api/ecommerce/auth/logout
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout()
+    {
+        try
+        {
+            var customerId = GetCustomerIdFromToken();
+            if (customerId == null)
+                return Unauthorized(new { message = "No autorizado" });
+
+            var customer = await _context.EcommerceCustomers
+                .FirstOrDefaultAsync(c => c.Id == customerId.Value);
+
+            if (customer != null)
+            {
+                // Invalidar refresh token
+                customer.RefreshTokenHash = null;
+                customer.RefreshTokenExpires = null;
+                customer.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+
+            _logger.LogInformation("Cliente cerró sesión: {CustomerId}", customerId);
+            return Ok(new { message = "Sesión cerrada exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en logout");
             return StatusCode(500, new { message = "Error interno del servidor" });
         }
     }

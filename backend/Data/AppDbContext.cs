@@ -219,7 +219,8 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
-            entity.HasIndex(e => e.Email).IsUnique();
+            // Índice único en Email: evita duplicados a nivel DB (complementa la validación en código)
+            entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_EcommerceCustomers_Email");
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.FullName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(20);
@@ -227,6 +228,14 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Address).HasMaxLength(300);
             entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.District).HasMaxLength(100);
+
+            // Índice compuesto para queries frecuentes: clientes activos ordenados por fecha
+            entity.HasIndex(e => new { e.IsActive, e.CreatedAt })
+                  .HasDatabaseName("IX_EcommerceCustomers_IsActive_CreatedAt");
+
+            // Índice en RefreshTokenHash para búsqueda rápida al renovar token
+            entity.HasIndex(e => e.RefreshTokenHash)
+                  .HasDatabaseName("IX_EcommerceCustomers_RefreshTokenHash");
         });
 
         // Order configuration
