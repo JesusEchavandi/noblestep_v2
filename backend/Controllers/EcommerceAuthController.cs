@@ -63,17 +63,21 @@ public class EcommerceAuthController : ControllerBase
                 return BadRequest(new { message = "El nombre completo es requerido" });
             }
 
-            // Verificar si el email ya existe
-            var existingCustomer = await _context.EcommerceCustomers
-                .FirstOrDefaultAsync(c => c.Email.ToLower() == dto.Email.ToLower());
+            // Verificar email Y hacer hash en PARALELO para reducir tiempo de respuesta
+            var emailCheckTask = _context.EcommerceCustomers
+                .AnyAsync(c => c.Email.ToLower() == dto.Email.ToLower());
 
-            if (existingCustomer != null)
+            var hashTask = Task.Run(() =>
+                BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 10));
+
+            await Task.WhenAll(emailCheckTask, hashTask);
+
+            if (emailCheckTask.Result)
             {
                 return BadRequest(new { message = "Este email ya está registrado" });
             }
 
-            // Crear hash de contraseña (work factor 11 = balance seguridad/velocidad en VPS)
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 11);
+            var passwordHash = hashTask.Result;
 
             // Crear nuevo cliente
             var customer = new EcommerceCustomer
