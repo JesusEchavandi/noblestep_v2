@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EcommerceAuthService } from '../../services/ecommerce-auth.service';
 import { NotificationService } from '../../services/notification.service';
-import { finalize, timeout } from 'rxjs';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -476,7 +476,6 @@ export class LoginComponent implements OnInit {
       phone: this.formData.phone
     })
       .pipe(
-        timeout(30000),
         finalize(() => {
           this.loading = false;
         })
@@ -487,9 +486,7 @@ export class LoginComponent implements OnInit {
           this.router.navigate([this.returnUrl]);
         },
         error: (error) => {
-          if (error?.name === 'TimeoutError') {
-            this.notificationService.error('El servidor está tardando. Inténtalo nuevamente en un momento.');
-          } else if (error?.status === 429) {
+          if (error?.status === 429) {
             this.notificationService.error('Demasiados intentos de registro. Espera unos minutos e inténtalo nuevamente.');
           } else {
             this.notificationService.error(error.error?.message || 'Error al crear la cuenta');

@@ -72,8 +72,8 @@ public class EcommerceAuthController : ControllerBase
                 return BadRequest(new { message = "Este email ya está registrado" });
             }
 
-            // Crear hash de contraseña
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            // Crear hash de contraseña (work factor 11 = balance seguridad/velocidad en VPS)
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 11);
 
             // Crear nuevo cliente
             var customer = new EcommerceCustomer
