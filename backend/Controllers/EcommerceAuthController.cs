@@ -104,12 +104,17 @@ public class EcommerceAuthController : ControllerBase
                 return BadRequest(new { message = "Este email ya está registrado" });
             }
 
-            // Enviar email de bienvenida de forma no bloqueante
+            // Enviar email de bienvenida de forma no bloqueante con timeout de 8 segundos
             _ = Task.Run(async () =>
             {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
                 try
                 {
-                    await _emailService.SendWelcomeEmailAsync(customer.Email, customer.FullName);
+                    await Task.Run(() => _emailService.SendWelcomeEmailAsync(customer.Email, customer.FullName), cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogWarning("Timeout enviando email de bienvenida a {Email} (8s)", customer.Email);
                 }
                 catch (Exception emailEx)
                 {
