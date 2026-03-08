@@ -6,50 +6,50 @@
 
   <ul class="nav nav-tabs mb-4">
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'sales'" (click)="activeTab = 'sales'; loadSalesReports()">
+      <button class="nav-link" [class.active]="pestanaActiva === 'ventas'" (click)="pestanaActiva = 'ventas'; cargarReportesVentas()">
         <i class="bi bi-cart-check"></i> Ventas
       </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'purchases'" (click)="activeTab = 'purchases'; loadPurchasesReports()">
+      <button class="nav-link" [class.active]="pestanaActiva === 'compras'" (click)="pestanaActiva = 'compras'; cargarReportesCompras()">
         <i class="bi bi-bag-plus"></i> Compras
       </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'inventory'" (click)="activeTab = 'inventory'; loadInventoryReports()">
+      <button class="nav-link" [class.active]="pestanaActiva === 'inventario'" (click)="pestanaActiva = 'inventario'; cargarReportesInventario()">
         <i class="bi bi-box-seam"></i> Inventario
       </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'profit'" (click)="activeTab = 'profit'; loadProfitLossReport()">
+      <button class="nav-link" [class.active]="pestanaActiva === 'ganancia'" (click)="pestanaActiva = 'ganancia'; cargarReporteGananciaPerdida()">
         <i class="bi bi-currency-dollar"></i> Rentabilidad
       </button>
     </li>
   </ul>
 
-  <!-- Sales Tab -->
-  <div *ngIf="activeTab === 'sales'">
+  <!-- Pestaña Ventas -->
+  <div *ngIf="pestanaActiva === 'ventas'">
     <div class="card mb-4">
       <div class="card-header"><h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5></div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-3">
             <label class="form-label">Fecha Inicio</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.startDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
           </div>
           <div class="col-md-3">
             <label class="form-label">Fecha Fin</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.endDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
           </div>
           <div class="col-md-3">
             <label class="form-label">Categoría</label>
-            <select class="form-select" [(ngModel)]="filters.categoryId">
+            <select class="form-select" [(ngModel)]="filtros.categoriaId">
               <option [value]="null">Todas</option>
-              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+              <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
             </select>
           </div>
           <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-primary w-100" (click)="loadSalesReports()">
+            <button class="btn btn-primary w-100" (click)="cargarReportesVentas()">
               <i class="bi bi-search"></i> Generar
             </button>
           </div>
@@ -57,56 +57,69 @@
       </div>
     </div>
 
-    <div class="row mb-4" *ngIf="salesReport">
+    <div class="row mb-4" *ngIf="reporteVentas">
       <div class="col-md-4">
         <div class="report-card card-sales">
           <h6>Ventas Totales</h6>
-          <h3>{{ salesReport.totalSales | currency:'PEN':'symbol':'1.2-2' }}</h3>
-          <p>{{ salesReport.totalTransactions }} transacciones</p>
-          <button class="btn btn-sm btn-light" (click)="exportSalesReport()">
-            <i class="bi bi-download"></i> Exportar
-          </button>
+          <h3>{{ reporteVentas.totalVentas | currency:'PEN':'symbol':'1.2-2' }}</h3>
+          <p>{{ reporteVentas.totalTransacciones }} transacciones</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="report-card card-avg">
           <h6>Ticket Promedio</h6>
-          <h3>{{ salesReport.averageTicket | currency:'PEN':'symbol':'1.2-2' }}</h3>
+          <h3>{{ reporteVentas.ticketPromedio | currency:'PEN':'symbol':'1.2-2' }}</h3>
           <p>Por transacción</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="report-card card-period">
           <h6>Período Analizado</h6>
-          <h3>{{ getDaysDifference() }}</h3>
+          <h3>{{ obtenerDiferenciaDias() }}</h3>
           <p>días de análisis</p>
         </div>
       </div>
     </div>
 
-    <div class="card mb-4" *ngIf="salesReport && salesReport.items.length > 0">
+    <!-- Botones de exportación Ventas -->
+    <div class="export-bar mb-4" *ngIf="reporteVentas && reporteVentas.items.length > 0">
+      <span class="export-label"><i class="bi bi-download"></i> Exportar Ventas:</span>
+      <div class="export-buttons">
+        <button class="btn btn-sm btn-outline-success" (click)="exportarVentasAExcel()" title="Descargar Excel con múltiples hojas">
+          <i class="bi bi-file-earmark-excel"></i> Excel
+        </button>
+        <button class="btn btn-sm btn-outline-danger" (click)="exportarVentasAPDF()" title="Descargar PDF profesional">
+          <i class="bi bi-file-earmark-pdf"></i> PDF
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" (click)="exportarReporteVentas()" title="Descargar CSV simple">
+          <i class="bi bi-filetype-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+
+    <div class="card mb-4" *ngIf="reporteVentas && reporteVentas.items.length > 0">
       <div class="card-header d-flex justify-content-between">
         <h5 class="mb-0">Detalle de Ventas</h5>
-        <span class="badge bg-info">{{ salesReport.items.length }} registros</span>
+        <span class="badge bg-info">{{ reporteVentas.items.length }} registros</span>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th style="color:black">ID</th>
-                <th style="color:black">Fecha</th>
-                <th style="color:black">Cliente</th>
-                <th style="color:black">Items</th>
-                <th style="color:black" class="text-end">Total</th>
+                <th >ID</th>
+                <th >Fecha</th>
+                <th >Cliente</th>
+                <th >Items</th>
+                <th  class="text-end">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of salesReport.items">
-                <td>#{{ item.saleId }}</td>
-                <td>{{ item.saleDate | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ item.customerName }}</td>
-                <td>{{ item.itemsCount }}</td>
+              <tr *ngFor="let item of reporteVentas.items">
+                <td>#{{ item.ventaId }}</td>
+                <td>{{ item.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ item.nombreCliente }}</td>
+                <td>{{ item.cantidadItems }}</td>
                 <td class="text-end"><strong>{{ item.total | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
               </tr>
             </tbody>
@@ -115,30 +128,28 @@
       </div>
     </div>
 
-    <div class="card" *ngIf="salesByProduct.length > 0">
+    <div class="card" *ngIf="ventasPorProducto.length > 0">
       <div class="card-header d-flex justify-content-between">
         <h5 class="mb-0">Ventas por Producto</h5>
-        <button class="btn btn-sm btn-outline-primary" (click)="exportSalesByProduct()">
-          <i class="bi bi-download"></i> Exportar
-        </button>
+        <span class="badge bg-primary">{{ ventasPorProducto.length }} productos</span>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th style="color:black">Producto</th>
-                <th style="color:black">Categoría</th>
-                <th style="color:black" class="text-center">Cantidad</th>
-                <th style="color:black" class="text-end">Ingresos</th>
+                <th >Producto</th>
+                <th >Categoría</th>
+                <th  class="text-center">Cantidad</th>
+                <th  class="text-end">Ingresos</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of salesByProduct">
-                <td><strong>{{ item.productName }}</strong> - {{ item.brand }}</td>
-                <td><span class="badge bg-info">{{ item.categoryName }}</span></td>
-                <td class="text-center">{{ item.totalQuantitySold }}</td>
-                <td class="text-end"><strong>{{ item.totalRevenue | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
+              <tr *ngFor="let item of ventasPorProducto">
+                <td><strong>{{ item.nombreProducto }}</strong> - {{ item.marca }}</td>
+                <td><span class="badge bg-info">{{ item.nombreCategoria }}</span></td>
+                <td class="text-center">{{ item.cantidadTotalVendida }}</td>
+                <td class="text-end"><strong>{{ item.ingresosTotales | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
               </tr>
             </tbody>
           </table>
@@ -147,69 +158,82 @@
     </div>
   </div>
 
-  <!-- Purchases Tab -->
-  <div *ngIf="activeTab === 'purchases'">
+  <!-- Pestaña Compras -->
+  <div *ngIf="pestanaActiva === 'compras'">
     <div class="card mb-4">
       <div class="card-header"><h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5></div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-5">
             <label class="form-label">Fecha Inicio</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.startDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
           </div>
           <div class="col-md-5">
             <label class="form-label">Fecha Fin</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.endDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
           </div>
           <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-success w-100" (click)="loadPurchasesReports()">Generar</button>
+            <button class="btn btn-success w-100" (click)="cargarReportesCompras()">Generar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row mb-4" *ngIf="purchasesReport">
+    <div class="row mb-4" *ngIf="reporteCompras">
       <div class="col-md-6">
         <div class="report-card card-purchases">
           <h6>Compras Totales</h6>
-          <h3>{{ purchasesReport.totalPurchases | currency:'PEN':'symbol':'1.2-2' }}</h3>
-          <p>{{ purchasesReport.totalTransactions }} transacciones</p>
-          <button class="btn btn-sm btn-light" (click)="exportPurchasesReport()">
-            <i class="bi bi-download"></i> Exportar
-          </button>
+          <h3>{{ reporteCompras.totalCompras | currency:'PEN':'symbol':'1.2-2' }}</h3>
+          <p>{{ reporteCompras.totalTransacciones }} transacciones</p>
         </div>
       </div>
       <div class="col-md-6">
         <div class="report-card card-period">
           <h6>Período Analizado</h6>
-          <h3>{{ getDaysDifference() }}</h3>
+          <h3>{{ obtenerDiferenciaDias() }}</h3>
           <p>días de análisis</p>
         </div>
       </div>
     </div>
 
-    <div class="card" *ngIf="purchasesBySupplier.length > 0">
+    <!-- Botones de exportación Compras -->
+    <div class="export-bar mb-4" *ngIf="reporteCompras && reporteCompras.items.length > 0">
+      <span class="export-label"><i class="bi bi-download"></i> Exportar Compras:</span>
+      <div class="export-buttons">
+        <button class="btn btn-sm btn-outline-success" (click)="exportarComprasAExcel()" title="Descargar Excel con múltiples hojas">
+          <i class="bi bi-file-earmark-excel"></i> Excel
+        </button>
+        <button class="btn btn-sm btn-outline-danger" (click)="exportarComprasAPDF()" title="Descargar PDF profesional">
+          <i class="bi bi-file-earmark-pdf"></i> PDF
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" (click)="exportarReporteCompras()" title="Descargar CSV simple">
+          <i class="bi bi-filetype-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="comprasPorProveedor.length > 0">
       <div class="card-header d-flex justify-content-between">
         <h5 class="mb-0">Compras por Proveedor</h5>
-        <button class="btn btn-sm btn-outline-success" (click)="exportPurchasesBySupplier()">Exportar</button>
+        <span class="badge bg-success">{{ comprasPorProveedor.length }} proveedores</span>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th style="color:black">Proveedor</th>
-                <th style="color:black" class="text-center">Total Compras</th>
-                <th style="color:black" class="text-end">Total Gastado</th>
-                <th style="color:black">Última Compra</th>
+                <th >Proveedor</th>
+                <th  class="text-center">Total Compras</th>
+                <th  class="text-end">Total Gastado</th>
+                <th >Última Compra</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of purchasesBySupplier">
-                <td><strong>{{ item.supplierName }}</strong></td>
-                <td class="text-center">{{ item.totalPurchases }}</td>
-                <td class="text-end"><strong>{{ item.totalSpent | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
-                <td>{{ item.lastPurchaseDate | date:'dd/MM/yyyy' }}</td>
+              <tr *ngFor="let item of comprasPorProveedor">
+                <td><strong>{{ item.nombreProveedor }}</strong></td>
+                <td class="text-center">{{ item.totalCompras }}</td>
+                <td class="text-end"><strong>{{ item.totalGastado | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
+                <td>{{ item.ultimaFechaCompra | date:'dd/MM/yyyy' }}</td>
               </tr>
             </tbody>
           </table>
@@ -218,76 +242,87 @@
     </div>
   </div>
 
-  <!-- Inventory Tab -->
-  <div *ngIf="activeTab === 'inventory'">
+  <!-- Pestaña Inventario -->
+  <div *ngIf="pestanaActiva === 'inventario'">
     <div class="card mb-4">
       <div class="card-header"><h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5></div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-10">
             <label class="form-label">Categoría</label>
-            <select class="form-select" [(ngModel)]="filters.categoryId">
+            <select class="form-select" [(ngModel)]="filtros.categoriaId">
               <option [value]="null">Todas las categorías</option>
-              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+              <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
             </select>
           </div>
           <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-info w-100" (click)="loadInventoryReports()">Generar</button>
+            <button class="btn btn-info w-100" (click)="cargarReportesInventario()">Generar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row mb-4" *ngIf="inventoryValuation">
-      <div class="col-md-4">
+    <div class="row mb-4" *ngIf="valuacionInventario">
+      <div class="col-md-6">
         <div class="report-card card-inventory">
           <h6>Valor Total Inventario</h6>
-          <h3>{{ inventoryValuation.totalValue | currency:'PEN':'symbol':'1.2-2' }}</h3>
-          <p>{{ inventoryValuation.totalProducts }} productos</p>
+          <h3>{{ valuacionInventario.valorTotal | currency:'PEN':'symbol':'1.2-2' }}</h3>
+          <p>{{ valuacionInventario.totalProductos }} productos</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div class="report-card card-units">
           <h6>Unidades Totales</h6>
-          <h3>{{ inventoryValuation.totalUnits }}</h3>
+          <h3>{{ valuacionInventario.totalUnidades }}</h3>
           <p>en stock</p>
         </div>
       </div>
-      <div class="col-md-4">
-        <button class="btn btn-outline-info btn-lg w-100 h-100" (click)="exportInventoryReport()">
-          <i class="bi bi-download"></i> Exportar Inventario
+    </div>
+
+    <!-- Botones de exportación Inventario -->
+    <div class="export-bar mb-4" *ngIf="reporteInventario.length > 0">
+      <span class="export-label"><i class="bi bi-download"></i> Exportar Inventario:</span>
+      <div class="export-buttons">
+        <button class="btn btn-sm btn-outline-success" (click)="exportarInventarioAExcel()" title="Descargar Excel con valuación">
+          <i class="bi bi-file-earmark-excel"></i> Excel
+        </button>
+        <button class="btn btn-sm btn-outline-danger" (click)="exportarInventarioAPDF()" title="Descargar PDF profesional">
+          <i class="bi bi-file-earmark-pdf"></i> PDF
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" (click)="exportarReporteInventario()" title="Descargar CSV simple">
+          <i class="bi bi-filetype-csv"></i> CSV
         </button>
       </div>
     </div>
 
-    <div class="card" *ngIf="inventoryReport.length > 0">
+    <div class="card" *ngIf="reporteInventario.length > 0">
       <div class="card-header"><h5 class="mb-0">Detalle de Inventario</h5></div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th style="color:black">Producto</th>
-                <th style="color:black">Categoría</th>
-                <th style="color:black" class="text-center">Stock</th>
-                <th style="color:black"class="text-end">Precio Unit.</th>
-                <th style="color:black"class="text-end">Valor Total</th>
-                <th style="color:black"class="text-center">Rotación</th>
+                <th >Producto</th>
+                <th >Categoría</th>
+                <th  class="text-center">Stock</th>
+                <th class="text-end">Precio Unit.</th>
+                <th class="text-end">Valor Total</th>
+                <th class="text-center">Rotación</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of inventoryReport">
-                <td><strong>{{ item.productName }}</strong> - {{ item.brand }}</td>
-                <td><span class="badge bg-info">{{ item.categoryName }}</span></td>
-                <td class="text-center">{{ item.currentStock }}</td>
-                <td class="text-end">{{ item.unitPrice | currency:'PEN':'symbol':'1.2-2' }}</td>
-                <td class="text-end"><strong>{{ item.totalValue | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
+              <tr *ngFor="let item of reporteInventario">
+                <td><strong>{{ item.nombreProducto }}</strong> - {{ item.marca }}</td>
+                <td><span class="badge bg-info">{{ item.nombreCategoria }}</span></td>
+                <td class="text-center">{{ item.stockActual }}</td>
+                <td class="text-end">{{ item.precioUnitario | currency:'PEN':'symbol':'1.2-2' }}</td>
+                <td class="text-end"><strong>{{ item.valorTotal | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
                 <td class="text-center">
                   <span class="badge" 
-                        [class.bg-success]="item.rotationRate > 1" 
-                        [class.bg-warning]="item.rotationRate > 0.5 && item.rotationRate <= 1"
-                        [class.bg-danger]="item.rotationRate <= 0.5">
-                    {{ item.rotationRate | number:'1.2-2' }}x
+                        [class.bg-success]="item.tasaRotacion > 1" 
+                        [class.bg-warning]="item.tasaRotacion > 0.5 && item.tasaRotacion <= 1"
+                        [class.bg-danger]="item.tasaRotacion <= 0.5">
+                    {{ item.tasaRotacion | number:'1.2-2' }}x
                   </span>
                 </td>
               </tr>
@@ -298,57 +333,70 @@
     </div>
   </div>
 
-  <!-- Profit/Loss Tab -->
-  <div *ngIf="activeTab === 'profit'">
+  <!-- Pestaña Ganancia/Pérdida -->
+  <div *ngIf="pestanaActiva === 'ganancia'">
     <div class="card mb-4">
       <div class="card-header"><h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5></div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-5">
             <label class="form-label">Fecha Inicio</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.startDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
           </div>
           <div class="col-md-5">
             <label class="form-label">Fecha Fin</label>
-            <input type="date" class="form-control" [(ngModel)]="filters.endDate">
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
           </div>
           <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-warning w-100" (click)="loadProfitLossReport()">Generar</button>
+            <button class="btn btn-warning w-100" (click)="cargarReporteGananciaPerdida()">Generar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="profitLossReport">
+    <div *ngIf="reporteGananciaPerdida">
       <div class="row mb-4">
         <div class="col-md-3">
           <div class="report-card card-income">
             <h6>Ingresos</h6>
-            <h3>{{ profitLossReport.totalSales | currency:'PEN':'symbol':'1.2-2' }}</h3>
-            <p>{{ profitLossReport.productsSold }} unidades vendidas</p>
+            <h3>{{ reporteGananciaPerdida.totalVentas | currency:'PEN':'symbol':'1.2-2' }}</h3>
+            <p>{{ reporteGananciaPerdida.productosVendidos }} unidades vendidas</p>
           </div>
         </div>
         <div class="col-md-3">
           <div class="report-card card-expenses">
             <h6>Egresos</h6>
-            <h3>{{ profitLossReport.totalPurchases | currency:'PEN':'symbol':'1.2-2' }}</h3>
-            <p>{{ profitLossReport.productsPurchased }} unidades compradas</p>
+            <h3>{{ reporteGananciaPerdida.totalCompras | currency:'PEN':'symbol':'1.2-2' }}</h3>
+            <p>{{ reporteGananciaPerdida.productosComprados }} unidades compradas</p>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="report-card" [class.card-profit]="profitLossReport.grossProfit > 0" 
-               [class.card-loss]="profitLossReport.grossProfit < 0">
+          <div class="report-card" [class.card-profit]="reporteGananciaPerdida.gananciaBruta > 0" 
+               [class.card-loss]="reporteGananciaPerdida.gananciaBruta < 0">
             <h6>Utilidad Bruta</h6>
-            <h3>{{ profitLossReport.grossProfit | currency:'PEN':'symbol':'1.2-2' }}</h3>
-            <p>{{ profitLossReport.grossProfit >= 0 ? 'Ganancia' : 'Pérdida' }}</p>
+            <h3>{{ reporteGananciaPerdida.gananciaBruta | currency:'PEN':'symbol':'1.2-2' }}</h3>
+            <p>{{ reporteGananciaPerdida.gananciaBruta >= 0 ? 'Ganancia' : 'Pérdida' }}</p>
           </div>
         </div>
         <div class="col-md-3">
           <div class="report-card card-margin">
             <h6>Margen de Utilidad</h6>
-            <h3>{{ profitLossReport.profitMargin | number:'1.2-2' }}%</h3>
+            <h3>{{ reporteGananciaPerdida.margenGanancia | number:'1.2-2' }}%</h3>
             <p>Sobre ventas</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Botones de exportación Rentabilidad -->
+      <div class="export-bar mb-4">
+        <span class="export-label"><i class="bi bi-download"></i> Exportar Rentabilidad:</span>
+        <div class="export-buttons">
+          <button class="btn btn-sm btn-outline-success" (click)="exportarRentabilidadAExcel()" title="Descargar Excel con análisis financiero">
+            <i class="bi bi-file-earmark-excel"></i> Excel
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="exportarRentabilidadAPDF()" title="Descargar PDF profesional">
+            <i class="bi bi-file-earmark-pdf"></i> PDF
+          </button>
         </div>
       </div>
 
@@ -356,23 +404,23 @@
         <div class="card-header"><h5 class="mb-0">Análisis Financiero</h5></div>
         <div class="card-body">
           <div class="analysis-grid">
-            <div class="analysis-status" [ngClass]="getMarginStatus().className">
-              <h6>{{ getMarginStatus().label }}</h6>
-              <p class="mb-0">Margen: {{ profitLossReport.profitMargin | number:'1.2-2' }}%</p>
+            <div class="analysis-status" [ngClass]="obtenerEstadoMargen().className">
+              <h6>{{ obtenerEstadoMargen().label }}</h6>
+              <p class="mb-0">Margen: {{ reporteGananciaPerdida.margenGanancia | number:'1.2-2' }}%</p>
             </div>
             <div class="analysis-metrics">
               <div class="metric-row">
                 <span>Ingresos</span>
-                <strong>{{ profitLossReport.totalSales | currency:'PEN':'symbol':'1.2-2' }}</strong>
+                <strong>{{ reporteGananciaPerdida.totalVentas | currency:'PEN':'symbol':'1.2-2' }}</strong>
               </div>
               <div class="metric-row">
                 <span>Egresos</span>
-                <strong>{{ profitLossReport.totalPurchases | currency:'PEN':'symbol':'1.2-2' }}</strong>
+                <strong>{{ reporteGananciaPerdida.totalCompras | currency:'PEN':'symbol':'1.2-2' }}</strong>
               </div>
               <div class="metric-row">
                 <span>Resultado</span>
-                <strong [class.text-success]="profitLossReport.grossProfit >= 0" [class.text-danger]="profitLossReport.grossProfit < 0">
-                  {{ profitLossReport.grossProfit | currency:'PEN':'symbol':'1.2-2' }}
+                <strong [class.text-success]="reporteGananciaPerdida.gananciaBruta >= 0" [class.text-danger]="reporteGananciaPerdida.gananciaBruta < 0">
+                  {{ reporteGananciaPerdida.gananciaBruta | currency:'PEN':'symbol':'1.2-2' }}
                 </strong>
               </div>
             </div>
@@ -381,17 +429,17 @@
           <div class="profit-progress">
             <div class="progress-header">
               <span>Nivel de rentabilidad</span>
-              <span>{{ profitLossReport.profitMargin | number:'1.2-2' }}%</span>
+              <span>{{ reporteGananciaPerdida.margenGanancia | number:'1.2-2' }}%</span>
             </div>
             <div class="progress">
               <div
                 class="progress-bar"
                 role="progressbar"
-                [style.width.%]="getMarginProgress()"
-                [class.bg-success]="profitLossReport.profitMargin > 20"
-                [class.bg-info]="profitLossReport.profitMargin > 10 && profitLossReport.profitMargin <= 20"
-                [class.bg-warning]="profitLossReport.profitMargin > 0 && profitLossReport.profitMargin <= 10"
-                [class.bg-danger]="profitLossReport.profitMargin <= 0">
+                [style.width.%]="obtenerProgresoMargen()"
+                [class.bg-success]="reporteGananciaPerdida.margenGanancia > 20"
+                [class.bg-info]="reporteGananciaPerdida.margenGanancia > 10 && reporteGananciaPerdida.margenGanancia <= 20"
+                [class.bg-warning]="reporteGananciaPerdida.margenGanancia > 0 && reporteGananciaPerdida.margenGanancia <= 10"
+                [class.bg-danger]="reporteGananciaPerdida.margenGanancia <= 0">
               </div>
             </div>
             <small class="text-muted">Referencia: 40% = excelente rentabilidad</small>

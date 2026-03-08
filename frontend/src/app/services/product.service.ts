@@ -2,15 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Product, CreateProduct, UpdateProduct, ProductVariant, CreateVariant, UpdateVariantStock } from '../models/product.model';
+import { Producto, CrearProducto, ActualizarProducto, VarianteProducto, CrearVariante, ActualizarStockVariante } from '../models/product.model';
 import { environment } from '../../environments/environment';
 
-export interface PagedResult<T> {
-  data: T[];
-  page: number;
-  pageSize: number;
+export interface ResultadoPaginado<T> {
+  datos: T[];
+  pagina: number;
+  tamanoPagina: number;
   total: number;
-  totalPages: number;
+  totalPaginas: number;
 }
 
 @Injectable({
@@ -22,53 +22,53 @@ export class ProductService {
 
   // ── Productos ─────────────────────────────────────────────────────────
   /** Devuelve todos los productos (pageSize=200 para compatibilidad con componentes existentes) */
-  getProducts(): Observable<Product[]> {
-    return this.http.get<PagedResult<Product>>(`${this.API_URL}?page=1&pageSize=200`)
-      .pipe(map(res => res.data));
+  obtenerProductos(): Observable<Producto[]> {
+    return this.http.get<ResultadoPaginado<Producto>>(`${this.API_URL}?page=1&pageSize=200`)
+      .pipe(map(res => res.datos));
   }
 
   /** Versión paginada — usar cuando se necesite paginación real en la UI */
-  getProductsPaged(page = 1, pageSize = 50): Observable<PagedResult<Product>> {
-    return this.http.get<PagedResult<Product>>(`${this.API_URL}?page=${page}&pageSize=${pageSize}`);
+  obtenerProductosPaginados(pagina = 1, tamanoPagina = 50): Observable<ResultadoPaginado<Producto>> {
+    return this.http.get<ResultadoPaginado<Producto>>(`${this.API_URL}?page=${pagina}&pageSize=${tamanoPagina}`);
   }
 
-  getProduct(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.API_URL}/${id}`);
+  obtenerProducto(id: number): Observable<Producto> {
+    return this.http.get<Producto>(`${this.API_URL}/${id}`);
   }
 
-  createProduct(product: CreateProduct): Observable<Product> {
-    return this.http.post<Product>(this.API_URL, product);
+  crearProducto(producto: CrearProducto): Observable<Producto> {
+    return this.http.post<Producto>(this.API_URL, producto);
   }
 
-  updateProduct(id: number, product: UpdateProduct): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/${id}`, product);
+  actualizarProducto(id: number, producto: ActualizarProducto): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${id}`, producto);
   }
 
-  deleteProduct(id: number): Observable<void> {
+  eliminarProducto(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 
   // ── Variantes (tallas) ────────────────────────────────────────────────
-  getVariants(productId: number): Observable<ProductVariant[]> {
-    return this.http.get<ProductVariant[]>(`${this.API_URL}/${productId}/variants`);
+  obtenerVariantes(productoId: number): Observable<VarianteProducto[]> {
+    return this.http.get<VarianteProducto[]>(`${this.API_URL}/${productoId}/variants`);
   }
 
   /** Alias usado por ProductListComponent */
-  addVariant(productId: number, variant: CreateVariant): Observable<ProductVariant> {
-    return this.http.post<ProductVariant>(`${this.API_URL}/${productId}/variants`, variant);
+  agregarVariante(productoId: number, variante: CrearVariante): Observable<VarianteProducto> {
+    return this.http.post<VarianteProducto>(`${this.API_URL}/${productoId}/variants`, variante);
   }
 
   /** Alias usado por ProductListComponent — agrega rango de tallas en un solo request */
-  addVariantsBulk(productId: number, variants: CreateVariant[]): Observable<ProductVariant[]> {
-    return this.http.post<ProductVariant[]>(`${this.API_URL}/${productId}/variants/bulk`, variants);
+  agregarVariantesMasivo(productoId: number, variantes: CrearVariante[]): Observable<VarianteProducto[]> {
+    return this.http.post<VarianteProducto[]>(`${this.API_URL}/${productoId}/variants/bulk`, variantes);
   }
 
   /** Actualiza solo el stock de una variante. stock es un número directo */
-  updateVariantStock(productId: number, variantId: number, stock: number): Observable<any> {
-    return this.http.put<any>(`${this.API_URL}/${productId}/variants/${variantId}/stock`, { stock });
+  actualizarStockVariante(productoId: number, varianteId: number, stock: number): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/${productoId}/variants/${varianteId}/stock`, { stock });
   }
 
-  deleteVariant(productId: number, variantId: number): Observable<any> {
-    return this.http.delete<any>(`${this.API_URL}/${productId}/variants/${variantId}`);
+  eliminarVariante(productoId: number, varianteId: number): Observable<any> {
+    return this.http.delete<any>(`${this.API_URL}/${productoId}/variants/${varianteId}`);
   }
 }

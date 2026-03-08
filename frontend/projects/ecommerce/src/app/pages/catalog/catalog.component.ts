@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ShopService } from '../../services/shop.service';
+import { ShopService, PaginatedResponse } from '../../services/shop.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { MetaService } from '../../services/meta.service';
-import { Product, Category } from '../../models/product.model';
+import { Producto, Categoria } from '../../models/product.model';
 
 @Component({
   selector: 'app-catalog',
@@ -16,21 +16,27 @@ import { Product, Category } from '../../models/product.model';
   styleUrls: ['./catalog.component.css']
 })
 export class CatalogComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  categories: Category[] = [];
-  loading = true;
-  filtersOpen = false;
-  showQuickView = false;
-  selectedProduct: Product | null = null;
+  productos: Producto[] = [];
+  productosFiltrados: Producto[] = [];
+  categorias: Categoria[] = [];
+  cargando = true;
+  filtrosAbiertos = false;
+  mostrarVistaRapida = false;
+  productoSeleccionado: Producto | null = null;
   
   // Filtros
-  selectedCategoryId: number | null = null;
-  searchTerm = '';
-  minPrice: number | null = null;
-  maxPrice: number | null = null;
-  sortBy: 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' = 'relevance';
-  hideOutOfStock = false;
+  categoriaSeleccionadaId: number | null = null;
+  terminoBusqueda = '';
+  precioMinimo: number | null = null;
+  precioMaximo: number | null = null;
+  ordenarPor: 'relevancia' | 'precio-asc' | 'precio-desc' | 'nombre-asc' = 'relevancia';
+  ocultarSinStock = false;
+
+  // Paginación
+  paginaActual = 1;
+  tamanioPagina = 20;
+  totalItems = 0;
+  totalPaginas = 0;
 
   constructor(
     private shopService: ShopService,
@@ -40,189 +46,210 @@ export class CatalogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.metaService.updateMetaTags({
-      title: 'Catálogo de Productos',
-      description: 'Explora nuestra amplia colección de calzado. Encuentra el par perfecto para cada ocasión.',
-      type: 'website'
+    this.metaService.actualizarMetaEtiquetas({
+      titulo: 'Catálogo de Productos',
+      descripcion: 'Explora nuestra amplia colección de calzado. Encuentra el par perfecto para cada ocasión.',
+      tipo: 'website'
     });
-    this.loadCategories();
-    this.loadProducts();
+    this.cargarCategorias();
+    this.cargarProductos();
   }
 
-  loadCategories() {
-    this.shopService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
+  cargarCategorias() {
+    this.shopService.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.categorias = categorias;
       },
       error: (err) => {
-        console.error('Error loading categories:', err);
+        console.error('Error cargando categorías:', err);
         this.notificationService.error('Error al cargar las categorías');
       }
     });
   }
 
-  loadProducts() {
-    this.loading = true;
-    this.shopService.getProducts(
-      this.selectedCategoryId || undefined,
-      this.searchTerm || undefined,
-      this.minPrice || undefined,
-      this.maxPrice || undefined
+  cargarProductos() {
+    this.cargando = true;
+    this.shopService.obtenerProductos(
+      this.categoriaSeleccionadaId || undefined,
+      this.terminoBusqueda || undefined,
+      this.precioMinimo || undefined,
+      this.precioMaximo || undefined,
+      this.paginaActual,
+      this.tamanioPagina
     ).subscribe({
-      next: (products: any) => {
-        const list = Array.isArray(products) ? products : (products.items || products.data || []);
-        this.products = list;
-        this.applyClientFilters();
-        this.loading = false;
+      next: (response: PaginatedResponse<Producto>) => {
+        this.productos = response.items || [];
+        this.totalItems = response.totalItems;
+        this.totalPaginas = response.totalPages;
+        this.aplicarFiltrosCliente();
+        this.cargando = false;
       },
       error: (err) => {
-        console.error('Error loading products:', err);
+        console.error('Error cargando productos:', err);
         this.notificationService.error('Error al cargar los productos');
-        this.loading = false;
+        this.cargando = false;
       }
     });
   }
 
-  onCategoryChange(categoryId: number | null) {
-    this.selectedCategoryId = categoryId;
-    this.loadProducts();
+  onCambioCategoria(categoriaId: number | null) {
+    this.categoriaSeleccionadaId = categoriaId;
+    this.paginaActual = 1;
+    this.cargarProductos();
   }
 
-  onSearch() {
-    this.loadProducts();
+  onBuscar() {
+    this.paginaActual = 1;
+    this.cargarProductos();
   }
 
-  onPriceFilter() {
-    this.loadProducts();
+  onFiltroPrecio() {
+    this.paginaActual = 1;
+    this.cargarProductos();
   }
 
-  toggleStockFilter() {
-    this.hideOutOfStock = !this.hideOutOfStock;
-    this.applyClientFilters();
+  cambiarPagina(pagina: number) {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.cargarProductos();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  clearFilters() {
-    this.selectedCategoryId = null;
-    this.searchTerm = '';
-    this.minPrice = null;
-    this.maxPrice = null;
-    this.sortBy = 'relevance';
-    this.hideOutOfStock = false;
-    this.loadProducts();
-    this.closeFilters();
+  get paginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const inicio = Math.max(1, this.paginaActual - 2);
+    const fin = Math.min(this.totalPaginas, this.paginaActual + 2);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
   }
 
-  toggleFilters() {
-    this.filtersOpen = !this.filtersOpen;
+  alternarFiltroStock() {
+    this.ocultarSinStock = !this.ocultarSinStock;
+    this.aplicarFiltrosCliente();
   }
 
-  closeFilters() {
-    this.filtersOpen = false;
+  limpiarFiltros() {
+    this.categoriaSeleccionadaId = null;
+    this.terminoBusqueda = '';
+    this.precioMinimo = null;
+    this.precioMaximo = null;
+    this.ordenarPor = 'relevancia';
+    this.ocultarSinStock = false;
+    this.paginaActual = 1;
+    this.cargarProductos();
+    this.cerrarFiltros();
   }
 
-  applyFilters() {
-    this.loadProducts();
-    this.closeFilters();
+  alternarFiltros() {
+    this.filtrosAbiertos = !this.filtrosAbiertos;
   }
 
-  applyClientFilters() {
-    let filtered = [...this.products];
+  cerrarFiltros() {
+    this.filtrosAbiertos = false;
+  }
 
-    if (this.hideOutOfStock) {
-      filtered = filtered.filter(product => product.stock > 0);
+  aplicarFiltros() {
+    this.cargarProductos();
+    this.cerrarFiltros();
+  }
+
+  aplicarFiltrosCliente() {
+    let filtrados = [...this.productos];
+
+    if (this.ocultarSinStock) {
+      filtrados = filtrados.filter(producto => producto.stock > 0);
     }
 
-    switch (this.sortBy) {
-      case 'price-asc':
-        filtered.sort((a, b) => a.salePrice - b.salePrice);
+    switch (this.ordenarPor) {
+      case 'precio-asc':
+        filtrados.sort((a, b) => a.precioVenta - b.precioVenta);
         break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.salePrice - a.salePrice);
+      case 'precio-desc':
+        filtrados.sort((a, b) => b.precioVenta - a.precioVenta);
         break;
-      case 'name-asc':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      case 'nombre-asc':
+        filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
         break;
     }
 
-    this.filteredProducts = filtered;
+    this.productosFiltrados = filtrados;
   }
 
-  onQuickView(product: Product) {
-    this.selectedProduct = product;
-    this.showQuickView = true;
+  onVistaRapida(producto: Producto) {
+    this.productoSeleccionado = producto;
+    this.mostrarVistaRapida = true;
   }
 
-  closeQuickView() {
-    this.showQuickView = false;
-    this.selectedProduct = null;
+  cerrarVistaRapida() {
+    this.mostrarVistaRapida = false;
+    this.productoSeleccionado = null;
   }
 
-  addToCartFromQuickView() {
-    if (this.selectedProduct) {
-      this.addToCart(this.selectedProduct);
-      this.closeQuickView();
+  agregarDesdeVistaRapida() {
+    if (this.productoSeleccionado) {
+      this.agregarAlCarrito(this.productoSeleccionado);
+      this.cerrarVistaRapida();
     }
   }
 
-  hasActiveFilters(): boolean {
-    return !!(this.selectedCategoryId || this.searchTerm || this.minPrice || this.maxPrice);
+  tieneFiltrosActivos(): boolean {
+    return !!(this.categoriaSeleccionadaId || this.terminoBusqueda || this.precioMinimo || this.precioMaximo);
   }
 
-  getActiveFilterCount(): number {
-    let count = 0;
-    if (this.selectedCategoryId) count++;
-    if (this.searchTerm) count++;
-    if (this.minPrice || this.maxPrice) count++;
-    return count;
+  obtenerCantidadFiltrosActivos(): number {
+    let cantidad = 0;
+    if (this.categoriaSeleccionadaId) cantidad++;
+    if (this.terminoBusqueda) cantidad++;
+    if (this.precioMinimo || this.precioMaximo) cantidad++;
+    return cantidad;
   }
 
-  addToCart(product: Product) {
-    const result = this.cartService.addToCart(product);
-    if (result.success) {
-      this.notificationService.success(`✓ ${product.name} agregado al carrito`);
+  agregarAlCarrito(producto: Producto) {
+    const resultado = this.cartService.agregarAlCarrito(producto);
+    if (resultado.success) {
+      this.notificationService.success(`✓ ${producto.nombre} agregado al carrito`);
     } else {
-      this.notificationService.error(result.message);
+      this.notificationService.error(resultado.message);
     }
   }
 
-  onSortChange() {
-    this.applyClientFilters();
+  onCambioOrden() {
+    this.aplicarFiltrosCliente();
   }
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 
-  getProductImage(product: Product): string {
-    // Si el producto ya tiene imagen definida, usarla
-    if (product.imageUrl && product.imageUrl.startsWith('http')) {
-      return product.imageUrl;
+  obtenerImagenProducto(producto: Producto): string {
+    if (producto.urlImagen && producto.urlImagen.startsWith('http')) {
+      return producto.urlImagen;
     }
 
-    const name = (product.name || '').toLowerCase();
-    const cat  = (product.categoryName || '').toLowerCase();
+    const nombre = (producto.nombre || '').toLowerCase();
+    const cat = (producto.nombreCategoria || '').toLowerCase();
 
-    // Imágenes referenciales por nombre/categoría de producto (calzado)
-    if (name.includes('sneaker') || name.includes('zapatilla') || name.includes('running'))
+    if (nombre.includes('sneaker') || nombre.includes('zapatilla') || nombre.includes('running'))
       return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop';
-    if (name.includes('formal') || name.includes('oxford') || name.includes('clásic'))
+    if (nombre.includes('formal') || nombre.includes('oxford') || nombre.includes('clásic'))
       return 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=600&q=80&fit=crop';
-    if (name.includes('bota') || name.includes('boot'))
+    if (nombre.includes('bota') || nombre.includes('boot'))
       return 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=600&q=80&fit=crop';
-    if (name.includes('sandalia') || name.includes('sandal'))
+    if (nombre.includes('sandalia') || nombre.includes('sandal'))
       return 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=600&q=80&fit=crop';
-    if (name.includes('casual') || name.includes('loafer'))
+    if (nombre.includes('casual') || nombre.includes('loafer'))
       return 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=600&q=80&fit=crop';
-    if (name.includes('sport') || name.includes('gym') || name.includes('training'))
+    if (nombre.includes('sport') || nombre.includes('gym') || nombre.includes('training'))
       return 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80&fit=crop';
-    if (name.includes('mocasín') || name.includes('moccasin') || name.includes('slip'))
+    if (nombre.includes('mocasín') || nombre.includes('moccasin') || nombre.includes('slip'))
       return 'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&q=80&fit=crop';
-    if (name.includes('dama') || name.includes('mujer') || name.includes('tac') || name.includes('heel'))
+    if (nombre.includes('dama') || nombre.includes('mujer') || nombre.includes('tac') || nombre.includes('heel'))
       return 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&q=80&fit=crop';
-    if (name.includes('niño') || name.includes('kid') || name.includes('infant'))
+    if (nombre.includes('niño') || nombre.includes('kid') || nombre.includes('infant'))
       return 'https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?w=600&q=80&fit=crop';
 
-    // Por categoría
     if (cat.includes('sneaker') || cat.includes('sport'))
       return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop';
     if (cat.includes('formal'))
@@ -232,13 +259,12 @@ export class CatalogComponent implements OnInit {
     if (cat.includes('bota') || cat.includes('boot'))
       return 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=600&q=80&fit=crop';
 
-    // Fallback general de calzado
     const fallbacks = [
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop',
       'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=600&q=80&fit=crop',
       'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80&fit=crop',
       'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&q=80&fit=crop',
     ];
-    return fallbacks[product.id % fallbacks.length];
+    return fallbacks[producto.id % fallbacks.length];
   }
 }

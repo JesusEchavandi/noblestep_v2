@@ -2,12 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { PurchaseService } from '../services/purchase.service';
 import { SupplierService } from '../services/supplier.service';
 import { ProductService } from '../services/product.service';
-import { CreatePurchase } from '../models/purchase.model';
-import { Supplier } from '../models/supplier.model';
-import { Product, ProductVariant } from '../models/product.model';
+import { CrearCompra } from '../models/purchase.model';
+import { Proveedor } from '../models/supplier.model';
+import { Producto, VarianteProducto } from '../models/product.model';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-purchase-form',
@@ -25,54 +27,55 @@ import { Product, ProductVariant } from '../models/product.model';
               <form (ngSubmit)="onSubmit()" #purchaseForm="ngForm">
                 <div class="row mb-4">
                   <div class="col-md-4">
-                    <label for="supplierId" class="form-label">Proveedor *</label>
+                    <label for="proveedorId" class="form-label">Proveedor *</label>
                     <select
                       class="form-select"
-                      id="supplierId"
-                      name="supplierId"
-                      [(ngModel)]="purchase.supplierId"
+                      id="proveedorId"
+                      name="proveedorId"
+                      [(ngModel)]="compra.proveedorId"
                       required
                     >
                       <option [ngValue]="0" disabled>Seleccione un proveedor</option>
-                      <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">
-                        {{ supplier.companyName }}
+                      <option *ngFor="let proveedor of proveedores" [ngValue]="proveedor.id">
+                        {{ proveedor.nombreEmpresa }}
                       </option>
                     </select>
                   </div>
 
                   <div class="col-md-4">
-                    <label for="invoiceNumber" class="form-label">Nº Factura *</label>
+                    <label for="numeroCompra" class="form-label">Nº Compra</label>
                     <input
                       type="text"
-                      class="form-control"
-                      id="invoiceNumber"
-                      name="invoiceNumber"
-                      [(ngModel)]="purchase.invoiceNumber"
-                      required
-                      placeholder="F001-00001"
+                      class="form-control bg-light"
+                      id="numeroCompra"
+                      name="numeroCompra"
+                      [value]="numeroCompraGenerado"
+                      readonly
+                      placeholder="Generando..."
                     />
+                    <small class="text-muted">Generado automáticamente</small>
                   </div>
 
                   <div class="col-md-4">
-                    <label for="purchaseDate" class="form-label">Fecha de Compra *</label>
+                    <label for="fechaCompra" class="form-label">Fecha de Compra *</label>
                     <input
                       type="datetime-local"
                       class="form-control"
-                      id="purchaseDate"
-                      name="purchaseDate"
-                      [(ngModel)]="purchaseDateStr"
+                      id="fechaCompra"
+                      name="fechaCompra"
+                      [(ngModel)]="fechaCompraStr"
                       required
                     />
                   </div>
                 </div>
 
                 <div class="mb-4">
-                  <label for="notes" class="form-label">Notas</label>
+                  <label for="notas" class="form-label">Notas</label>
                   <textarea
                     class="form-control"
-                    id="notes"
-                    name="notes"
-                    [(ngModel)]="purchase.notes"
+                    id="notas"
+                    name="notas"
+                    [(ngModel)]="compra.notas"
                     rows="2"
                     placeholder="Notas adicionales sobre la compra..."
                   ></textarea>
@@ -80,7 +83,7 @@ import { Product, ProductVariant } from '../models/product.model';
 
                 <h5 class="mb-3">Artículos de Compra</h5>
 
-                <div *ngFor="let item of purchaseItems; let i = index" class="card mb-3 border-primary">
+                <div *ngFor="let item of itemsCompra; let i = index" class="card mb-3 border-primary">
                   <div class="card-body">
                     <div class="row align-items-end g-2">
 
@@ -89,14 +92,14 @@ import { Product, ProductVariant } from '../models/product.model';
                         <label class="form-label fw-semibold">Producto *</label>
                         <select
                           class="form-select"
-                          [(ngModel)]="item.productId"
-                          [name]="'product_' + i"
-                          (change)="onProductChange(i)"
+                          [(ngModel)]="item.productoId"
+                          [name]="'producto_' + i"
+                          (change)="onCambioProducto(i)"
                           required
                         >
                           <option [ngValue]="0" disabled>Seleccione un producto</option>
-                          <option *ngFor="let product of products" [ngValue]="product.id">
-                            {{ product.name }} — {{ product.brand }}
+                          <option *ngFor="let producto of productos" [ngValue]="producto.id">
+                            {{ producto.nombre }} — {{ producto.marca }}
                           </option>
                         </select>
                       </div>
@@ -106,17 +109,17 @@ import { Product, ProductVariant } from '../models/product.model';
                         <label class="form-label fw-semibold">Talla *</label>
                         <select
                           class="form-select"
-                          [(ngModel)]="item.variantId"
-                          [name]="'variant_' + i"
-                          (change)="onVariantChange(i)"
-                          [disabled]="!item.productId || getVariants(item.productId).length === 0"
+                          [(ngModel)]="item.varianteId"
+                          [name]="'variante_' + i"
+                          (change)="onCambioVariante(i)"
+                          [disabled]="!item.productoId || obtenerVariantes(item.productoId).length === 0"
                           required
                         >
                           <option [ngValue]="null">
-                            {{ getVariants(item.productId).length === 0 ? 'Sin tallas' : 'Seleccione talla' }}
+                            {{ obtenerVariantes(item.productoId).length === 0 ? 'Sin tallas' : 'Seleccione talla' }}
                           </option>
-                          <option *ngFor="let v of getVariants(item.productId)" [ngValue]="v.id">
-                            Talla {{ v.size }} (stock actual: {{ v.stock }})
+                          <option *ngFor="let v of obtenerVariantes(item.productoId)" [ngValue]="v.id">
+                            Talla {{ v.talla }} (stock actual: {{ v.stock }})
                           </option>
                         </select>
                       </div>
@@ -127,9 +130,9 @@ import { Product, ProductVariant } from '../models/product.model';
                         <input
                           type="number"
                           class="form-control"
-                          [(ngModel)]="item.quantity"
-                          [name]="'quantity_' + i"
-                          (change)="calculateTotal()"
+                          [(ngModel)]="item.cantidad"
+                          [name]="'cantidad_' + i"
+                          (change)="calcularTotal()"
                           min="1"
                           required
                         />
@@ -143,9 +146,9 @@ import { Product, ProductVariant } from '../models/product.model';
                           <input
                             type="number"
                             class="form-control"
-                            [(ngModel)]="item.unitCost"
-                            [name]="'unitCost_' + i"
-                            (change)="calculateTotal()"
+                            [(ngModel)]="item.costoUnitario"
+                            [name]="'costoUnitario_' + i"
+                            (change)="calcularTotal()"
                             min="0.01"
                             step="0.01"
                             required
@@ -161,7 +164,7 @@ import { Product, ProductVariant } from '../models/product.model';
                           <input
                             type="text"
                             class="form-control bg-light"
-                            [value]="(item.quantity * item.unitCost).toFixed(2)"
+                            [value]="(item.cantidad * item.costoUnitario).toFixed(2)"
                             readonly
                           />
                         </div>
@@ -172,8 +175,8 @@ import { Product, ProductVariant } from '../models/product.model';
                         <button
                           type="button"
                           class="btn btn-outline-danger btn-sm w-100"
-                          (click)="removeItem(i)"
-                          [disabled]="purchaseItems.length === 1"
+                          (click)="quitarItem(i)"
+                          [disabled]="itemsCompra.length === 1"
                         >
                           🗑️
                         </button>
@@ -182,10 +185,10 @@ import { Product, ProductVariant } from '../models/product.model';
                     </div>
 
                     <!-- Stock actual de la variante seleccionada -->
-                    <div *ngIf="item.variantId" class="mt-2">
+                    <div *ngIf="item.varianteId" class="mt-2">
                       <small class="text-muted">
-                        📦 Stock actual: <strong>{{ getVariantStock(item.productId, item.variantId) }}</strong> unidades
-                        → después de esta compra: <strong>{{ getVariantStock(item.productId, item.variantId) + (item.quantity || 0) }}</strong>
+                        📦 Stock actual: <strong>{{ obtenerStockVariante(item.productoId, item.varianteId) }}</strong> unidades
+                        → después de esta compra: <strong>{{ obtenerStockVariante(item.productoId, item.varianteId) + (item.cantidad || 0) }}</strong>
                       </small>
                     </div>
 
@@ -193,32 +196,32 @@ import { Product, ProductVariant } from '../models/product.model';
                 </div>
 
                 <div class="mb-4">
-                  <button type="button" class="btn btn-outline-primary" (click)="addItem()">
+                  <button type="button" class="btn btn-outline-primary" (click)="agregarItem()">
                     + Agregar Artículo
                   </button>
                 </div>
 
                 <div class="row mb-4">
                   <div class="col-md-12 text-end">
-                    <h4>Total: {{ totalAmount | currency }}</h4>
+                    <h4>Total: {{ montoTotal | currency }}</h4>
                   </div>
                 </div>
 
-                <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-                  {{ errorMessage }}
+                <div *ngIf="mensajeError" class="alert alert-danger" role="alert">
+                  {{ mensajeError }}
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                  <button type="button" class="btn btn-secondary" (click)="cancel()">
+                  <button type="button" class="btn btn-secondary" (click)="cancelar()">
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     class="btn btn-primary"
-                    [disabled]="!purchaseForm.form.valid || saving || !isValid()"
+                    [disabled]="!purchaseForm.form.valid || guardando || !esValido()"
                   >
-                    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ saving ? 'Procesando...' : 'Registrar Compra' }}
+                    <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ guardando ? 'Procesando...' : 'Registrar Compra' }}
                   </button>
                 </div>
               </form>
@@ -234,155 +237,169 @@ export class PurchaseFormComponent implements OnInit {
   private supplierService = inject(SupplierService);
   private productService = inject(ProductService);
   private router = inject(Router);
+  private http = inject(HttpClient);
 
-  purchase: CreatePurchase = {
-    supplierId: 0,
-    purchaseDate: new Date(),
-    invoiceNumber: '',
-    notes: '',
-    details: []
+  numeroCompraGenerado = 'Generando...';
+
+  compra: CrearCompra = {
+    proveedorId: 0,
+    fechaCompra: new Date(),
+    numeroFactura: '',
+    notas: '',
+    detalles: []
   };
 
-  purchaseDateStr: string = new Date().toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+  fechaCompraStr: string = new Date().toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
 
-  purchaseItems: Array<{
-    productId: number;
-    variantId: number | null;
-    quantity: number;
-    unitCost: number;
+  itemsCompra: Array<{
+    productoId: number;
+    varianteId: number | null;
+    cantidad: number;
+    costoUnitario: number;
     subtotal: number;
   }> = [{
-    productId: 0,
-    variantId: null,
-    quantity: 1,
-    unitCost: 0,
+    productoId: 0,
+    varianteId: null,
+    cantidad: 1,
+    costoUnitario: 0,
     subtotal: 0
   }];
 
-  suppliers: Supplier[] = [];
-  products: Product[] = [];
-  totalAmount = 0;
-  errorMessage = '';
-  saving = false;
+  proveedores: Proveedor[] = [];
+  productos: Producto[] = [];
+  montoTotal = 0;
+  mensajeError = '';
+  guardando = false;
 
   ngOnInit(): void {
-    this.loadSuppliers();
-    this.loadProducts();
+    this.cargarProveedores();
+    this.cargarProductos();
+    this.cargarSiguienteNumero();
   }
 
-  loadSuppliers(): void {
-    this.supplierService.getSuppliers().subscribe({
-      next: (data) => {
-        this.suppliers = data;
+  cargarSiguienteNumero(): void {
+    this.http.get<{ numeroCompra: string }>(`${environment.apiUrl}/purchases/next-number`).subscribe({
+      next: (res) => {
+        this.numeroCompraGenerado = res.numeroCompra;
       },
-      error: (error) => console.error('Error al cargar proveedores:', error)
-    });
-  }
-
-  loadProducts(): void {
-    this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-      },
-      error: (error) => console.error('Error al cargar productos:', error)
-    });
-  }
-
-  onProductChange(index: number): void {
-    const item = this.purchaseItems[index];
-    item.variantId = null; // resetear talla al cambiar producto
-    const product = this.products.find(p => p.id === item.productId);
-
-    // Auto-seleccionar talla si solo hay una variante
-    if (product?.variants && product.variants.length === 1) {
-      item.variantId = product.variants[0].id;
-    }
-
-    // Sugerir costo basado en precio de venta (solo si el campo está vacío)
-    if (product && item.unitCost === 0) {
-      item.unitCost = +(product.price * 0.6).toFixed(2);
-    }
-    this.calculateTotal();
-  }
-
-  onVariantChange(index: number): void {
-    this.calculateTotal();
-  }
-
-  getVariants(productId: number): ProductVariant[] {
-    const product = this.products.find(p => p.id === productId);
-    return product?.variants?.filter(v => v.isActive) ?? [];
-  }
-
-  getVariantStock(productId: number, variantId: number | null): number {
-    if (!variantId) return 0;
-    const product = this.products.find(p => p.id === productId);
-    const variant = product?.variants?.find(v => v.id === variantId);
-    return variant?.stock ?? 0;
-  }
-
-  calculateTotal(): void {
-    this.totalAmount = this.purchaseItems.reduce((sum, item) => {
-      return sum + (item.quantity * item.unitCost);
-    }, 0);
-
-    this.purchaseItems.forEach(item => {
-      item.subtotal = item.quantity * item.unitCost;
-    });
-  }
-
-  addItem(): void {
-    this.purchaseItems.push({
-      productId: 0,
-      variantId: null,
-      quantity: 1,
-      unitCost: 0,
-      subtotal: 0
-    });
-  }
-
-  removeItem(index: number): void {
-    this.purchaseItems.splice(index, 1);
-    this.calculateTotal();
-  }
-
-  isValid(): boolean {
-    return this.purchase.supplierId > 0 &&
-           this.purchase.invoiceNumber.trim() !== '' &&
-           this.purchaseItems.length > 0 &&
-           this.purchaseItems.every(item =>
-             item.productId > 0 &&
-             item.quantity > 0 &&
-             item.unitCost > 0 &&
-             // Si el producto tiene variantes, la talla es obligatoria
-             (this.getVariants(item.productId).length === 0 || item.variantId != null)
-           );
-  }
-
-  onSubmit(): void {
-    this.errorMessage = '';
-    this.saving = true;
-
-    this.purchase.purchaseDate = new Date(this.purchaseDateStr);
-    this.purchase.details = this.purchaseItems.map(item => ({
-      productId: item.productId,
-      variantId: item.variantId ?? undefined,
-      quantity: item.quantity,
-      unitCost: item.unitCost
-    }));
-
-    this.purchaseService.createPurchase(this.purchase).subscribe({
-      next: () => {
-        this.router.navigate(['/purchases']);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Error al crear la compra. Por favor intente nuevamente.';
-        this.saving = false;
+      error: () => {
+        this.numeroCompraGenerado = 'COMP-AUTO';
       }
     });
   }
 
-  cancel(): void {
+  cargarProveedores(): void {
+    this.supplierService.obtenerProveedores().subscribe({
+      next: (datos) => {
+        this.proveedores = datos;
+      },
+      error: (error: any) => console.error('Error al cargar proveedores:', error)
+    });
+  }
+
+  cargarProductos(): void {
+    this.productService.obtenerProductos().subscribe({
+      next: (datos) => {
+        this.productos = datos;
+      },
+      error: (error: any) => console.error('Error al cargar productos:', error)
+    });
+  }
+
+  onCambioProducto(index: number): void {
+    const item = this.itemsCompra[index];
+    item.varianteId = null; // resetear talla al cambiar producto
+    const producto = this.productos.find(p => p.id === item.productoId);
+
+    // Auto-seleccionar talla si solo hay una variante
+    if (producto?.variantes && producto.variantes.length === 1) {
+      item.varianteId = producto.variantes[0].id;
+    }
+
+    // Sugerir costo basado en precio de venta (solo si el campo está vacío)
+    if (producto && item.costoUnitario === 0) {
+      item.costoUnitario = +(producto.precio * 0.6).toFixed(2);
+    }
+    this.calcularTotal();
+  }
+
+  onCambioVariante(index: number): void {
+    this.calcularTotal();
+  }
+
+  obtenerVariantes(productoId: number): VarianteProducto[] {
+    const producto = this.productos.find(p => p.id === productoId);
+    return producto?.variantes?.filter(v => v.activo) ?? [];
+  }
+
+  obtenerStockVariante(productoId: number, varianteId: number | null): number {
+    if (!varianteId) return 0;
+    const producto = this.productos.find(p => p.id === productoId);
+    const variante = producto?.variantes?.find(v => v.id === varianteId);
+    return variante?.stock ?? 0;
+  }
+
+  calcularTotal(): void {
+    this.montoTotal = this.itemsCompra.reduce((sum, item) => {
+      return sum + (item.cantidad * item.costoUnitario);
+    }, 0);
+
+    this.itemsCompra.forEach(item => {
+      item.subtotal = item.cantidad * item.costoUnitario;
+    });
+  }
+
+  agregarItem(): void {
+    this.itemsCompra.push({
+      productoId: 0,
+      varianteId: null,
+      cantidad: 1,
+      costoUnitario: 0,
+      subtotal: 0
+    });
+  }
+
+  quitarItem(index: number): void {
+    this.itemsCompra.splice(index, 1);
+    this.calcularTotal();
+  }
+
+  esValido(): boolean {
+    return this.compra.proveedorId > 0 &&
+           this.itemsCompra.length > 0 &&
+           this.itemsCompra.every(item =>
+             item.productoId > 0 &&
+             item.cantidad > 0 &&
+             item.costoUnitario > 0 &&
+             // Si el producto tiene variantes, la talla es obligatoria
+             (this.obtenerVariantes(item.productoId).length === 0 || item.varianteId != null)
+           );
+  }
+
+  onSubmit(): void {
+    this.mensajeError = '';
+    this.guardando = true;
+
+    this.compra.fechaCompra = new Date(this.fechaCompraStr);
+    this.compra.detalles = this.itemsCompra.map(item => ({
+      productoId: item.productoId,
+      varianteId: item.varianteId ?? undefined,
+      cantidad: item.cantidad,
+      costoUnitario: item.costoUnitario
+    }));
+
+    this.purchaseService.crearCompra(this.compra).subscribe({
+      next: () => {
+        this.router.navigate(['/purchases']);
+      },
+      error: (error: any) => {
+        this.mensajeError = error.error?.message || 'Error al crear la compra. Por favor intente nuevamente.';
+        this.guardando = false;
+      }
+    });
+  }
+
+  cancelar(): void {
     this.router.navigate(['/purchases']);
   }
 }

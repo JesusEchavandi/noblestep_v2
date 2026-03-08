@@ -1,11 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReportService, SalesReport, SalesByProduct, SalesByCustomer, PurchasesReport, PurchasesBySupplier, InventoryReport, InventoryValuation, ProfitLossReport } from '../services/report.service';
+import { ReportService, ReporteVentas, VentasPorProducto, VentasPorCliente, ReporteCompras, ComprasPorProveedor, ReporteInventario, ValuacionInventario, ReporteGananciaPerdida } from '../services/report.service';
 import { CategoryService } from '../services/category.service';
 import { ExportService } from '../services/export.service';
 import { NotificationService } from '../services/notification.service';
-import { Category } from '../models/category.model';
+import { Categoria } from '../models/category.model';
 
 @Component({
   selector: 'app-reports',
@@ -20,270 +20,538 @@ export class ReportsComponent implements OnInit {
   private exportService = inject(ExportService);
   private notificationService = inject(NotificationService);
 
-  activeTab: string = 'sales';
-  categories: Category[] = [];
-  
-  filters = {
-    startDate: '',
-    endDate: '',
-    categoryId: null as number | null
+  pestanaActiva: string = 'ventas';
+  categorias: Categoria[] = [];
+
+  filtros = {
+    fechaInicio: '',
+    fechaFin: '',
+    categoriaId: null as number | null
   };
 
-  // Sales Reports
-  salesReport: SalesReport | null = null;
-  salesByProduct: SalesByProduct[] = [];
-  salesByCustomer: SalesByCustomer[] = [];
+  // Reportes de Ventas
+  reporteVentas: ReporteVentas | null = null;
+  ventasPorProducto: VentasPorProducto[] = [];
+  ventasPorCliente: VentasPorCliente[] = [];
 
-  // Purchases Reports
-  purchasesReport: PurchasesReport | null = null;
-  purchasesBySupplier: PurchasesBySupplier[] = [];
+  // Reportes de Compras
+  reporteCompras: ReporteCompras | null = null;
+  comprasPorProveedor: ComprasPorProveedor[] = [];
 
-  // Inventory Reports
-  inventoryReport: InventoryReport[] = [];
-  inventoryValuation: InventoryValuation | null = null;
+  // Reportes de Inventario
+  reporteInventario: ReporteInventario[] = [];
+  valuacionInventario: ValuacionInventario | null = null;
 
-  // Profit/Loss Report
-  profitLossReport: ProfitLossReport | null = null;
+  // Reporte de Ganancia/Pérdida
+  reporteGananciaPerdida: ReporteGananciaPerdida | null = null;
 
-  loading = false;
+  cargando = false;
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.setDefaultDates();
+    this.cargarCategorias();
+    this.establecerFechasPredeterminadas();
+    this.cargarReportesVentas();
   }
 
-  setDefaultDates(): void {
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    
-    this.filters.endDate = today.toISOString().split('T')[0];
-    this.filters.startDate = firstDayOfMonth.toISOString().split('T')[0];
+  establecerFechasPredeterminadas(): void {
+    const hoy = new Date();
+    const tresAtras = new Date(hoy.getFullYear(), hoy.getMonth() - 3, 1);
+
+    this.filtros.fechaFin = hoy.toISOString().split('T')[0];
+    this.filtros.fechaInicio = tresAtras.toISOString().split('T')[0];
   }
 
-  loadCategories(): void {
-    this.categoryService.getCategories().subscribe({
-      next: (data) => this.categories = data,
-      error: (err) => console.error('Error loading categories:', err)
+  cargarCategorias(): void {
+    this.categoryService.obtenerCategorias().subscribe({
+      next: (datos) => this.categorias = datos,
+      error: (err) => console.error('Error al cargar categorías:', err)
     });
   }
 
-  loadSalesReports(): void {
-    this.loading = true;
-    this.reportService.getSalesReport(this.filters.startDate, this.filters.endDate).subscribe({
-      next: (data) => {
-        this.salesReport = data;
-        this.loading = false;
+  cargarReportesVentas(): void {
+    this.cargando = true;
+    this.reportService.obtenerReporteVentas(this.filtros.fechaInicio, this.filtros.fechaFin).subscribe({
+      next: (datos) => {
+        this.reporteVentas = datos;
+        this.cargando = false;
       },
       error: (err) => {
-        console.error('Error loading sales report:', err);
-        this.loading = false;
+        console.error('Error al cargar reporte de ventas:', err);
+        this.cargando = false;
       }
     });
 
-    this.reportService.getSalesByProduct(this.filters.startDate, this.filters.endDate, this.filters.categoryId ?? undefined).subscribe({
-      next: (data) => this.salesByProduct = data,
+    this.reportService.obtenerVentasPorProducto(this.filtros.fechaInicio, this.filtros.fechaFin, this.filtros.categoriaId ?? undefined).subscribe({
+      next: (datos) => this.ventasPorProducto = datos,
       error: (err) => console.error('Error:', err)
     });
 
-    this.reportService.getSalesByCustomer(this.filters.startDate, this.filters.endDate).subscribe({
-      next: (data) => this.salesByCustomer = data,
-      error: (err) => console.error('Error:', err)
-    });
-  }
-
-  loadPurchasesReports(): void {
-    this.loading = true;
-    this.reportService.getPurchasesReport(this.filters.startDate, this.filters.endDate).subscribe({
-      next: (data) => {
-        this.purchasesReport = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error:', err);
-        this.loading = false;
-      }
-    });
-
-    this.reportService.getPurchasesBySupplier(this.filters.startDate, this.filters.endDate).subscribe({
-      next: (data) => this.purchasesBySupplier = data,
+    this.reportService.obtenerVentasPorCliente(this.filtros.fechaInicio, this.filtros.fechaFin).subscribe({
+      next: (datos) => this.ventasPorCliente = datos,
       error: (err) => console.error('Error:', err)
     });
   }
 
-  loadInventoryReports(): void {
-    this.loading = true;
-    this.reportService.getInventoryReport(this.filters.categoryId ?? undefined).subscribe({
-      next: (data) => {
-        this.inventoryReport = data;
-        this.loading = false;
+  cargarReportesCompras(): void {
+    this.cargando = true;
+    this.reportService.obtenerReporteCompras(this.filtros.fechaInicio, this.filtros.fechaFin).subscribe({
+      next: (datos) => {
+        this.reporteCompras = datos;
+        this.cargando = false;
       },
       error: (err) => {
         console.error('Error:', err);
-        this.loading = false;
+        this.cargando = false;
       }
     });
 
-    this.reportService.getInventoryValuation().subscribe({
-      next: (data) => this.inventoryValuation = data,
+    this.reportService.obtenerComprasPorProveedor(this.filtros.fechaInicio, this.filtros.fechaFin).subscribe({
+      next: (datos) => this.comprasPorProveedor = datos,
       error: (err) => console.error('Error:', err)
     });
   }
 
-  loadProfitLossReport(): void {
-    this.loading = true;
-    this.reportService.getProfitLossReport(this.filters.startDate, this.filters.endDate).subscribe({
-      next: (data) => {
-        this.profitLossReport = data;
-        this.loading = false;
+  cargarReportesInventario(): void {
+    this.cargando = true;
+    this.reportService.obtenerReporteInventario(this.filtros.categoriaId ?? undefined).subscribe({
+      next: (datos) => {
+        this.reporteInventario = datos;
+        this.cargando = false;
       },
       error: (err) => {
         console.error('Error:', err);
-        this.loading = false;
+        this.cargando = false;
+      }
+    });
+
+    this.reportService.obtenerValuacionInventario().subscribe({
+      next: (datos) => this.valuacionInventario = datos,
+      error: (err) => console.error('Error:', err)
+    });
+  }
+
+  cargarReporteGananciaPerdida(): void {
+    this.cargando = true;
+    this.reportService.obtenerReporteGananciaPerdida(this.filtros.fechaInicio, this.filtros.fechaFin).subscribe({
+      next: (datos) => {
+        this.reporteGananciaPerdida = datos;
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error:', err);
+        this.cargando = false;
       }
     });
   }
 
-  getProfitClass(): string {
-    if (!this.profitLossReport) return '';
-    return this.profitLossReport.grossProfit >= 0 ? 'text-success' : 'text-danger';
+  obtenerClaseGanancia(): string {
+    if (!this.reporteGananciaPerdida) return '';
+    return this.reporteGananciaPerdida.gananciaBruta >= 0 ? 'text-success' : 'text-danger';
   }
 
-  getMarginStatus(): { label: string; className: string } {
-    if (!this.profitLossReport) return { label: '', className: '' };
-    const margin = this.profitLossReport.profitMargin;
-    if (margin > 20) return { label: 'Excelente rentabilidad', className: 'status-excellent' };
-    if (margin > 10) return { label: 'Buena rentabilidad', className: 'status-good' };
-    if (margin > 0) return { label: 'Rentabilidad baja', className: 'status-low' };
+  obtenerEstadoMargen(): { label: string; className: string } {
+    if (!this.reporteGananciaPerdida) return { label: '', className: '' };
+    const margen = this.reporteGananciaPerdida.margenGanancia;
+    if (margen > 20) return { label: 'Excelente rentabilidad', className: 'status-excellent' };
+    if (margen > 10) return { label: 'Buena rentabilidad', className: 'status-good' };
+    if (margen > 0) return { label: 'Rentabilidad baja', className: 'status-low' };
     return { label: 'Pérdida operativa', className: 'status-loss' };
   }
 
-  getMarginProgress(): number {
-    if (!this.profitLossReport) return 0;
-    const margin = this.profitLossReport.profitMargin;
-    if (margin <= 0) return 15;
-    if (margin >= 40) return 100;
-    return Math.min(100, Math.round((margin / 40) * 100));
+  obtenerProgresoMargen(): number {
+    if (!this.reporteGananciaPerdida) return 0;
+    const margen = this.reporteGananciaPerdida.margenGanancia;
+    if (margen <= 0) return 15;
+    if (margen >= 40) return 100;
+    return Math.min(100, Math.round((margen / 40) * 100));
   }
 
-  getDaysDifference(): number {
-    if (!this.filters.startDate || !this.filters.endDate) return 0;
-    const start = new Date(this.filters.startDate);
-    const end = new Date(this.filters.endDate);
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  obtenerDiferenciaDias(): number {
+    if (!this.filtros.fechaInicio || !this.filtros.fechaFin) return 0;
+    const inicio = new Date(this.filtros.fechaInicio);
+    const fin = new Date(this.filtros.fechaFin);
+    return Math.ceil((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  // Export functions - CSV
-  exportSalesReport(): void {
-    if (this.salesReport) {
-      this.reportService.exportToCSV(this.salesReport.items, 'reporte-ventas');
+  // =====================================================
+  // EXPORTACIONES - VENTAS
+  // =====================================================
+
+  exportarReporteVentas(): void {
+    if (this.reporteVentas) {
+      this.reportService.exportarACSV(this.reporteVentas.items, 'reporte-ventas');
       this.notificationService.notifySuccess('Reporte exportado a CSV');
     }
   }
 
-  exportSalesByProduct(): void {
-    this.reportService.exportToCSV(this.salesByProduct, 'ventas-por-producto');
+  exportarVentasPorProducto(): void {
+    this.reportService.exportarACSV(this.ventasPorProducto, 'ventas-por-producto');
     this.notificationService.notifySuccess('Reporte exportado a CSV');
   }
 
-  exportSalesByCustomer(): void {
-    this.reportService.exportToCSV(this.salesByCustomer, 'ventas-por-cliente');
+  exportarVentasPorCliente(): void {
+    this.reportService.exportarACSV(this.ventasPorCliente, 'ventas-por-cliente');
     this.notificationService.notifySuccess('Reporte exportado a CSV');
   }
 
-  exportPurchasesReport(): void {
-    if (this.purchasesReport) {
-      this.reportService.exportToCSV(this.purchasesReport.items, 'reporte-compras');
+  exportarReporteCompras(): void {
+    if (this.reporteCompras) {
+      this.reportService.exportarACSV(this.reporteCompras.items, 'reporte-compras');
       this.notificationService.notifySuccess('Reporte exportado a CSV');
     }
   }
 
-  exportPurchasesBySupplier(): void {
-    this.reportService.exportToCSV(this.purchasesBySupplier, 'compras-por-proveedor');
+  exportarComprasPorProveedor(): void {
+    this.reportService.exportarACSV(this.comprasPorProveedor, 'compras-por-proveedor');
     this.notificationService.notifySuccess('Reporte exportado a CSV');
   }
 
-  exportInventoryReport(): void {
-    this.reportService.exportToCSV(this.inventoryReport, 'reporte-inventario');
+  exportarReporteInventario(): void {
+    this.reportService.exportarACSV(this.reporteInventario, 'reporte-inventario');
     this.notificationService.notifySuccess('Reporte exportado a CSV');
   }
 
-  // Export functions - Excel
-  exportSalesToExcel(): void {
-    if (this.salesReport && this.salesReport.items.length > 0) {
-      const sheets = [
-        { name: 'Resumen', data: [{ 
-          'Total Ventas': this.salesReport.totalSales,
-          'Total Transacciones': this.salesReport.totalTransactions,
-          'Ticket Promedio': this.salesReport.averageTicket
+  // Funciones de exportación - Excel
+  exportarVentasAExcel(): void {
+    if (this.reporteVentas && this.reporteVentas.items.length > 0) {
+      const hojas = [
+        { name: 'Resumen', data: [{
+          'Total Ventas': `S/ ${this.reporteVentas.totalVentas.toFixed(2)}`,
+          'Total Transacciones': this.reporteVentas.totalTransacciones,
+          'Ticket Promedio': `S/ ${this.reporteVentas.ticketPromedio.toFixed(2)}`,
+          'Período': `${this.filtros.fechaInicio} al ${this.filtros.fechaFin}`
         }]},
-        { name: 'Detalle Ventas', data: this.salesReport.items.map(item => ({
-          ID: item.saleId,
-          Fecha: new Date(item.saleDate).toLocaleDateString('es-PE'),
-          Cliente: item.customerName,
-          Documento: item.customerDocument,
-          Items: item.itemsCount,
-          Total: item.total,
-          Usuario: item.userName
+        { name: 'Detalle Ventas', data: this.reporteVentas.items.map(item => ({
+          ID: item.ventaId,
+          Fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE'),
+          Cliente: item.nombreCliente,
+          Documento: item.documentoCliente,
+          Items: item.cantidadItems,
+          'Total (S/)': item.total.toFixed(2),
+          Usuario: item.nombreUsuario
         }))},
-        { name: 'Por Producto', data: this.salesByProduct.map(p => ({
-          Producto: p.productName,
-          Marca: p.brand,
-          Categoría: p.categoryName,
-          'Cantidad Vendida': p.totalQuantitySold,
-          Ingresos: p.totalRevenue,
-          'Precio Promedio': p.averagePrice
+        { name: 'Por Producto', data: this.ventasPorProducto.map(p => ({
+          Producto: p.nombreProducto,
+          Marca: p.marca,
+          Categoría: p.nombreCategoria,
+          'Cantidad Vendida': p.cantidadTotalVendida,
+          'Ingresos (S/)': p.ingresosTotales.toFixed(2),
+          'Precio Promedio (S/)': p.precioPromedio.toFixed(2)
         }))},
-        { name: 'Por Cliente', data: this.salesByCustomer.map(c => ({
-          Cliente: c.customerName,
-          Documento: c.documentNumber,
-          'Total Compras': c.totalPurchases,
-          'Total Gastado': c.totalSpent,
-          'Ticket Promedio': c.averageTicket,
-          'Última Compra': new Date(c.lastPurchaseDate).toLocaleDateString('es-PE')
+        { name: 'Por Cliente', data: this.ventasPorCliente.map(c => ({
+          Cliente: c.nombreCliente,
+          Documento: c.numeroDocumento,
+          'Total Compras': c.totalCompras,
+          'Total Gastado (S/)': c.totalGastado.toFixed(2),
+          'Ticket Promedio (S/)': c.ticketPromedio.toFixed(2),
+          'Última Compra': new Date(c.ultimaFechaCompra).toLocaleDateString('es-PE')
         }))}
       ];
-      this.exportService.exportMultipleSheetsToExcel(sheets, 'reporte-ventas-completo');
+      this.exportService.exportarMultiplesHojasAExcel(hojas, 'reporte-ventas-completo');
       this.notificationService.notifySuccess('Reporte exportado a Excel');
     }
   }
 
-  // Export functions - PDF
-  async exportSalesToPDF(): Promise<void> {
-    if (this.salesReport && this.salesReport.items.length > 0) {
-      this.notificationService.notifySuccess('Generando PDF...');
-      
-      const columns = [
-        { header: 'ID', dataKey: 'saleId' },
-        { header: 'Fecha', dataKey: 'saleDate' },
-        { header: 'Cliente', dataKey: 'customerName' },
-        { header: 'Items', dataKey: 'itemsCount' },
-        { header: 'Total', dataKey: 'total' }
+  exportarComprasAExcel(): void {
+    if (this.reporteCompras && this.reporteCompras.items.length > 0) {
+      const hojas = [
+        { name: 'Resumen', data: [{
+          'Total Compras': `S/ ${this.reporteCompras.totalCompras.toFixed(2)}`,
+          'Total Transacciones': this.reporteCompras.totalTransacciones,
+          'Período': `${this.filtros.fechaInicio} al ${this.filtros.fechaFin}`
+        }]},
+        { name: 'Detalle Compras', data: this.reporteCompras.items.map(item => ({
+          ID: item.compraId,
+          Fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE'),
+          Proveedor: item.nombreProveedor,
+          Documento: item.documentoProveedor,
+          Items: item.cantidadItems,
+          'Total (S/)': item.total.toFixed(2)
+        }))},
+        { name: 'Por Proveedor', data: this.comprasPorProveedor.map(p => ({
+          Proveedor: p.nombreProveedor,
+          Documento: p.numeroDocumento,
+          'Total Compras': p.totalCompras,
+          'Total Gastado (S/)': p.totalGastado.toFixed(2),
+          'Última Compra': new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE')
+        }))}
       ];
-
-      const data = this.salesReport.items.map(item => ({
-        saleId: item.saleId,
-        saleDate: new Date(item.saleDate).toLocaleDateString('es-PE'),
-        customerName: item.customerName,
-        itemsCount: item.itemsCount,
-        total: `S/ ${item.total.toFixed(2)}`
-      }));
-
-      const additionalInfo = [
-        { label: 'Período', value: `${new Date(this.salesReport.startDate).toLocaleDateString('es-PE')} - ${new Date(this.salesReport.endDate).toLocaleDateString('es-PE')}` },
-        { label: 'Total Ventas', value: `S/ ${this.salesReport.totalSales.toFixed(2)}` },
-        { label: 'Total Transacciones', value: this.salesReport.totalTransactions.toString() },
-        { label: 'Ticket Promedio', value: `S/ ${this.salesReport.averageTicket.toFixed(2)}` }
-      ];
-
-      await this.exportService.exportToPDF(
-        'Reporte de Ventas',
-        data,
-        columns,
-        'reporte-ventas',
-        additionalInfo
-      );
-
-      this.notificationService.notifySuccess('PDF generado exitosamente');
+      this.exportService.exportarMultiplesHojasAExcel(hojas, 'reporte-compras-completo');
+      this.notificationService.notifySuccess('Reporte exportado a Excel');
     }
+  }
+
+  exportarInventarioAExcel(): void {
+    if (this.reporteInventario.length > 0) {
+      const hojas: { name: string; data: any[] }[] = [
+        { name: 'Inventario', data: this.reporteInventario.map(item => ({
+          Producto: item.nombreProducto,
+          Marca: item.marca,
+          Talla: item.talla || 'Única',
+          Categoría: item.nombreCategoria,
+          'Stock Actual': item.stockActual,
+          'Precio Unit. (S/)': item.precioUnitario.toFixed(2),
+          'Valor Total (S/)': item.valorTotal.toFixed(2),
+          'Total Vendido': item.totalVendido,
+          'Rotación': item.tasaRotacion.toFixed(2)
+        }))}
+      ];
+      if (this.valuacionInventario) {
+        hojas.unshift({ name: 'Valuación', data: [
+          { Concepto: 'Valor Total del Inventario', Valor: `S/ ${this.valuacionInventario.valorTotal.toFixed(2)}` },
+          { Concepto: 'Total de Unidades', Valor: this.valuacionInventario.totalUnidades },
+          { Concepto: 'Total de Productos', Valor: this.valuacionInventario.totalProductos },
+          ...this.valuacionInventario.porCategoria.map(c => ({
+            Concepto: `Categoría: ${c.categoria}`, Valor: `S/ ${c.valorTotal.toFixed(2)} (${c.totalUnidades} uds, ${c.productos} prod.)`
+          }))
+        ]});
+      }
+      this.exportService.exportarMultiplesHojasAExcel(hojas, 'reporte-inventario-completo');
+      this.notificationService.notifySuccess('Reporte exportado a Excel');
+    }
+  }
+
+  exportarRentabilidadAExcel(): void {
+    if (this.reporteGananciaPerdida) {
+      const gp = this.reporteGananciaPerdida;
+      this.exportService.exportarExcelProfesional({
+        titulo: 'Reporte de Rentabilidad — NobleStep',
+        subtitulo: `Período: ${this.filtros.fechaInicio} al ${this.filtros.fechaFin}`,
+        resumen: [
+          { etiqueta: 'Total Ingresos', valor: `S/ ${gp.totalVentas.toFixed(2)}` },
+          { etiqueta: 'Total Egresos', valor: `S/ ${gp.totalCompras.toFixed(2)}` },
+          { etiqueta: 'Utilidad Bruta', valor: `S/ ${gp.gananciaBruta.toFixed(2)}` },
+          { etiqueta: 'Margen de Ganancia', valor: `${gp.margenGanancia.toFixed(2)}%` },
+        ],
+        columnas: [
+          { titulo: 'Concepto', campo: 'concepto' },
+          { titulo: 'Monto (S/)', campo: 'monto' },
+          { titulo: 'Unidades', campo: 'unidades' },
+          { titulo: 'Observación', campo: 'observacion' }
+        ],
+        datos: [
+          { concepto: 'Ventas', monto: `S/ ${gp.totalVentas.toFixed(2)}`, unidades: gp.productosVendidos, observacion: 'Ingresos por ventas' },
+          { concepto: 'Compras', monto: `S/ ${gp.totalCompras.toFixed(2)}`, unidades: gp.productosComprados, observacion: 'Costo de adquisición' },
+          { concepto: 'Utilidad Bruta', monto: `S/ ${gp.gananciaBruta.toFixed(2)}`, unidades: '-', observacion: gp.gananciaBruta >= 0 ? 'Ganancia' : 'Pérdida' },
+          { concepto: 'Margen', monto: `${gp.margenGanancia.toFixed(2)}%`, unidades: '-', observacion: this.obtenerEstadoMargen().label }
+        ],
+        nombreArchivo: 'reporte-rentabilidad'
+      });
+      this.notificationService.notifySuccess('Reporte exportado a Excel');
+    }
+  }
+
+  // =====================================================
+  // EXPORTACIONES - PDF
+  // =====================================================
+
+  async exportarVentasAPDF(): Promise<void> {
+    if (!this.reporteVentas || this.reporteVentas.items.length === 0) return;
+    this.notificationService.notifySuccess('Generando PDF...');
+
+    const rv = this.reporteVentas;
+    await this.exportService.exportarPDFProfesional({
+      titulo: 'Reporte de Ventas',
+      subtitulo: `Período: ${new Date(rv.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(rv.fechaFin).toLocaleDateString('es-PE')}`,
+      resumen: [
+        { etiqueta: 'Total Ventas', valor: `S/ ${rv.totalVentas.toFixed(2)}` },
+        { etiqueta: 'Transacciones', valor: rv.totalTransacciones.toString() },
+        { etiqueta: 'Ticket Promedio', valor: `S/ ${rv.ticketPromedio.toFixed(2)}` },
+        { etiqueta: 'Días Analizados', valor: this.obtenerDiferenciaDias().toString() }
+      ],
+      secciones: [
+        {
+          titulo: 'Detalle de Ventas',
+          colorCabecera: [124, 58, 237],
+          columnas: [
+            { header: 'ID', dataKey: 'id', align: 'center' },
+            { header: 'Fecha', dataKey: 'fecha' },
+            { header: 'Cliente', dataKey: 'cliente' },
+            { header: 'Items', dataKey: 'items', align: 'center' },
+            { header: 'Total', dataKey: 'total', align: 'right' }
+          ],
+          datos: rv.items.map(item => ({
+            id: `#${item.ventaId}`,
+            fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE'),
+            cliente: item.nombreCliente,
+            items: item.cantidadItems,
+            total: `S/ ${item.total.toFixed(2)}`
+          }))
+        },
+        {
+          titulo: 'Ventas por Producto',
+          colorCabecera: [16, 185, 129],
+          columnas: [
+            { header: 'Producto', dataKey: 'producto' },
+            { header: 'Categoría', dataKey: 'categoria' },
+            { header: 'Cantidad', dataKey: 'cantidad', align: 'center' },
+            { header: 'Ingresos', dataKey: 'ingresos', align: 'right' }
+          ],
+          datos: this.ventasPorProducto.map(p => ({
+            producto: `${p.nombreProducto} - ${p.marca}`,
+            categoria: p.nombreCategoria,
+            cantidad: p.cantidadTotalVendida,
+            ingresos: `S/ ${p.ingresosTotales.toFixed(2)}`
+          }))
+        },
+        {
+          titulo: 'Ventas por Cliente',
+          colorCabecera: [59, 130, 246],
+          columnas: [
+            { header: 'Cliente', dataKey: 'cliente' },
+            { header: 'Compras', dataKey: 'compras', align: 'center' },
+            { header: 'Total Gastado', dataKey: 'gastado', align: 'right' },
+            { header: 'Ticket Prom.', dataKey: 'ticket', align: 'right' }
+          ],
+          datos: this.ventasPorCliente.map(c => ({
+            cliente: c.nombreCliente,
+            compras: c.totalCompras,
+            gastado: `S/ ${c.totalGastado.toFixed(2)}`,
+            ticket: `S/ ${c.ticketPromedio.toFixed(2)}`
+          }))
+        }
+      ],
+      nombreArchivo: 'reporte-ventas'
+    });
+
+    this.notificationService.notifySuccess('PDF generado exitosamente');
+  }
+
+  async exportarComprasAPDF(): Promise<void> {
+    if (!this.reporteCompras || this.reporteCompras.items.length === 0) return;
+    this.notificationService.notifySuccess('Generando PDF...');
+
+    const rc = this.reporteCompras;
+    await this.exportService.exportarPDFProfesional({
+      titulo: 'Reporte de Compras',
+      subtitulo: `Período: ${new Date(rc.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(rc.fechaFin).toLocaleDateString('es-PE')}`,
+      resumen: [
+        { etiqueta: 'Total Compras', valor: `S/ ${rc.totalCompras.toFixed(2)}` },
+        { etiqueta: 'Transacciones', valor: rc.totalTransacciones.toString() },
+        { etiqueta: 'Días Analizados', valor: this.obtenerDiferenciaDias().toString() }
+      ],
+      secciones: [
+        {
+          titulo: 'Detalle de Compras',
+          colorCabecera: [220, 38, 38],
+          columnas: [
+            { header: 'ID', dataKey: 'id', align: 'center' },
+            { header: 'Fecha', dataKey: 'fecha' },
+            { header: 'Proveedor', dataKey: 'proveedor' },
+            { header: 'Items', dataKey: 'items', align: 'center' },
+            { header: 'Total', dataKey: 'total', align: 'right' }
+          ],
+          datos: rc.items.map(item => ({
+            id: `#${item.compraId}`,
+            fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE'),
+            proveedor: item.nombreProveedor,
+            items: item.cantidadItems,
+            total: `S/ ${item.total.toFixed(2)}`
+          }))
+        },
+        {
+          titulo: 'Compras por Proveedor',
+          colorCabecera: [245, 158, 11],
+          columnas: [
+            { header: 'Proveedor', dataKey: 'proveedor' },
+            { header: 'Compras', dataKey: 'compras', align: 'center' },
+            { header: 'Total Gastado', dataKey: 'gastado', align: 'right' },
+            { header: 'Última Compra', dataKey: 'ultima' }
+          ],
+          datos: this.comprasPorProveedor.map(p => ({
+            proveedor: p.nombreProveedor,
+            compras: p.totalCompras,
+            gastado: `S/ ${p.totalGastado.toFixed(2)}`,
+            ultima: new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE')
+          }))
+        }
+      ],
+      nombreArchivo: 'reporte-compras'
+    });
+
+    this.notificationService.notifySuccess('PDF generado exitosamente');
+  }
+
+  async exportarInventarioAPDF(): Promise<void> {
+    if (this.reporteInventario.length === 0) return;
+    this.notificationService.notifySuccess('Generando PDF...');
+
+    const resumen: { etiqueta: string; valor: string }[] = [];
+    if (this.valuacionInventario) {
+      resumen.push(
+        { etiqueta: 'Valor Total', valor: `S/ ${this.valuacionInventario.valorTotal.toFixed(2)}` },
+        { etiqueta: 'Total Unidades', valor: this.valuacionInventario.totalUnidades.toString() },
+        { etiqueta: 'Total Productos', valor: this.valuacionInventario.totalProductos.toString() }
+      );
+    }
+
+    await this.exportService.exportarPDFProfesional({
+      titulo: 'Reporte de Inventario',
+      subtitulo: `Fecha: ${new Date().toLocaleDateString('es-PE')}`,
+      resumen,
+      secciones: [
+        {
+          titulo: 'Detalle de Inventario',
+          colorCabecera: [14, 165, 233],
+          columnas: [
+            { header: 'Producto', dataKey: 'producto' },
+            { header: 'Categoría', dataKey: 'categoria' },
+            { header: 'Stock', dataKey: 'stock', align: 'center' },
+            { header: 'Precio Unit.', dataKey: 'precio', align: 'right' },
+            { header: 'Valor Total', dataKey: 'valor', align: 'right' },
+            { header: 'Rotación', dataKey: 'rotacion', align: 'center' }
+          ],
+          datos: this.reporteInventario.map(item => ({
+            producto: `${item.nombreProducto} - ${item.marca}`,
+            categoria: item.nombreCategoria,
+            stock: item.stockActual,
+            precio: `S/ ${item.precioUnitario.toFixed(2)}`,
+            valor: `S/ ${item.valorTotal.toFixed(2)}`,
+            rotacion: `${item.tasaRotacion.toFixed(2)}x`
+          }))
+        }
+      ],
+      nombreArchivo: 'reporte-inventario'
+    });
+
+    this.notificationService.notifySuccess('PDF generado exitosamente');
+  }
+
+  async exportarRentabilidadAPDF(): Promise<void> {
+    if (!this.reporteGananciaPerdida) return;
+    this.notificationService.notifySuccess('Generando PDF...');
+
+    const gp = this.reporteGananciaPerdida;
+    await this.exportService.exportarPDFProfesional({
+      titulo: 'Reporte de Rentabilidad',
+      subtitulo: `Período: ${new Date(gp.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(gp.fechaFin).toLocaleDateString('es-PE')}`,
+      resumen: [
+        { etiqueta: 'Ingresos', valor: `S/ ${gp.totalVentas.toFixed(2)}` },
+        { etiqueta: 'Egresos', valor: `S/ ${gp.totalCompras.toFixed(2)}` },
+        { etiqueta: 'Utilidad Bruta', valor: `S/ ${gp.gananciaBruta.toFixed(2)}` },
+        { etiqueta: 'Margen', valor: `${gp.margenGanancia.toFixed(2)}%` }
+      ],
+      secciones: [
+        {
+          titulo: 'Análisis Financiero',
+          colorCabecera: gp.gananciaBruta >= 0 ? [16, 185, 129] : [239, 68, 68],
+          columnas: [
+            { header: 'Concepto', dataKey: 'concepto' },
+            { header: 'Monto', dataKey: 'monto', align: 'right' },
+            { header: 'Unidades', dataKey: 'unidades', align: 'center' },
+            { header: 'Observación', dataKey: 'obs' }
+          ],
+          datos: [
+            { concepto: 'Ventas (Ingresos)', monto: `S/ ${gp.totalVentas.toFixed(2)}`, unidades: gp.productosVendidos, obs: 'Ingreso operativo' },
+            { concepto: 'Compras (Egresos)', monto: `S/ ${gp.totalCompras.toFixed(2)}`, unidades: gp.productosComprados, obs: 'Costo de mercadería' },
+            { concepto: 'Utilidad Bruta', monto: `S/ ${gp.gananciaBruta.toFixed(2)}`, unidades: '-', obs: gp.gananciaBruta >= 0 ? '✅ Ganancia' : '❌ Pérdida' },
+            { concepto: 'Margen de Ganancia', monto: `${gp.margenGanancia.toFixed(2)}%`, unidades: '-', obs: this.obtenerEstadoMargen().label }
+          ]
+        }
+      ],
+      nombreArchivo: 'reporte-rentabilidad'
+    });
+
+    this.notificationService.notifySuccess('PDF generado exitosamente');
   }
 }

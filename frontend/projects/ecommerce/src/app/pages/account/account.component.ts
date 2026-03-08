@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerce-auth.service';
-import { OrderService, Order } from '../../services/order.service';
+import { EcommerceAuthService, ClienteEcommerce } from '../../services/ecommerce-auth.service';
+import { OrderService, Pedido } from '../../services/order.service';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
@@ -14,19 +14,19 @@ import { NotificationService } from '../../services/notification.service';
   styleUrls: ['./account.component.css']
 })
 export class AccountComponent implements OnInit {
-  customer: EcommerceCustomer | null = null;
-  orders: Order[] = [];
-  activeTab: 'orders' | 'profile' | 'settings' = 'orders';
-  loading = false;
-  editingProfile = false;
+  cliente: ClienteEcommerce | null = null;
+  pedidos: Pedido[] = [];
+  pestanaActiva: 'pedidos' | 'perfil' | 'configuracion' = 'pedidos';
+  cargando = false;
+  editandoPerfil = false;
 
-  profileForm = {
-    fullName: '',
-    phone: '',
-    documentNumber: '',
-    address: '',
-    city: '',
-    district: ''
+  formularioPerfil = {
+    nombreCompleto: '',
+    telefono: '',
+    numeroDocumento: '',
+    direccion: '',
+    ciudad: '',
+    distrito: ''
   };
 
   constructor(
@@ -37,141 +37,144 @@ export class AccountComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.authService.currentCustomer$.subscribe(customer => {
-      this.customer = customer;
-      if (customer) {
-        this.profileForm = {
-          fullName: customer.fullName,
-          phone: customer.phone || '',
-          documentNumber: customer.documentNumber || '',
-          address: customer.address || '',
-          city: customer.city || '',
-          district: customer.district || ''
+    this.authService.clienteActual$.subscribe(cliente => {
+      this.cliente = cliente;
+      if (cliente) {
+        this.formularioPerfil = {
+          nombreCompleto: cliente.nombreCompleto,
+          telefono: cliente.telefono || '',
+          numeroDocumento: cliente.numeroDocumento || '',
+          direccion: cliente.direccion || '',
+          ciudad: cliente.ciudad || '',
+          distrito: cliente.distrito || ''
         };
       }
     });
 
-    this.loadOrders();
+    this.cargarPedidos();
   }
 
-  loadOrders() {
-    this.loading = true;
-    this.orderService.getMyOrders().subscribe({
-      next: (orders) => {
-        this.orders = orders;
-        this.loading = false;
+  cargarPedidos() {
+    this.cargando = true;
+    this.orderService.obtenerMisPedidos().subscribe({
+      next: (pedidos) => {
+        this.pedidos = pedidos;
+        this.cargando = false;
       },
       error: (error) => {
-        this.loading = false;
+        this.cargando = false;
         this.notificationService.error('Error al cargar pedidos');
       }
     });
   }
 
-  setActiveTab(tab: 'orders' | 'profile' | 'settings') {
-    this.activeTab = tab;
-    this.editingProfile = false;
+  establecerPestanaActiva(pestana: 'pedidos' | 'perfil' | 'configuracion') {
+    this.pestanaActiva = pestana;
+    this.editandoPerfil = false;
   }
 
-  toggleEditProfile() {
-    this.editingProfile = !this.editingProfile;
+  alternarEditarPerfil() {
+    this.editandoPerfil = !this.editandoPerfil;
   }
 
-  saveProfile() {
-    if (!this.profileForm.fullName) {
+  guardarPerfil() {
+    if (!this.formularioPerfil.nombreCompleto) {
       this.notificationService.warning('El nombre es requerido');
       return;
     }
 
-    this.loading = true;
-    this.authService.updateProfile(this.profileForm).subscribe({
-      next: (customer) => {
-        this.loading = false;
-        this.editingProfile = false;
+    this.cargando = true;
+    this.authService.actualizarPerfil(this.formularioPerfil).subscribe({
+      next: (cliente) => {
+        this.cargando = false;
+        this.editandoPerfil = false;
         this.notificationService.success('Perfil actualizado exitosamente');
       },
       error: (error) => {
-        this.loading = false;
+        this.cargando = false;
         this.notificationService.error('Error al actualizar el perfil');
       }
     });
   }
 
-  logout() {
-    this.authService.logout();
+  cerrarSesion() {
+    this.authService.cerrarSesion();
     this.notificationService.success('Sesión cerrada');
     this.router.navigate(['/']);
   }
 
-  getStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      'Pending': '#f59e0b',
-      'Processing': '#3b82f6',
-      'Shipped': '#8b5cf6',
-      'Delivered': '#10b981',
-      'Cancelled': '#ef4444'
+  obtenerColorEstado(estado: string): string {
+    const colores: { [key: string]: string } = {
+      'Pendiente': '#f59e0b',
+      'EnProceso': '#3b82f6',
+      'Enviado': '#8b5cf6',
+      'Entregado': '#10b981',
+      'Cancelado': '#ef4444',
+      'Reembolsado': '#6b7280'
     };
-    return colors[status] || '#6b7280';
+    return colores[estado] || '#6b7280';
   }
 
-  getStatusText(status: string): string {
-    const texts: { [key: string]: string } = {
-      'Pending': 'Pendiente',
-      'Processing': 'Procesando',
-      'Shipped': 'Enviado',
-      'Delivered': 'Entregado',
-      'Cancelled': 'Cancelado'
+  obtenerTextoEstado(estado: string): string {
+    const textos: { [key: string]: string } = {
+      'Pendiente': 'Pendiente',
+      'EnProceso': 'En Proceso',
+      'Enviado': 'Enviado',
+      'Entregado': 'Entregado',
+      'Cancelado': 'Cancelado',
+      'Reembolsado': 'Reembolsado'
     };
-    return texts[status] || status;
+    return textos[estado] || estado;
   }
 
-  getPaymentStatusText(status: string): string {
-    const texts: { [key: string]: string } = {
-      'Pending': 'Pendiente',
-      'Confirmed': 'Confirmado',
-      'Rejected': 'Rechazado'
+  obtenerTextoEstadoPago(estado: string): string {
+    const textos: { [key: string]: string } = {
+      'Pendiente': 'Pendiente',
+      'Pagado': 'Pagado',
+      'Fallido': 'Fallido',
+      'Reembolsado': 'Reembolsado'
     };
-    return texts[status] || status;
+    return textos[estado] || estado;
   }
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 
-  formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('es-PE', {
+  formatearFecha(fecha: Date | string): string {
+    return new Date(fecha).toLocaleDateString('es-PE', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
   }
 
-  getOrderStatusIcon(status: string): string {
-    const icons: { [key: string]: string } = {
-      'Pending': '⏳',
-      'Processing': '📦',
-      'Shipped': '🚚',
-      'Delivered': '✅',
-      'Cancelled': '❌'
+  obtenerIconoEstadoPedido(estado: string): string {
+    const iconos: { [key: string]: string } = {
+      'Pendiente': '⏳',
+      'EnProceso': '📦',
+      'Enviado': '🚚',
+      'Entregado': '✅',
+      'Cancelado': '❌',
+      'Reembolsado': '🔄'
     };
-    return icons[status] || '📋';
+    return iconos[estado] || '📋';
   }
 
-  getPaymentMethodName(method: string): string {
-    const methods: { [key: string]: string } = {
+  obtenerNombreMetodoPago(metodo: string): string {
+    const metodos: { [key: string]: string } = {
       'yape': 'Yape',
       'card': 'Tarjeta',
       'transfer': 'Transferencia'
     };
-    return methods[method] || method;
+    return metodos[metodo] || metodo;
   }
 
-  viewOrderDetails(order: Order) {
-    // Expandir detalles del pedido (se puede implementar un modal)
-    console.log('Ver detalles:', order);
+  verDetallesPedido(pedido: Pedido) {
+    console.log('Ver detalles:', pedido);
   }
 
-  trackOrder(orderNumber: string) {
-    this.notificationService.info(`Rastreando pedido #${orderNumber}`);
+  rastrearPedido(numeroPedido: string) {
+    this.notificationService.info(`Rastreando pedido #${numeroPedido}`);
   }
 }

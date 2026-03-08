@@ -37,7 +37,7 @@
             <label>Nombre completo *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-user input-icon"></i>
-              <input type="text" [(ngModel)]="customerData.fullName" placeholder="Juan Pérez García" />
+              <input type="text" [(ngModel)]="datosCliente.nombreCompleto" placeholder="Juan Pérez García" />
             </div>
           </div>
 
@@ -45,7 +45,7 @@
             <label>WhatsApp / Celular *</label>
             <div class="input-wrap">
               <i class="fi fi-brands-whatsapp input-icon green"></i>
-              <input type="tel" [(ngModel)]="customerData.phone" placeholder="987 654 321" maxlength="9" />
+              <input type="tel" [(ngModel)]="datosCliente.telefono" placeholder="987 654 321" maxlength="9" />
             </div>
           </div>
 
@@ -53,7 +53,7 @@
             <label>Correo electrónico</label>
             <div class="input-wrap">
               <i class="fi fi-rr-envelope input-icon"></i>
-              <input type="email" [(ngModel)]="customerData.email" placeholder="correo@ejemplo.com" />
+              <input type="email" [(ngModel)]="datosCliente.correo" placeholder="correo@ejemplo.com" />
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@
             <label>Ciudad *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-city input-icon"></i>
-              <input type="text" [(ngModel)]="customerData.city" placeholder="Lima" />
+              <input type="text" [(ngModel)]="datosCliente.ciudad" placeholder="Lima" />
             </div>
           </div>
 
@@ -94,7 +94,7 @@
             <label>Distrito *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-map-marker input-icon"></i>
-              <input type="text" [(ngModel)]="customerData.district" placeholder="Miraflores" />
+              <input type="text" [(ngModel)]="datosCliente.distrito" placeholder="Miraflores" />
             </div>
           </div>
 
@@ -102,7 +102,7 @@
             <label>Dirección *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-home input-icon"></i>
-              <input type="text" [(ngModel)]="customerData.address" placeholder="Av. Principal 123, Dpto 4B" />
+              <input type="text" [(ngModel)]="datosCliente.direccion" placeholder="Av. Principal 123, Dpto 4B" />
             </div>
           </div>
 
@@ -110,7 +110,7 @@
             <label>Referencia (opcional)</label>
             <div class="input-wrap">
               <i class="fi fi-rr-info input-icon"></i>
-              <input type="text" [(ngModel)]="customerData.reference" placeholder="Frente al parque, casa de color azul..." />
+              <input type="text" [(ngModel)]="datosCliente.referencia" placeholder="Frente al parque, casa de color azul..." />
             </div>
           </div>
         </div>
@@ -127,36 +127,36 @@
         </div>
 
         <div class="invoice-tabs">
-          <button class="invoice-tab" [class.active]="invoiceType === 'Boleta'" (click)="invoiceType = 'Boleta'">
+          <button class="invoice-tab" [class.active]="tipoComprobante === 'Boleta'" (click)="tipoComprobante = 'Boleta'">
             <i class="fi fi-rr-receipt"></i>
             <span>Boleta</span>
           </button>
-          <button class="invoice-tab" [class.active]="invoiceType === 'Factura'" (click)="invoiceType = 'Factura'">
+          <button class="invoice-tab" [class.active]="tipoComprobante === 'Factura'" (click)="tipoComprobante = 'Factura'">
             <i class="fi fi-rr-building"></i>
             <span>Factura</span>
           </button>
         </div>
 
-        <div class="form-grid" *ngIf="invoiceType === 'Factura'">
+        <div class="form-grid" *ngIf="tipoComprobante === 'Factura'">
           <div class="field full">
             <label>Razón Social *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-building input-icon"></i>
-              <input type="text" [(ngModel)]="invoiceData.companyName" placeholder="Mi Empresa S.A.C." />
+              <input type="text" [(ngModel)]="datosFactura.razonSocial" placeholder="Mi Empresa S.A.C." />
             </div>
           </div>
           <div class="field">
             <label>RUC *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-id-card input-icon"></i>
-              <input type="text" [(ngModel)]="invoiceData.companyRUC" placeholder="20123456789" maxlength="11" />
+              <input type="text" [(ngModel)]="datosFactura.ruc" placeholder="20123456789" maxlength="11" />
             </div>
           </div>
           <div class="field">
             <label>Dirección fiscal</label>
             <div class="input-wrap">
               <i class="fi fi-rr-marker input-icon"></i>
-              <input type="text" [(ngModel)]="invoiceData.companyAddress" placeholder="Av. Fiscal 456" />
+              <input type="text" [(ngModel)]="datosFactura.direccionEmpresa" placeholder="Av. Fiscal 456" />
             </div>
           </div>
         </div>
@@ -173,25 +173,25 @@
         </div>
 
         <div class="payment-grid">
-          <div class="payment-pill" [class.active]="paymentMethod === 'yape'" (click)="selectPaymentMethod('yape')">
+          <div class="payment-pill" [class.active]="metodoPago === 'yape'" (click)="seleccionarMetodoPago('yape')">
             <img src="/logo_yape.png" alt="Yape" class="pay-logo" />
             <span>Yape</span>
-            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'yape'"></i>
+            <i class="fi fi-rr-check check" *ngIf="metodoPago === 'yape'"></i>
           </div>
-          <div class="payment-pill" [class.active]="paymentMethod === 'transfer'" (click)="selectPaymentMethod('transfer')">
+          <div class="payment-pill" [class.active]="metodoPago === 'transfer'" (click)="seleccionarMetodoPago('transfer')">
             <i class="fi fi-rr-bank"></i>
             <span>Transferencia</span>
-            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'transfer'"></i>
+            <i class="fi fi-rr-check check" *ngIf="metodoPago === 'transfer'"></i>
           </div>
-          <div class="payment-pill" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">
+          <div class="payment-pill" [class.active]="metodoPago === 'card'" (click)="seleccionarMetodoPago('card')">
             <i class="fi fi-rr-credit-card"></i>
             <span>Tarjeta</span>
-            <i class="fi fi-rr-check check" *ngIf="paymentMethod === 'card'"></i>
+            <i class="fi fi-rr-check check" *ngIf="metodoPago === 'card'"></i>
           </div>
         </div>
 
         <!-- Yape -->
-        <div class="payment-detail" *ngIf="paymentMethod === 'yape'">
+        <div class="payment-detail" *ngIf="metodoPago === 'yape'">
           <div class="pay-info-card yape">
             <i class="fi fi-brands-whatsapp"></i>
             <div>
@@ -203,21 +203,21 @@
             <label>Tu número de Yape *</label>
             <div class="input-wrap">
               <i class="fi fi-rr-phone input-icon"></i>
-              <input type="tel" [(ngModel)]="paymentData.yapePhone" placeholder="987 654 321" maxlength="9" />
+              <input type="tel" [(ngModel)]="datosPago.telefonoYape" placeholder="987 654 321" maxlength="9" />
             </div>
           </div>
           <div class="field">
             <label>Comprobante de pago (captura) *</label>
-            <div class="upload-zone" (click)="fileInput.click()" [class.has-file]="paymentProofPreview">
-              <input #fileInput type="file" accept="image/*" (change)="onPaymentProofSelected($event)" hidden />
-              <ng-container *ngIf="!paymentProofPreview">
+            <div class="upload-zone" (click)="fileInput.click()" [class.has-file]="vistaComprobante">
+              <input #fileInput type="file" accept="image/*" (change)="alSeleccionarComprobante($event)" hidden />
+              <ng-container *ngIf="!vistaComprobante">
                 <i class="fi fi-rr-cloud-upload"></i>
                 <span>Subir captura de Yape</span>
                 <small>JPG, PNG — máx. 5MB</small>
               </ng-container>
-              <ng-container *ngIf="paymentProofPreview">
-                <img [src]="paymentProofPreview" alt="Comprobante" class="proof-preview" />
-                <button class="remove-proof" (click)="$event.stopPropagation(); removePaymentProof()">
+              <ng-container *ngIf="vistaComprobante">
+                <img [src]="vistaComprobante" alt="Comprobante" class="proof-preview" />
+                <button class="remove-proof" (click)="$event.stopPropagation(); quitarComprobante()">
                   <i class="fi fi-rr-cross-small"></i>
                 </button>
               </ng-container>
@@ -226,7 +226,7 @@
         </div>
 
         <!-- Transferencia -->
-        <div class="payment-detail" *ngIf="paymentMethod === 'transfer'">
+        <div class="payment-detail" *ngIf="metodoPago === 'transfer'">
           <div class="pay-info-card transfer">
             <i class="fi fi-rr-bank"></i>
             <div>
@@ -240,21 +240,21 @@
               <label>Banco de origen *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-bank input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.transferBank" placeholder="BCP, BBVA, Interbank..." />
+                <input type="text" [(ngModel)]="datosPago.bancoTransferencia" placeholder="BCP, BBVA, Interbank..." />
               </div>
             </div>
             <div class="field">
               <label>Número de operación *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-hashtag input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.transferAccount" placeholder="123456789" />
+                <input type="text" [(ngModel)]="datosPago.cuentaTransferencia" placeholder="123456789" />
               </div>
             </div>
           </div>
         </div>
 
         <!-- Tarjeta -->
-        <div class="payment-detail" *ngIf="paymentMethod === 'card'">
+        <div class="payment-detail" *ngIf="metodoPago === 'card'">
           <div class="pay-info-card card">
             <i class="fi fi-rr-credit-card"></i>
             <div>
@@ -267,28 +267,28 @@
               <label>Número de tarjeta *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-credit-card input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" />
+                <input type="text" [(ngModel)]="datosPago.numeroTarjeta" placeholder="1234 5678 9012 3456" maxlength="19" />
               </div>
             </div>
             <div class="field full">
               <label>Nombre en la tarjeta *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-user input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.cardName" placeholder="JUAN PÉREZ" />
+                <input type="text" [(ngModel)]="datosPago.nombreTarjeta" placeholder="JUAN PÉREZ" />
               </div>
             </div>
             <div class="field">
               <label>Vencimiento *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-calendar input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.cardExpiry" placeholder="MM/AA" maxlength="5" />
+                <input type="text" [(ngModel)]="datosPago.vencimientoTarjeta" placeholder="MM/AA" maxlength="5" />
               </div>
             </div>
             <div class="field">
               <label>CVV *</label>
               <div class="input-wrap">
                 <i class="fi fi-rr-lock input-icon"></i>
-                <input type="text" [(ngModel)]="paymentData.cardCvv" placeholder="123" maxlength="3" />
+                <input type="text" [(ngModel)]="datosPago.cvvTarjeta" placeholder="123" maxlength="3" />
               </div>
             </div>
           </div>
@@ -297,7 +297,7 @@
 
       <!-- Términos -->
       <label class="terms-check">
-        <input type="checkbox" [(ngModel)]="termsAccepted" />
+        <input type="checkbox" [(ngModel)]="terminosAceptados" />
         <span>Acepto los <a href="#" class="terms-link">términos y condiciones</a> y la <a href="#" class="terms-link">política de privacidad</a></span>
       </label>
 
@@ -311,16 +311,16 @@
 
         <!-- Items -->
         <div class="summary-items">
-          <div class="summary-item" *ngFor="let item of cartItems">
+          <div class="summary-item" *ngFor="let item of itemsCarrito">
             <div class="si-img">
-              <img [src]="getProductImage(item.product)" [alt]="item.product.name"
+              <img [src]="obtenerImagenProducto(item.producto)" [alt]="item.producto.nombre"
                 (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=70'" />
-              <span class="si-qty">{{ item.quantity }}</span>
+              <span class="si-qty">{{ item.cantidad }}</span>
             </div>
             <div class="si-info">
-              <span class="si-name">{{ item.product.name }}</span>
+              <span class="si-name">{{ item.producto.nombre }}</span>
             </div>
-            <span class="si-price">S/ {{ (item.product.salePrice * item.quantity) | number:'1.2-2' }}</span>
+            <span class="si-price">S/ {{ (item.producto.precioVenta * item.cantidad) | number:'1.2-2' }}</span>
           </div>
         </div>
 
@@ -329,7 +329,7 @@
         <!-- Totales -->
         <div class="summary-row">
           <span>Subtotal</span>
-          <span>S/ {{ getSubtotal() | number:'1.2-2' }}</span>
+          <span>S/ {{ obtenerSubtotal() | number:'1.2-2' }}</span>
         </div>
 
         <div class="summary-row shipping">
@@ -343,7 +343,7 @@
 
         <div class="summary-total">
           <span>Total</span>
-          <span>S/ {{ getSubtotal() | number:'1.2-2' }}</span>
+          <span>S/ {{ obtenerSubtotal() | number:'1.2-2' }}</span>
         </div>
         <small class="total-note">+ costo de envío a coordinar</small>
 
@@ -355,12 +355,12 @@
 
         <!-- CTA Secundario: Confirmar online -->
         <button class="btn-confirm"
-          [disabled]="!isFormValid() || !termsAccepted || processing"
-          (click)="processPayment()">
-          <span *ngIf="!processing">
+          [disabled]="!esFormularioValido() || !terminosAceptados || procesando"
+          (click)="procesarPago()">
+          <span *ngIf="!procesando">
             <i class="fi fi-rr-check-circle"></i> Confirmar pedido
           </span>
-          <span *ngIf="processing">
+          <span *ngIf="procesando">
             <i class="fi fi-rr-spinner"></i> Procesando...
           </span>
         </button>

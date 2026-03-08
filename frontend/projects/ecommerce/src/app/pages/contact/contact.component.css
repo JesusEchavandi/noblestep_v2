@@ -145,48 +145,6 @@
 .schedule-row .hours { color: #fff; font-weight: 600; }
 .schedule-row .hours.closed { color: rgba(255,255,255,0.3); }
 
-/* Social */
-.social-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
-
-.social-card h2 {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 1rem;
-}
-
-.social-links {
-  display: flex;
-  gap: 0.6rem;
-}
-
-.social-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  border: 1.5px solid #e8e4de;
-  color: #1a1a1a;
-  text-decoration: none;
-  font-size: 0.78rem;
-  font-weight: 600;
-  transition: all 0.18s;
-}
-
-.social-btn:hover {
-  background: #1a1a1a;
-  color: #fff;
-  border-color: #1a1a1a;
-}
-
 /* ===== FORM PANEL ===== */
 .form-panel {
   background: #fff;
@@ -347,6 +305,35 @@ textarea.form-control {
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Laptop 1366px */
+@media (max-width: 1399px) {
+  .container { max-width: 100%; padding: 0 1.25rem; }
+  .contact-page { padding: 2rem 0 3rem; }
+  .contact-header h1 { font-size: 1.75rem; }
+  .contact-header p { font-size: 0.85rem; }
+  .contact-layout { gap: 1.5rem; }
+  .form-panel { padding: 1.5rem; }
+  .info-card { padding: 1.25rem; }
+  .info-card h2 { font-size: 0.9rem; }
+}
+
+/* QHD 2560x1440 */
+@media (min-width: 1920px) {
+  .container { max-width: 1440px; }
+  .contact-page { padding: 3rem 0 5rem; }
+  .form-panel { padding: 2.5rem; }
+  .contact-header h1 { font-size: 2.5rem; }
+  .contact-header p { font-size: 1.1rem; }
+  .contact-header { margin-bottom: 3rem; }
+  .contact-layout { gap: 2.5rem; }
+  .info-card { padding: 1.75rem; }
+  .info-card h2 { font-size: 1.15rem; }
+  .form-panel label { font-size: 0.9rem; }
+  .form-panel input, .form-panel textarea { font-size: 1rem; padding: 0.85rem 1rem; }
+  .btn-whatsapp { font-size: 1rem; padding: 0.9rem 1.5rem; }
+}
+
 @media (max-width: 900px) {
   .contact-layout { grid-template-columns: 1fr; }
 }
@@ -357,5 +344,4 @@ textarea.form-control {
   .form-row { grid-template-columns: 1fr; }
   .form-panel { padding: 1.5rem; }
   .contact-header h1 { font-size: 1.6rem; }
-  .social-links { flex-wrap: wrap; }
 }

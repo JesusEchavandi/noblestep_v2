@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { LoginRequest, LoginResponse } from '../models/user.model';
+import { SolicitudInicioSesion, RespuestaInicioSesion } from '../models/user.model';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -13,48 +13,48 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   
-  private currentUserSubject = new BehaviorSubject<LoginResponse | null>(this.getUserFromStorage());
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private sujetoUsuarioActual = new BehaviorSubject<RespuestaInicioSesion | null>(this.obtenerUsuarioDeStorage());
+  public usuarioActual$ = this.sujetoUsuarioActual.asObservable();
 
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, credentials).pipe(
-      tap(response => {
-        localStorage.setItem('currentUser', JSON.stringify(response));
-        this.currentUserSubject.next(response);
+  iniciarSesion(credenciales: SolicitudInicioSesion): Observable<RespuestaInicioSesion> {
+    return this.http.post<RespuestaInicioSesion>(`${this.API_URL}/auth/login`, credenciales).pipe(
+      tap(respuesta => {
+        localStorage.setItem('currentUser', JSON.stringify(respuesta));
+        this.sujetoUsuarioActual.next(respuesta);
       })
     );
   }
 
-  logout(): void {
+  cerrarSesion(): void {
     localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+    this.sujetoUsuarioActual.next(null);
     this.router.navigate(['/login']);
   }
 
-  getToken(): string | null {
-    const user = this.getUserFromStorage();
-    return user?.token || null;
+  obtenerToken(): string | null {
+    const usuario = this.obtenerUsuarioDeStorage();
+    return usuario?.token || null;
   }
 
-  isAuthenticated(): boolean {
-    const user = this.getUserFromStorage();
-    if (!user) return false;
+  estaAutenticado(): boolean {
+    const usuario = this.obtenerUsuarioDeStorage();
+    if (!usuario) return false;
     
-    // Check if token is expired
-    const expiresAt = new Date(user.expiresAt);
-    return expiresAt > new Date();
+    // Verificar si el token ha expirado
+    const expiraEn = new Date(usuario.expiraEn);
+    return expiraEn > new Date();
   }
 
-  getCurrentUser(): LoginResponse | null {
-    return this.getUserFromStorage();
+  obtenerUsuarioActual(): RespuestaInicioSesion | null {
+    return this.obtenerUsuarioDeStorage();
   }
 
-  hasRole(role: string): boolean {
-    const user = this.getUserFromStorage();
-    return user?.role === role;
+  tieneRol(rol: string): boolean {
+    const usuario = this.obtenerUsuarioDeStorage();
+    return usuario?.rol === rol;
   }
 
-  private getUserFromStorage(): LoginResponse | null {
+  private obtenerUsuarioDeStorage(): RespuestaInicioSesion | null {
     const userJson = localStorage.getItem('currentUser');
     if (!userJson) return null;
     try {

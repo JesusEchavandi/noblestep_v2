@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LazyLoadImageDirective } from '../../directives/lazy-load-image.directive';
-import { Product } from '../../models/product.model';
+import { Producto } from '../../models/product.model';
 
 @Component({
   selector: 'app-product-card-enhanced',
@@ -14,13 +14,13 @@ import { Product } from '../../models/product.model';
       <div class="product-image-wrapper">
         <div class="product-image">
           <img 
-            *ngIf="product.imageUrl" 
-            [src]="product.imageUrl" 
-            [alt]="product.name"
+            *ngIf="producto.urlImagen" 
+            [src]="producto.urlImagen" 
+            [alt]="producto.nombre"
             class="product-img"
             appLazyLoad
             loading="lazy">
-          <div *ngIf="!product.imageUrl" class="image-placeholder">
+          <div *ngIf="!producto.urlImagen" class="image-placeholder">
             <span class="placeholder-icon">📦</span>
           </div>
           
@@ -28,15 +28,15 @@ import { Product } from '../../models/product.model';
           <div class="image-overlay"></div>
           
           <!-- Badge de categoría -->
-          <span class="category-badge glass">{{ product.categoryName }}</span>
+          <span class="category-badge glass">{{ producto.nombreCategoria }}</span>
           
           <!-- Badges de estado -->
           <div class="status-badges">
-            <span *ngIf="isNew()" class="badge badge-new shine">✨ NUEVO</span>
-            <span *ngIf="isLowStock()" class="badge badge-low-stock">
-              ⚠️ ¡Solo {{ product.stock }}!
+            <span *ngIf="esNuevo()" class="badge badge-new shine">✨ NUEVO</span>
+            <span *ngIf="esBajoStock()" class="badge badge-low-stock">
+              ⚠️ ¡Solo {{ producto.stock }}!
             </span>
-            <span *ngIf="product.stock === 0" class="badge badge-out-of-stock">
+            <span *ngIf="producto.stock === 0" class="badge badge-out-of-stock">
               Sin Stock
             </span>
           </div>
@@ -45,21 +45,21 @@ import { Product } from '../../models/product.model';
           <div class="quick-actions">
             <button 
               class="quick-action-btn glass" 
-              (click)="onQuickView()"
+              (click)="alVistaRapida()"
               title="Vista rápida">
               <span class="icon">👁️</span>
             </button>
             <button 
               class="quick-action-btn glass wishlist-btn" 
-              [class.active]="isWishlisted"
-              (click)="toggleWishlist()"
+              [class.active]="enListaDeseos"
+              (click)="alternarListaDeseos()"
               title="Agregar a favoritos">
-              <span class="icon">{{ isWishlisted ? '❤️' : '🤍' }}</span>
+              <span class="icon">{{ enListaDeseos ? '❤️' : '🤍' }}</span>
             </button>
             <button 
-              *ngIf="product.stock > 0"
+              *ngIf="producto.stock > 0"
               class="quick-action-btn glass" 
-              (click)="onAddToCart()"
+              (click)="alAgregarAlCarrito()"
               title="Agregar al carrito">
               <span class="icon">🛒</span>
             </button>
@@ -69,12 +69,12 @@ import { Product } from '../../models/product.model';
       
       <!-- Información del producto -->
       <div class="product-info">
-        <a [routerLink]="['/product', product.id]" class="product-link">
-          <h3 class="product-name">{{ product.name }}</h3>
+        <a [routerLink]="['/product', producto.id]" class="product-link">
+          <h3 class="product-name">{{ producto.nombre }}</h3>
         </a>
         
-        <p class="product-code">SKU: {{ product.code }}</p>
-        <p class="product-description">{{ product.description }}</p>
+        <p class="product-code">SKU: {{ producto.codigo }}</p>
+        <p class="product-description">{{ producto.descripcion }}</p>
         
         <!-- Rating (placeholder) -->
         <div class="product-rating">
@@ -87,33 +87,33 @@ import { Product } from '../../models/product.model';
           <div class="price-section">
             <div class="price-wrapper">
               <span class="price-label">Precio:</span>
-              <span class="price">{{ formatPrice(product.salePrice) }}</span>
+              <span class="price">{{ formatearPrecio(producto.precioVenta) }}</span>
             </div>
-            <div class="stock-wrapper" [ngClass]="getStockClass()">
+            <div class="stock-wrapper" [ngClass]="obtenerClaseStock()">
               <span class="stock-icon">📦</span>
-              <span class="stock-text">{{ getStockText() }}</span>
+              <span class="stock-text">{{ obtenerTextoStock() }}</span>
             </div>
           </div>
           
           <div class="product-actions">
             <a 
-              [routerLink]="['/product', product.id]" 
+              [routerLink]="['/product', producto.id]" 
               class="btn btn-secondary btn-sm">
               Ver Detalles
             </a>
             <button 
-              (click)="onAddToCart()" 
+              (click)="alAgregarAlCarrito()" 
               class="btn btn-primary btn-sm"
-              [disabled]="product.stock === 0">
-              <span *ngIf="product.stock > 0">🛒 Agregar</span>
-              <span *ngIf="product.stock === 0">Agotado</span>
+              [disabled]="producto.stock === 0">
+              <span *ngIf="producto.stock > 0">🛒 Agregar</span>
+              <span *ngIf="producto.stock === 0">Agotado</span>
             </button>
           </div>
         </div>
       </div>
       
       <!-- Indicador de agregado al carrito -->
-      <div *ngIf="showAddedToCart" class="added-indicator">
+      <div *ngIf="mostrarAgregadoAlCarrito" class="added-indicator">
         ✓ Agregado al carrito
       </div>
     </div>
@@ -373,64 +373,80 @@ import { Product } from '../../models/product.model';
         transform: translateX(-50%) translateY(0);
       }
     }
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .product-image { height: 220px; }
+      .product-info { padding: 1rem; }
+      .product-name { font-size: 0.9rem; }
+      .price-current { font-size: 1rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .product-image { height: 340px; }
+      .product-info { padding: 1.75rem; }
+      .product-name { font-size: 1.15rem; }
+      .price-current { font-size: 1.4rem; }
+    }
   `]
 })
 export class ProductCardEnhancedComponent {
-  @Input() product!: Product;
-  @Output() addToCart = new EventEmitter<Product>();
-  @Output() quickView = new EventEmitter<Product>();
+  @Input() producto!: Producto;
+  @Output() agregarAlCarrito = new EventEmitter<Producto>();
+  @Output() vistaRapida = new EventEmitter<Producto>();
   
-  isWishlisted = false;
-  showAddedToCart = false;
+  enListaDeseos = false;
+  mostrarAgregadoAlCarrito = false;
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 
-  isNew(): boolean {
-    if (!this.product.createdAt) return false;
-    const createdAt = new Date(this.product.createdAt);
-    const now = new Date();
-    const diffDays = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    return diffDays <= 7;
+  esNuevo(): boolean {
+    if (!this.producto.creadoEn) return false;
+    const fechaCreacion = new Date(this.producto.creadoEn);
+    const ahora = new Date();
+    const diffDias = (ahora.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDias <= 7;
   }
 
-  isLowStock(): boolean {
-    return this.product.stock > 0 && this.product.stock < 5;
+  esBajoStock(): boolean {
+    return this.producto.stock > 0 && this.producto.stock < 5;
   }
 
-  getStockClass(): string {
-    if (this.product.stock === 0) return 'out-of-stock';
-    if (this.product.stock < 5) return 'low-stock';
+  obtenerClaseStock(): string {
+    if (this.producto.stock === 0) return 'out-of-stock';
+    if (this.producto.stock < 5) return 'low-stock';
     return 'in-stock';
   }
 
-  getStockText(): string {
-    if (this.product.stock === 0) return 'Sin stock';
-    if (this.product.stock < 5) return `Solo ${this.product.stock} disponibles`;
-    return `${this.product.stock} disponibles`;
+  obtenerTextoStock(): string {
+    if (this.producto.stock === 0) return 'Sin stock';
+    if (this.producto.stock < 5) return `Solo ${this.producto.stock} disponibles`;
+    return `${this.producto.stock} disponibles`;
   }
 
-  toggleWishlist() {
-    this.isWishlisted = !this.isWishlisted;
-    // Aquí conectarías con un servicio de wishlist
+  alternarListaDeseos() {
+    this.enListaDeseos = !this.enListaDeseos;
+    // Aquí conectarías con un servicio de lista de deseos
   }
 
-  onAddToCart() {
-    if (this.product.stock > 0) {
-      this.addToCart.emit(this.product);
-      this.showAddedIndicator();
+  alAgregarAlCarrito() {
+    if (this.producto.stock > 0) {
+      this.agregarAlCarrito.emit(this.producto);
+      this.mostrarIndicadorAgregado();
     }
   }
 
-  onQuickView() {
-    this.quickView.emit(this.product);
+  alVistaRapida() {
+    this.vistaRapida.emit(this.producto);
   }
 
-  private showAddedIndicator() {
-    this.showAddedToCart = true;
+  private mostrarIndicadorAgregado() {
+    this.mostrarAgregadoAlCarrito = true;
     setTimeout(() => {
-      this.showAddedToCart = false;
+      this.mostrarAgregadoAlCarrito = false;
     }, 2000);
   }
 }

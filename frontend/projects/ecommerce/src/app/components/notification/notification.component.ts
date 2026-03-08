@@ -10,7 +10,7 @@ import { NotificationService, Notification } from '../../services/notification.s
     <div class="notification-container">
       <div *ngFor="let notification of notifications" 
            class="notification notification-{{notification.type}}"
-           [@slideIn]>
+           >
         <div class="notification-icon">
           <span *ngIf="notification.type === 'success'">✓</span>
           <span *ngIf="notification.type === 'error'">✕</span>
@@ -165,6 +165,18 @@ import { NotificationService, Notification } from '../../services/notification.s
       color: var(--color-dark);
       background: var(--color-gray-100);
       transform: rotate(90deg);
+    }
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .notification-container { max-width: 340px; }
+      .notification { padding: 0.75rem 1rem; font-size: 0.85rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .notification-container { max-width: 440px; }
+      .notification { padding: 1.1rem 1.5rem; font-size: 1rem; }
     }
 
     @media (max-width: 768px) {

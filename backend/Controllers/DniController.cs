@@ -5,7 +5,7 @@ namespace NobleStep.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Administrator,Seller")]
+[Authorize(Roles = "Administrador,Vendedor")]
 public class DniController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
@@ -54,12 +54,11 @@ public class DniController : ControllerBase
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 return StatusCode(503, new { message = "Token de API inválido o expirado." });
 
-            var errorBody = await response.Content.ReadAsStringAsync();
-            return StatusCode((int)response.StatusCode, new { message = "Error consultando DNI.", detail = errorBody });
+            return StatusCode((int)response.StatusCode, new { message = "Error consultando DNI." });
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
-            return StatusCode(503, new { message = "Servicio de consulta DNI no disponible.", detail = ex.Message });
+            return StatusCode(503, new { message = "Servicio de consulta DNI no disponible." });
         }
         catch (TaskCanceledException)
         {
@@ -140,9 +139,9 @@ public class DniController : ControllerBase
 
             return StatusCode((int)response.StatusCode, new { message = "Error consultando RUC." });
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
-            return StatusCode(503, new { message = "Servicio de consulta RUC no disponible.", detail = ex.Message });
+            return StatusCode(503, new { message = "Servicio de consulta RUC no disponible." });
         }
     }
 }

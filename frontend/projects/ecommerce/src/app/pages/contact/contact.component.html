@@ -63,24 +63,7 @@
           </div>
         </div>
 
-        <!-- Redes sociales -->
-        <div class="social-card">
-          <h2>Síguenos</h2>
-          <div class="social-links">
-            <a href="#" class="social-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-              Facebook
-            </a>
-            <a href="#" class="social-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-              Instagram
-            </a>
-            <a href="#" class="social-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
-              Twitter
-            </a>
-          </div>
-        </div>
+
 
       </div>
 
@@ -89,25 +72,25 @@
         <h2>Envíanos un mensaje</h2>
         <p class="form-subtitle">Completa el formulario y te contactamos en menos de 24 horas.</p>
 
-        <div *ngIf="submitted && !error" class="alert alert-success">
+        <div *ngIf="enviado && !error" class="alert alert-success">
           ✓ ¡Mensaje enviado! Te contactaremos pronto.
         </div>
         <div *ngIf="error" class="alert alert-error">
           ✕ Error al enviar. Por favor intenta nuevamente.
         </div>
 
-        <form (ngSubmit)="onSubmit()">
+        <form (ngSubmit)="alEnviar()">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Nombre completo</label>
               <input type="text" id="name" class="form-control"
-                     [(ngModel)]="contactForm.name" name="name"
+                     [(ngModel)]="formularioContacto.name" name="name"
                      placeholder="Tu nombre completo" required />
             </div>
             <div class="form-group">
               <label for="email">Correo electrónico</label>
               <input type="email" id="email" class="form-control"
-                     [(ngModel)]="contactForm.email" name="email"
+                     [(ngModel)]="formularioContacto.email" name="email"
                      placeholder="tu@email.com" required />
             </div>
           </div>
@@ -115,20 +98,20 @@
           <div class="form-group">
             <label for="phone">Teléfono / WhatsApp</label>
             <input type="tel" id="phone" class="form-control"
-                   [(ngModel)]="contactForm.phone" name="phone"
+                   [(ngModel)]="formularioContacto.phone" name="phone"
                    placeholder="+51 999 999 999" required />
           </div>
 
           <div class="form-group">
             <label for="message">Mensaje</label>
             <textarea id="message" class="form-control"
-                      [(ngModel)]="contactForm.message" name="message"
+                      [(ngModel)]="formularioContacto.message" name="message"
                       placeholder="¿En qué podemos ayudarte?" required></textarea>
           </div>
 
-          <button type="submit" class="btn-submit" [disabled]="submitting">
-            <svg *ngIf="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            <span>{{ submitting ? 'Enviando...' : 'Enviar mensaje' }}</span>
+          <button type="submit" class="btn-submit" [disabled]="enviando">
+            <svg *ngIf="!enviando" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>{{ enviando ? 'Enviando...' : 'Enviar mensaje' }}</span>
           </button>
         </form>
 

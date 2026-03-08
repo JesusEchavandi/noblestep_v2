@@ -170,6 +170,20 @@ import { FormsModule } from '@angular/forms';
       font-weight: 500;
     }
 
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .search-bar-container { max-width: 480px; }
+      .search-input { font-size: 0.875rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .search-bar-container { max-width: 720px; }
+      .search-bar { padding: 0.625rem 1rem; }
+      .search-input { font-size: 1.05rem; }
+      .search-btn { padding: 0.625rem 2rem; font-size: 1rem; }
+    }
+
     @media (max-width: 768px) {
       .search-btn {
         padding: 0.5rem 1rem;

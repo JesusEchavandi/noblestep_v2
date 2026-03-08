@@ -1,35 +1,35 @@
 namespace NobleStep.Api.Helpers;
 
 /// <summary>
-/// Constantes de estado para órdenes del ecommerce.
+/// Constantes de estado para pedidos del ecommerce.
 /// Centraliza los strings de estado para evitar errores tipográficos.
 /// </summary>
-public static class OrderStatus
+public static class EstadoPedido
 {
-    public const string Pending = "Pending";
-    public const string Processing = "Processing";
-    public const string Shipped = "Shipped";
-    public const string Delivered = "Delivered";
-    public const string Cancelled = "Cancelled";
-    public const string Refunded = "Refunded";
+    public const string Pendiente = "Pendiente";
+    public const string EnProceso = "EnProceso";
+    public const string Enviado = "Enviado";
+    public const string Entregado = "Entregado";
+    public const string Cancelado = "Cancelado";
+    public const string Reembolsado = "Reembolsado";
 }
 
 /// <summary>
 /// Constantes de estado de pago.
 /// </summary>
-public static class PaymentStatus
+public static class EstadoPago
 {
-    public const string Pending = "Pending";
-    public const string Paid = "Paid";
-    public const string Failed = "Failed";
-    public const string Refunded = "Refunded";
+    public const string Pendiente = "Pendiente";
+    public const string Pagado = "Pagado";
+    public const string Fallido = "Fallido";
+    public const string Reembolsado = "Reembolsado";
 }
 
 /// <summary>
-/// Constantes de roles de usuario.
+/// Constantes de roles de usuario del sistema administrativo.
 /// </summary>
-public static class UserRoles
+public static class RolesUsuario
 {
-    public const string Administrator = "Administrator";
-    public const string Seller = "Seller";
+    public const string Administrador = "Administrador";
+    public const string Vendedor = "Vendedor";
 }

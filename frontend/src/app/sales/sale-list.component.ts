@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SaleService } from '../services/sale.service';
-import { Sale } from '../models/sale.model';
+import { Venta } from '../models/sale.model';
 
 @Component({
   selector: 'app-sale-list',
@@ -25,12 +25,12 @@ import { Sale } from '../models/sale.model';
             </div>
           </div>
 
-          <div *ngIf="!loading && sales.length === 0" class="text-center py-5 text-muted">
+          <div *ngIf="!loading && ventas.length === 0" class="text-center py-5 text-muted">
             <h5>No se encontraron ventas</h5>
             <p>Cree su primera venta para comenzar</p>
           </div>
 
-          <div *ngIf="!loading && sales.length > 0" class="table-responsive">
+          <div *ngIf="!loading && ventas.length > 0" class="table-responsive">
             <table class="table table-hover">
               <thead>
                 <tr>
@@ -44,22 +44,22 @@ import { Sale } from '../models/sale.model';
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let sale of sales">
-                  <td>{{ sale.id }}</td>
-                  <td>{{ sale.saleDate | date:'short' }}</td>
-                  <td>{{ sale.customerName }}</td>
-                  <td class="text-end">{{ sale.total | currency }}</td>
+                <tr *ngFor="let venta of ventasPaginadas">
+                  <td>{{ venta.id }}</td>
+                  <td>{{ venta.fechaVenta | date:'short' }}</td>
+                  <td>{{ venta.nombreCliente }}</td>
+                  <td class="text-end">{{ venta.total | currency }}</td>
                   <td>
-                    <span class="payment-badge" [ngClass]="getPaymentBadgeClass(sale.paymentMethod)">
-                      <i [ngClass]="getPaymentIcon(sale.paymentMethod)" class="me-1"></i>
-                      {{ sale.paymentMethod }}
+                    <span class="payment-badge" [ngClass]="obtenerClaseBadgePago(venta.metodoPago)">
+                      <i [ngClass]="obtenerIconoPago(venta.metodoPago)" class="me-1"></i>
+                      {{ venta.metodoPago }}
                     </span>
                   </td>
                   <td>
-                    <span class="badge bg-success">{{ sale.status }}</span>
+                    <span class="badge bg-success">{{ venta.estado }}</span>
                   </td>
                   <td class="text-end">
-                    <button (click)="viewDetails(sale)" class="btn btn-sm btn-outline-primary">
+                    <button (click)="verDetalles(venta)" class="btn btn-sm btn-outline-primary">
                       Ver Detalles
                     </button>
                   </td>
@@ -67,38 +67,56 @@ import { Sale } from '../models/sale.model';
               </tbody>
             </table>
           </div>
+
+          <!-- Paginación -->
+          <div *ngIf="totalPaginas > 1" class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">
+              {{ (paginaActual-1)*tamanoPagina+1 }}–{{ paginaActual*tamanoPagina > ventas.length ? ventas.length : paginaActual*tamanoPagina }} de {{ ventas.length }}
+            </small>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="paginaActual===1">
+                <button class="page-link" (click)="irAPagina(paginaActual-1)">‹</button>
+              </li>
+              <li *ngFor="let p of paginas" class="page-item" [class.active]="p===paginaActual">
+                <button class="page-link" (click)="irAPagina(p)">{{ p }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual===totalPaginas">
+                <button class="page-link" (click)="irAPagina(paginaActual+1)">›</button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <!-- Sale Details Modal -->
-      <div *ngIf="selectedSale" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
+      <!-- Modal Detalles de Venta -->
+      <div *ngIf="ventaSeleccionada" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Detalles de Venta #{{ selectedSale.id }}</h5>
-              <button type="button" class="btn-close" (click)="closeDetails()"></button>
+              <h5 class="modal-title">Detalles de Venta #{{ ventaSeleccionada.id }}</h5>
+              <button type="button" class="btn-close" (click)="cerrarDetalles()"></button>
             </div>
             <div class="modal-body">
               <div class="row mb-3">
                 <div class="col-md-6">
-                  <strong>Cliente:</strong> {{ selectedSale.customerName }}
+                  <strong>Cliente:</strong> {{ ventaSeleccionada.nombreCliente }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Fecha:</strong> {{ selectedSale.saleDate | date:'medium' }}
+                  <strong>Fecha:</strong> {{ ventaSeleccionada.fechaVenta | date:'medium' }}
                 </div>
               </div>
               
               <div class="row mb-3">
                 <div class="col-md-6">
                   <strong>Método de Pago:</strong>
-                  <span class="payment-badge ms-2" [ngClass]="getPaymentBadgeClass(selectedSale.paymentMethod)">
-                    <i [ngClass]="getPaymentIcon(selectedSale.paymentMethod)" class="me-1"></i>
-                    {{ selectedSale.paymentMethod }}
+                  <span class="payment-badge ms-2" [ngClass]="obtenerClaseBadgePago(ventaSeleccionada.metodoPago)">
+                    <i [ngClass]="obtenerIconoPago(ventaSeleccionada.metodoPago)" class="me-1"></i>
+                    {{ ventaSeleccionada.metodoPago }}
                   </span>
                 </div>
-                <div class="col-md-6" *ngIf="selectedSale.transactionId">
+                <div class="col-md-6" *ngIf="ventaSeleccionada.idTransaccion">
                   <strong>ID de Transacción:</strong>
-                  <code class="ms-2">{{ selectedSale.transactionId }}</code>
+                  <code class="ms-2">{{ ventaSeleccionada.idTransaccion }}</code>
                 </div>
               </div>
 
@@ -113,23 +131,23 @@ import { Sale } from '../models/sale.model';
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let detail of selectedSale.details">
-                    <td>{{ detail.productName }}</td>
-                    <td class="text-end">{{ detail.quantity }}</td>
-                    <td class="text-end">{{ detail.unitPrice | currency }}</td>
-                    <td class="text-end">{{ detail.subtotal | currency }}</td>
+                  <tr *ngFor="let detalle of ventaSeleccionada.detalles">
+                    <td>{{ detalle.nombreProducto }}</td>
+                    <td class="text-end">{{ detalle.cantidad }}</td>
+                    <td class="text-end">{{ detalle.precioUnitario | currency }}</td>
+                    <td class="text-end">{{ detalle.subtotal | currency }}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr>
                     <th colspan="3" class="text-end">Total:</th>
-                    <th class="text-end">{{ selectedSale.total | currency }}</th>
+                    <th class="text-end">{{ ventaSeleccionada.total | currency }}</th>
                   </tr>
                 </tfoot>
               </table>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="closeDetails()">
+              <button type="button" class="btn btn-secondary" (click)="cerrarDetalles()">
                 Cerrar
               </button>
             </div>
@@ -185,53 +203,75 @@ import { Sale } from '../models/sale.model';
 export class SaleListComponent implements OnInit {
   private saleService = inject(SaleService);
 
-  sales: Sale[] = [];
-  selectedSale: Sale | null = null;
+  ventas: Venta[] = [];
+  ventasPaginadas: Venta[] = [];
+  ventaSeleccionada: Venta | null = null;
   loading = true;
 
+  // Paginación
+  paginaActual = 1;
+  tamanoPagina = 10;
+  totalPaginas = 1;
+  paginas: number[] = [];
+
   ngOnInit(): void {
-    this.loadSales();
+    this.cargarVentas();
   }
 
-  loadSales(): void {
+  cargarVentas(): void {
     this.loading = true;
-    this.saleService.getSales().subscribe({
-      next: (data) => {
-        this.sales = data;
+    this.saleService.obtenerVentas().subscribe({
+      next: (datos) => {
+        this.ventas = datos;
+        this.actualizarPaginacion();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error loading sales:', error);
+      error: (err: any) => {
+        console.error('Error cargando ventas:', err);
         this.loading = false;
       }
     });
   }
 
-  getPaymentIcon(paymentMethod: string): string {
-    const icons: { [key: string]: string } = {
+  obtenerIconoPago(metodoPago: string): string {
+    const iconos: { [key: string]: string } = {
       'Efectivo': 'bi bi-cash-coin',
       'Tarjeta': 'bi bi-credit-card',
       'Yape': 'bi bi-phone',
       'Transferencia': 'bi bi-bank'
     };
-    return icons[paymentMethod] || 'bi bi-question-circle';
+    return iconos[metodoPago] || 'bi bi-question-circle';
   }
 
-  getPaymentBadgeClass(paymentMethod: string): string {
-    const classes: { [key: string]: string } = {
+  obtenerClaseBadgePago(metodoPago: string): string {
+    const clases: { [key: string]: string } = {
       'Efectivo': 'efectivo',
       'Tarjeta': 'tarjeta',
       'Yape': 'yape',
       'Transferencia': 'transferencia'
     };
-    return classes[paymentMethod] || 'efectivo';
+    return clases[metodoPago] || 'efectivo';
   }
 
-  viewDetails(sale: Sale): void {
-    this.selectedSale = sale;
+  actualizarPaginacion(): void {
+    this.totalPaginas = Math.max(1, Math.ceil(this.ventas.length / this.tamanoPagina));
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = this.totalPaginas;
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    this.ventasPaginadas = this.ventas.slice(inicio, inicio + this.tamanoPagina);
+    this.paginas = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }
 
-  closeDetails(): void {
-    this.selectedSale = null;
+  irAPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.actualizarPaginacion();
+  }
+
+  verDetalles(venta: Venta): void {
+    this.ventaSeleccionada = venta;
+  }
+
+  cerrarDetalles(): void {
+    this.ventaSeleccionada = null;
   }
 }

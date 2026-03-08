@@ -9,7 +9,7 @@
     <div class="card-header">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
-        <button class="btn btn-primary" (click)="openCreateModal()">
+        <button class="btn btn-primary" (click)="abrirModalCrear()">
           <i class="bi bi-person-plus"></i> Nuevo Usuario
         </button>
       </div>
@@ -20,24 +20,24 @@
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control" placeholder="Buscar..." 
-                   [(ngModel)]="searchText" (ngModelChange)="applyFilters()">
+                   [(ngModel)]="textoBusqueda" (ngModelChange)="aplicarFiltros()">
           </div>
         </div>
         <div class="col-md-3">
-          <select class="form-select" [(ngModel)]="filterRole" (ngModelChange)="applyFilters()">
+          <select class="form-select" [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()">
             <option value="">Todos los roles</option>
-            <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+            <option *ngFor="let rol of roles" [value]="rol">{{ rol }}</option>
           </select>
         </div>
         <div class="col-md-3">
-          <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+          <select class="form-select" [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()">
             <option value="">Todos los estados</option>
             <option value="active">Activos</option>
             <option value="inactive">Inactivos</option>
           </select>
         </div>
         <div class="col-md-2">
-          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+          <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
             <i class="bi bi-x-circle"></i> Limpiar
           </button>
         </div>
@@ -49,21 +49,21 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0"><i class="bi bi-list-ul"></i> Lista de Usuarios</h5>
-      <span class="badge bg-info">{{ filteredUsers.length }} usuarios</span>
+      <span class="badge bg-info">{{ usuariosFiltrados.length }} usuarios</span>
     </div>
     <div class="card-body">
-      <div *ngIf="loading" class="text-center py-5">
+      <div *ngIf="cargando" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
       </div>
 
-      <div *ngIf="!loading && filteredUsers.length === 0" class="text-center py-5">
+      <div *ngIf="!cargando && usuariosFiltrados.length === 0" class="text-center py-5">
         <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-secondary);"></i>
         <p class="text-muted mt-3">No se encontraron usuarios</p>
       </div>
 
-      <div *ngIf="!loading && filteredUsers.length > 0" class="table-responsive">
+      <div *ngIf="!cargando && usuariosFiltrados.length > 0" class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
@@ -77,40 +77,40 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of filteredUsers">
+            <tr *ngFor="let u of usuariosPaginados">
               <td>
-                <i class="bi" [ngClass]="getRoleIcon(user.role)"></i>
-                <strong>{{ user.username }}</strong>
+                <i class="bi" [ngClass]="obtenerIconoRol(u.rol)"></i>
+                <strong>{{ u.nombreUsuario }}</strong>
               </td>
-              <td>{{ user.fullName }}</td>
+              <td>{{ u.nombreCompleto }}</td>
               <td>
-                <a [href]="'mailto:' + user.email" class="text-decoration-none">
-                  <i class="bi bi-envelope"></i> {{ user.email }}
+                <a [href]="'mailto:' + u.correo" class="text-decoration-none">
+                  <i class="bi bi-envelope"></i> {{ u.correo }}
                 </a>
               </td>
               <td>
-                <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
-                  {{ user.role }}
+                <span class="badge" [ngClass]="obtenerClaseBadgeRol(u.rol)">
+                  {{ u.rol }}
                 </span>
               </td>
               <td>
-                <span class="badge" [class.bg-success]="user.isActive" [class.bg-secondary]="!user.isActive">
-                  {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                <span class="badge" [class.bg-success]="u.activo" [class.bg-secondary]="!u.activo">
+                  {{ u.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
-              <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>{{ u.creadoEn | date:'dd/MM/yyyy' }}</td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary me-1" (click)="openEditModal(user)" title="Editar">
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="abrirModalEditar(u)" title="Editar">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm me-1" 
-                        [class.btn-outline-warning]="user.isActive"
-                        [class.btn-outline-success]="!user.isActive"
-                        (click)="toggleUserStatus(user)"
-                        [title]="user.isActive ? 'Desactivar' : 'Activar'">
-                  <i class="bi" [class.bi-pause-circle]="user.isActive" [class.bi-play-circle]="!user.isActive"></i>
+                        [class.btn-outline-warning]="u.activo"
+                        [class.btn-outline-success]="!u.activo"
+                        (click)="alternarEstadoUsuario(u)"
+                        [title]="u.activo ? 'Desactivar' : 'Activar'">
+                  <i class="bi" [class.bi-pause-circle]="u.activo" [class.bi-play-circle]="!u.activo"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteUser(user)" title="Eliminar">
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminarUsuario(u)" title="Eliminar">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -118,61 +118,77 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Paginación -->
+      <div *ngIf="totalPaginas > 1" class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3">
+        <small class="text-muted">
+          {{ (paginaActual-1)*tamanoPagina+1 }}–{{ paginaActual*tamanoPagina > usuariosFiltrados.length ? usuariosFiltrados.length : paginaActual*tamanoPagina }} de {{ usuariosFiltrados.length }}
+        </small>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="paginaActual===1">
+            <button class="page-link" (click)="irAPagina(paginaActual-1)">‹</button>
+          </li>
+          <li *ngFor="let p of paginas" class="page-item" [class.active]="p===paginaActual">
+            <button class="page-link" (click)="irAPagina(p)">{{ p }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="paginaActual===totalPaginas">
+            <button class="page-link" (click)="irAPagina(paginaActual+1)">›</button>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
-
-<!-- Modal -->
-<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" 
-     tabindex="-1" *ngIf="showModal">
-  <div class="modal-backdrop fade show" (click)="closeModal()"></div>
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" 
+     tabindex="-1" *ngIf="mostrarModal">
+  <div class="modal-backdrop fade show" (click)="cerrarModal()"></div>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
-          <i class="bi" [class.bi-person-plus]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
-          {{ isEditMode ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          <i class="bi" [class.bi-person-plus]="!modoEdicion" [class.bi-pencil-square]="modoEdicion"></i>
+          {{ modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}
         </h5>
-        <button type="button" class="btn-close" (click)="closeModal()"></button>
+        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
       </div>
       <div class="modal-body">
         <form #userForm="ngForm">
           <div class="mb-3">
             <label class="form-label">Usuario *</label>
-            <input type="text" class="form-control" [(ngModel)]="user.username" name="username" required>
+            <input type="text" class="form-control" [(ngModel)]="usuario.nombreUsuario" name="nombreUsuario" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Nombre Completo *</label>
-            <input type="text" class="form-control" [(ngModel)]="user.fullName" name="fullName" required>
+            <input type="text" class="form-control" [(ngModel)]="usuario.nombreCompleto" name="nombreCompleto" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Email *</label>
-            <input type="email" class="form-control" [(ngModel)]="user.email" name="email" required>
+            <input type="email" class="form-control" [(ngModel)]="usuario.correo" name="correo" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Contraseña {{ isEditMode ? '(dejar en blanco para no cambiar)' : '*' }}</label>
-            <input type="password" class="form-control" [(ngModel)]="user.password" name="password" 
-                   [required]="!isEditMode">
+            <label class="form-label">Contraseña {{ modoEdicion ? '(dejar en blanco para no cambiar)' : '*' }}</label>
+            <input type="password" class="form-control" [(ngModel)]="usuario.contrasena" name="contrasena" 
+                   [required]="!modoEdicion">
           </div>
           <div class="mb-3">
             <label class="form-label">Rol *</label>
-            <select class="form-select" [(ngModel)]="user.role" name="role" required>
-              <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+            <select class="form-select" [(ngModel)]="usuario.rol" name="rol" required>
+              <option *ngFor="let rol of roles" [value]="rol">{{ rol }}</option>
             </select>
           </div>
-          <div class="mb-3" *ngIf="isEditMode">
+          <div class="mb-3" *ngIf="modoEdicion">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="user.isActive" name="isActive">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="usuario.activo" name="activo">
               <label class="form-check-label">Activo</label>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" (click)="saveUser()" [disabled]="saving || !userForm.valid">
-          <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="guardarUsuario()" [disabled]="guardando || !userForm.valid">
+          <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+          {{ modoEdicion ? 'Actualizar' : 'Crear' }}
         </button>
       </div>
     </div>

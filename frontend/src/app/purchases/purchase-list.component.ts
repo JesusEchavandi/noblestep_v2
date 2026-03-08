@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PurchaseService } from '../services/purchase.service';
-import { Purchase } from '../models/purchase.model';
+import { Compra } from '../models/purchase.model';
 
 @Component({
   selector: 'app-purchase-list',
@@ -25,36 +25,36 @@ import { Purchase } from '../models/purchase.model';
             </div>
           </div>
 
-          <div *ngIf="!loading && purchases.length === 0" class="text-center py-5 text-muted">
+          <div *ngIf="!loading && compras.length === 0" class="text-center py-5 text-muted">
             <h5>No se encontraron compras</h5>
             <p>Registre su primera compra para comenzar</p>
           </div>
 
-          <div *ngIf="!loading && purchases.length > 0" class="table-responsive">
+          <div *ngIf="!loading && compras.length > 0" class="table-responsive">
             <table class="table table-hover">
               <thead>
                 <tr>
                   <th>Compra #</th>
                   <th>Fecha</th>
                   <th>Proveedor</th>
-                  <th>Nº Factura</th>
+                  <th>Nº Compra</th>
                   <th class="text-end">Total</th>
                   <th>Estado</th>
                   <th class="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let purchase of purchases">
-                  <td>{{ purchase.id }}</td>
-                  <td>{{ purchase.purchaseDate | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>{{ purchase.supplierName }}</td>
-                  <td>{{ purchase.invoiceNumber }}</td>
-                  <td class="text-end">{{ purchase.total | currency }}</td>
+                <tr *ngFor="let compra of comprasPaginadas">
+                  <td>{{ compra.id }}</td>
+                  <td>{{ compra.fechaCompra | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ compra.nombreProveedor }}</td>
+                  <td>{{ compra.numeroFactura }}</td>
+                  <td class="text-end">{{ compra.total | currency }}</td>
                   <td>
-                    <span class="badge bg-success">{{ purchase.status }}</span>
+                    <span class="badge bg-success">{{ compra.estado }}</span>
                   </td>
                   <td class="text-end">
-                    <button (click)="viewDetails(purchase)" class="btn btn-sm btn-outline-primary">
+                    <button (click)="verDetalles(compra)" class="btn btn-sm btn-outline-primary">
                       Ver Detalles
                     </button>
                   </td>
@@ -62,37 +62,53 @@ import { Purchase } from '../models/purchase.model';
               </tbody>
             </table>
           </div>
+
+          <!-- Paginación -->
+          <div *ngIf="totalPaginas > 1" class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">
+              {{ (paginaActual-1)*tamanoPagina+1 }}–{{ paginaActual*tamanoPagina > compras.length ? compras.length : paginaActual*tamanoPagina }} de {{ compras.length }}
+            </small>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="paginaActual===1">
+                <button class="page-link" (click)="irAPagina(paginaActual-1)">‹</button>
+              </li>
+              <li *ngFor="let p of paginas" class="page-item" [class.active]="p===paginaActual">
+                <button class="page-link" (click)="irAPagina(p)">{{ p }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual===totalPaginas">
+                <button class="page-link" (click)="irAPagina(paginaActual+1)">›</button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-
-      <!-- Purchase Details Modal -->
-      <div *ngIf="selectedPurchase" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
+      <div *ngIf="compraSeleccionada" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Detalles de Compra #{{ selectedPurchase.id }}</h5>
-              <button type="button" class="btn-close" (click)="closeDetails()"></button>
+              <h5 class="modal-title">Detalles de Compra #{{ compraSeleccionada.id }}</h5>
+              <button type="button" class="btn-close" (click)="cerrarDetalles()"></button>
             </div>
             <div class="modal-body">
               <div class="row mb-3">
                 <div class="col-md-6">
-                  <strong>Proveedor:</strong> {{ selectedPurchase.supplierName }}
+                  <strong>Proveedor:</strong> {{ compraSeleccionada.nombreProveedor }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Fecha:</strong> {{ selectedPurchase.purchaseDate | date:'dd/MM/yyyy HH:mm:ss' }}
+                  <strong>Fecha:</strong> {{ compraSeleccionada.fechaCompra | date:'dd/MM/yyyy HH:mm:ss' }}
                 </div>
               </div>
               <div class="row mb-3">
                 <div class="col-md-6">
-                  <strong>Nº Factura:</strong> {{ selectedPurchase.invoiceNumber }}
+                  <strong>Nº Compra:</strong> {{ compraSeleccionada.numeroFactura }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Estado:</strong> <span class="badge bg-success">{{ selectedPurchase.status }}</span>
+                  <strong>Estado:</strong> <span class="badge bg-success">{{ compraSeleccionada.estado }}</span>
                 </div>
               </div>
-              <div class="row mb-3" *ngIf="selectedPurchase.notes">
+              <div class="row mb-3" *ngIf="compraSeleccionada.notas">
                 <div class="col-md-12">
-                  <strong>Notas:</strong> {{ selectedPurchase.notes }}
+                  <strong>Notas:</strong> {{ compraSeleccionada.notas }}
                 </div>
               </div>
 
@@ -107,23 +123,23 @@ import { Purchase } from '../models/purchase.model';
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let detail of selectedPurchase.details">
-                    <td>{{ detail.productName }}</td>
-                    <td class="text-end">{{ detail.quantity }}</td>
-                    <td class="text-end">{{ detail.unitCost | currency }}</td>
-                    <td class="text-end">{{ detail.subtotal | currency }}</td>
+                  <tr *ngFor="let detalle of compraSeleccionada.detalles">
+                    <td>{{ detalle.nombreProducto }}</td>
+                    <td class="text-end">{{ detalle.cantidad }}</td>
+                    <td class="text-end">{{ detalle.costoUnitario | currency }}</td>
+                    <td class="text-end">{{ detalle.subtotal | currency }}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr>
                     <th colspan="3" class="text-end">Total:</th>
-                    <th class="text-end">{{ selectedPurchase.total | currency }}</th>
+                    <th class="text-end">{{ compraSeleccionada.total | currency }}</th>
                   </tr>
                 </tfoot>
               </table>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="closeDetails()">
+              <button type="button" class="btn btn-secondary" (click)="cerrarDetalles()">
                 Cerrar
               </button>
             </div>
@@ -136,33 +152,55 @@ import { Purchase } from '../models/purchase.model';
 export class PurchaseListComponent implements OnInit {
   private purchaseService = inject(PurchaseService);
 
-  purchases: Purchase[] = [];
-  selectedPurchase: Purchase | null = null;
+  compras: Compra[] = [];
+  comprasPaginadas: Compra[] = [];
+  compraSeleccionada: Compra | null = null;
   loading = true;
 
+  // Paginación
+  paginaActual = 1;
+  tamanoPagina = 10;
+  totalPaginas = 1;
+  paginas: number[] = [];
+
   ngOnInit(): void {
-    this.loadPurchases();
+    this.cargarCompras();
   }
 
-  loadPurchases(): void {
+  cargarCompras(): void {
     this.loading = true;
-    this.purchaseService.getPurchases().subscribe({
-      next: (data) => {
-        this.purchases = data;
+    this.purchaseService.obtenerCompras().subscribe({
+      next: (datos) => {
+        this.compras = datos;
+        this.actualizarPaginacion();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error al cargar compras:', error);
+      error: (err: any) => {
+        console.error('Error al cargar compras:', err);
         this.loading = false;
       }
     });
   }
 
-  viewDetails(purchase: Purchase): void {
-    this.selectedPurchase = purchase;
+  verDetalles(compra: Compra): void {
+    this.compraSeleccionada = compra;
   }
 
-  closeDetails(): void {
-    this.selectedPurchase = null;
+  cerrarDetalles(): void {
+    this.compraSeleccionada = null;
+  }
+
+  actualizarPaginacion(): void {
+    this.totalPaginas = Math.max(1, Math.ceil(this.compras.length / this.tamanoPagina));
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = this.totalPaginas;
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    this.comprasPaginadas = this.compras.slice(inicio, inicio + this.tamanoPagina);
+    this.paginas = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
+
+  irAPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.actualizarPaginacion();
   }
 }

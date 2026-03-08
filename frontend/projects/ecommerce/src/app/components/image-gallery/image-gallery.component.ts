@@ -245,6 +245,20 @@ import { CommonModule } from '@angular/common';
       right: -70px;
     }
 
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .lightbox-nav { width: 44px; height: 44px; }
+      .lightbox-nav.prev { left: -55px; }
+      .lightbox-nav.next { right: -55px; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .lightbox-nav { width: 56px; height: 56px; font-size: 1.3rem; }
+      .lightbox-nav.prev { left: -85px; }
+      .lightbox-nav.next { right: -85px; }
+    }
+
     @media (max-width: 768px) {
       .zoom-result {
         display: none;

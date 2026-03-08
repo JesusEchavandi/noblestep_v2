@@ -12,7 +12,7 @@ import { finalize } from 'rxjs';
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="login-page">
-      <!-- Left panel: imagen editorial -->
+      <!-- Panel izquierdo: imagen editorial -->
       <div class="login-visual">
         <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80" alt="NobleStep" class="visual-img" />
         <div class="visual-overlay">
@@ -28,78 +28,78 @@ import { finalize } from 'rxjs';
         </div>
       </div>
 
-      <!-- Right panel: formulario -->
+      <!-- Panel derecho: formulario -->
       <div class="login-form-panel">
         <div class="form-wrap">
 
-          <!-- Back link -->
+          <!-- Enlace volver -->
           <a routerLink="/" class="back-link">
             <i class="fi fi-rr-arrow-left"></i> Volver a la tienda
           </a>
 
-          <!-- Header -->
+          <!-- Encabezado -->
           <div class="form-header">
-            <h1>{{ isLogin ? 'Bienvenido de vuelta' : 'Crea tu cuenta' }}</h1>
-            <p>{{ isLogin ? 'Ingresa tus datos para continuar' : 'Únete a miles de clientes satisfechos' }}</p>
+            <h1>{{ esInicioSesion ? 'Bienvenido de vuelta' : 'Crea tu cuenta' }}</h1>
+            <p>{{ esInicioSesion ? 'Ingresa tus datos para continuar' : 'Únete a miles de clientes satisfechos' }}</p>
           </div>
 
-          <!-- Form -->
-          <form (ngSubmit)="onSubmit()" class="auth-form" autocomplete="on">
+          <!-- Formulario -->
+          <form (ngSubmit)="alEnviar()" class="auth-form" autocomplete="on">
 
-            <div class="field-group" *ngIf="!isLogin">
+            <div class="field-group" *ngIf="!esInicioSesion">
               <label for="fullName">
                 <i class="fi fi-rr-user"></i> Nombre completo
               </label>
-              <input type="text" id="fullName" [(ngModel)]="formData.fullName" name="fullName" placeholder="Juan Pérez" required />
+              <input type="text" id="fullName" [(ngModel)]="datosFormulario.nombreCompleto" name="fullName" placeholder="Juan Pérez" required />
             </div>
 
             <div class="field-group">
               <label for="email">
                 <i class="fi fi-rr-envelope"></i> Correo electrónico
               </label>
-              <input type="email" id="email" [(ngModel)]="formData.email" name="email" placeholder="tu@email.com" required autocomplete="email" />
+              <input type="email" id="email" [(ngModel)]="datosFormulario.correo" name="email" placeholder="tu@email.com" required autocomplete="email" />
             </div>
 
-            <div class="field-group" *ngIf="!isLogin">
+            <div class="field-group" *ngIf="!esInicioSesion">
               <label for="phone">
                 <i class="fi fi-rr-phone-call"></i> Teléfono <span class="optional">(opcional)</span>
               </label>
-              <input type="tel" id="phone" [(ngModel)]="formData.phone" name="phone" placeholder="999 999 999" />
+              <input type="tel" id="phone" [(ngModel)]="datosFormulario.telefono" name="phone" placeholder="999 999 999" />
             </div>
 
             <div class="field-group">
               <label for="password">
                 <i class="fi fi-rr-lock"></i> Contraseña
               </label>
-              <input type="password" id="password" [(ngModel)]="formData.password" name="password" placeholder="••••••••" required autocomplete="current-password" maxlength="128" />
-              <a *ngIf="isLogin" class="forgot-link" (click)="showForgotPassword = true">¿Olvidaste tu contraseña?</a>
+              <input type="password" id="password" [(ngModel)]="datosFormulario.contrasena" name="password" placeholder="••••••••" required autocomplete="current-password" maxlength="128" />
+              <a *ngIf="esInicioSesion" class="forgot-link" (click)="mostrarRecuperacion = true">¿Olvidaste tu contraseña?</a>
             </div>
 
-            <div class="field-group" *ngIf="!isLogin">
+            <div class="field-group" *ngIf="!esInicioSesion">
               <label for="confirmPassword">
                 <i class="fi fi-rr-lock"></i> Confirmar contraseña
               </label>
-              <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="••••••••" required maxlength="128" />
+              <input type="password" id="confirmPassword" [(ngModel)]="confirmarContrasena" name="confirmPassword" placeholder="••••••••" required maxlength="128" />
             </div>
 
-            <button type="submit" class="btn-submit" [disabled]="loading">
-              <span *ngIf="!loading">
+            <button type="submit" class="btn-submit" [disabled]="cargando">
+              <span *ngIf="!cargando">
                 <i class="fi fi-rr-sign-in-alt"></i>
-                {{ isLogin ? 'Iniciar sesión' : 'Crear cuenta' }}
+                {{ esInicioSesion ? 'Iniciar sesión' : 'Crear cuenta' }}
               </span>
-              <span *ngIf="loading" class="spinner"></span>
+              <span *ngIf="cargando" class="spinner"></span>
             </button>
 
             <div class="divider"><span>o</span></div>
 
-            <button type="button" class="btn-guest" (click)="continueAsGuest()">
+            <button type="button" class="btn-guest" (click)="continuarComoInvitado()">
               <i class="fi fi-rr-shopping-bag"></i> Continuar sin cuenta
             </button>
 
             <p class="toggle-text">
-              {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
-              <a (click)="toggleMode()" class="toggle-link">
-                {{ isLogin ? 'Regístrate gratis' : 'Inicia sesión' }}
+              {{ esInicioSesion ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+              <a (click)="alternarModo()" class="toggle-link">
+                {{ esInicioSesion ? 'Regístrate gratis' : 'Inicia sesión' }}
               </a>
             </p>
 
@@ -108,21 +108,21 @@ import { finalize } from 'rxjs';
       </div>
 
       <!-- Modal recuperar contraseña -->
-      <div class="modal-backdrop" *ngIf="showForgotPassword" (click)="showForgotPassword = false">
+      <div class="modal-backdrop" *ngIf="mostrarRecuperacion" (click)="mostrarRecuperacion = false">
         <div class="modal-box" (click)="$event.stopPropagation()">
           <div class="modal-head">
             <h2>Recuperar contraseña</h2>
-            <button (click)="showForgotPassword = false"><i class="fi fi-rr-cross"></i></button>
+            <button (click)="mostrarRecuperacion = false"><i class="fi fi-rr-cross"></i></button>
           </div>
           <p>Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
           <div class="field-group">
             <label><i class="fi fi-rr-envelope"></i> Correo electrónico</label>
-            <input type="email" [(ngModel)]="resetEmail" placeholder="tu@email.com" />
+            <input type="email" [(ngModel)]="correoRecuperacion" placeholder="tu@email.com" />
           </div>
           <div class="modal-actions">
-            <button class="btn-cancel" (click)="showForgotPassword = false">Cancelar</button>
-            <button class="btn-submit" (click)="sendResetEmail()" [disabled]="loading">
-              {{ loading ? 'Enviando...' : 'Enviar enlace' }}
+            <button class="btn-cancel" (click)="mostrarRecuperacion = false">Cancelar</button>
+            <button class="btn-submit" (click)="enviarCorreoRecuperacion()" [disabled]="cargando">
+              {{ cargando ? 'Enviando...' : 'Enviar enlace' }}
             </button>
           </div>
         </div>
@@ -368,6 +368,27 @@ import { finalize } from 'rxjs';
     .modal-actions .btn-submit { flex: 1; margin-top: 0; }
 
     /* Responsive */
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .visual-overlay { padding: 2rem; }
+      .visual-brand { font-size: 1.6rem; }
+      .visual-quote p { font-size: 1.3rem; }
+      .form-header h1 { font-size: 1.5rem; }
+      .field-group input { padding: 0.75rem 0.9rem; font-size: 0.9rem; }
+      .btn-submit { padding: 0.8rem; font-size: 0.9rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .visual-brand { font-size: 2.5rem; }
+      .visual-quote p { font-size: 2rem; }
+      .form-wrap { max-width: 500px; }
+      .form-header h1 { font-size: 2.25rem; }
+      .field-group input { padding: 1rem 1.25rem; font-size: 1.05rem; }
+      .btn-submit { padding: 1.1rem; font-size: 1.05rem; }
+    }
+
     @media (max-width: 768px) {
       .login-page { grid-template-columns: 1fr; }
       .login-visual { display: none; }
@@ -377,18 +398,18 @@ import { finalize } from 'rxjs';
   `]
 })
 export class LoginComponent implements OnInit {
-  isLogin = true;
-  loading = false;
-  showForgotPassword = false;
-  resetEmail = '';
-  confirmPassword = '';
-  returnUrl = '/';
+  esInicioSesion = true;
+  cargando = false;
+  mostrarRecuperacion = false;
+  correoRecuperacion = '';
+  confirmarContrasena = '';
+  urlRetorno = '/';
 
-  formData = {
-    email: '',
-    password: '',
-    fullName: '',
-    phone: ''
+  datosFormulario = {
+    correo: '',
+    contrasena: '',
+    nombreCompleto: '',
+    telefono: ''
   };
 
   constructor(
@@ -400,7 +421,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     // Verificar si ya está autenticado
-    if (this.authService.isAuthenticated()) {
+    if (this.authService.estaAutenticado()) {
       this.router.navigate(['/account']);
       return;
     }
@@ -408,82 +429,82 @@ export class LoginComponent implements OnInit {
     // Obtener URL de retorno — validar que sea ruta relativa para evitar open redirect
     const rawReturnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     // Solo permitir rutas relativas (deben empezar con '/')
-    this.returnUrl = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : '/';
+    this.urlRetorno = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : '/';
   }
 
-  toggleMode() {
-    this.isLogin = !this.isLogin;
-    this.confirmPassword = '';
+  alternarModo() {
+    this.esInicioSesion = !this.esInicioSesion;
+    this.confirmarContrasena = '';
   }
 
-  onSubmit() {
-    if (this.isLogin) {
-      this.login();
+  alEnviar() {
+    if (this.esInicioSesion) {
+      this.iniciarSesion();
     } else {
-      this.register();
+      this.registrar();
     }
   }
 
-  login() {
-    if (!this.formData.email || !this.formData.password) {
+  iniciarSesion() {
+    if (!this.datosFormulario.correo || !this.datosFormulario.contrasena) {
       this.notificationService.warning('Por favor completa todos los campos');
       return;
     }
 
-    this.loading = true;
-    this.authService.login({
-      email: this.formData.email,
-      password: this.formData.password
+    this.cargando = true;
+    this.authService.iniciarSesion({
+      correo: this.datosFormulario.correo,
+      contrasena: this.datosFormulario.contrasena
     }).subscribe({
-      next: (response) => {
-        this.loading = false;
+      next: (respuesta) => {
+        this.cargando = false;
         this.notificationService.success('¡Bienvenido de vuelta!');
-        this.router.navigate([this.returnUrl]);
+        this.router.navigate([this.urlRetorno]);
       },
       error: (error) => {
-        this.loading = false;
+        this.cargando = false;
         this.notificationService.error(error.error?.message || 'Error al iniciar sesión');
       }
     });
   }
 
-  register() {
-    if (!this.formData.email || !this.formData.password || !this.formData.fullName) {
+  registrar() {
+    if (!this.datosFormulario.correo || !this.datosFormulario.contrasena || !this.datosFormulario.nombreCompleto) {
       this.notificationService.warning('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    if (this.formData.password.length < 6) {
+    if (this.datosFormulario.contrasena.length < 6) {
       this.notificationService.warning('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
-    if (this.formData.password.length > 128) {
+    if (this.datosFormulario.contrasena.length > 128) {
       this.notificationService.warning('La contraseña no puede superar los 128 caracteres');
       return;
     }
 
-    if (this.formData.password !== this.confirmPassword) {
+    if (this.datosFormulario.contrasena !== this.confirmarContrasena) {
       this.notificationService.warning('Las contraseñas no coinciden');
       return;
     }
 
-    this.loading = true;
-    this.authService.register({
-      email: this.formData.email,
-      password: this.formData.password,
-      fullName: this.formData.fullName,
-      phone: this.formData.phone
+    this.cargando = true;
+    this.authService.registrar({
+      correo: this.datosFormulario.correo,
+      contrasena: this.datosFormulario.contrasena,
+      nombreCompleto: this.datosFormulario.nombreCompleto,
+      telefono: this.datosFormulario.telefono
     })
       .pipe(
         finalize(() => {
-          this.loading = false;
+          this.cargando = false;
         })
       )
       .subscribe({
         next: () => {
           this.notificationService.success('¡Cuenta creada exitosamente!');
-          this.router.navigate([this.returnUrl]);
+          this.router.navigate([this.urlRetorno]);
         },
         error: (error) => {
           if (error?.status === 429) {
@@ -495,40 +516,40 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  private redirectToLoginAfterRegister() {
-    this.loading = false;
-    this.isLogin = true;
-    this.confirmPassword = '';
+  private redirigirALoginDespuesDeRegistro() {
+    this.cargando = false;
+    this.esInicioSesion = true;
+    this.confirmarContrasena = '';
     this.notificationService.info('Cuenta creada. Inicia sesión para continuar.');
     this.router.navigate(['/login'], {
-      queryParams: { returnUrl: this.returnUrl }
+      queryParams: { returnUrl: this.urlRetorno }
     });
   }
 
-  sendResetEmail() {
-    if (!this.resetEmail) {
+  enviarCorreoRecuperacion() {
+    if (!this.correoRecuperacion) {
       this.notificationService.warning('Por favor ingresa tu correo electrónico');
       return;
     }
 
-    this.loading = true;
-    this.authService.forgotPassword(this.resetEmail).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.showForgotPassword = false;
+    this.cargando = true;
+    this.authService.olvidoContrasena(this.correoRecuperacion).subscribe({
+      next: (respuesta: any) => {
+        this.cargando = false;
+        this.mostrarRecuperacion = false;
         this.notificationService.success('Revisa tu correo electrónico para restablecer tu contraseña');
-        this.resetEmail = '';
+        this.correoRecuperacion = '';
       },
-      error: (error) => {
-        this.loading = false;
+      error: (error: any) => {
+        this.cargando = false;
         this.notificationService.error('Error al enviar el correo');
       }
     });
   }
 
-  continueAsGuest() {
+  continuarComoInvitado() {
     // Si vino desde checkout u otra ruta protegida, regresar allí; si no, al catálogo
-    const destination = this.returnUrl && this.returnUrl !== '/' ? this.returnUrl : '/catalog';
-    this.router.navigate([destination]);
+    const destino = this.urlRetorno && this.urlRetorno !== '/' ? this.urlRetorno : '/catalog';
+    this.router.navigate([destino]);
   }
 }

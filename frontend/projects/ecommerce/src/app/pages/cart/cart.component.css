@@ -493,6 +493,36 @@
 .secure-note i { color: #2a9d8f; font-size: 0.9rem; }
 
 /* ===== RESPONSIVE ===== */
+
+/* Laptop 1366px */
+@media (max-width: 1399px) {
+  .container { max-width: 100%; padding: 0 1.25rem; }
+  .cart-page { padding: 1.5rem 0 3rem; }
+  .cart-layout { gap: 1.5rem; }
+  .items-panel { padding: 1.25rem; }
+  .summary-card { padding: 1.25rem; }
+  .header-right h1 { font-size: 1.5rem; }
+  .item-name { font-size: 0.88rem; }
+  .item-price { font-size: 0.88rem; }
+  .total-amount { font-size: 1.3rem; }
+}
+
+/* QHD 2560x1440 */
+@media (min-width: 1920px) {
+  .container { max-width: 1440px; }
+  .cart-page { padding: 3rem 0 5rem; }
+  .cart-layout { gap: 3rem; }
+  .items-panel { padding: 2rem; }
+  .summary-card { padding: 2rem; }
+  .total-amount { font-size: 1.75rem; }
+  .header-right h1 { font-size: 2.25rem; }
+  .item-name { font-size: 1.05rem; }
+  .item-price { font-size: 1.05rem; }
+  .item-count { font-size: 0.9rem; }
+  .back-link { font-size: 0.92rem; }
+  .btn-checkout { font-size: 1rem; padding: 1rem; }
+}
+
 @media (max-width: 960px) {
   .cart-layout { grid-template-columns: 1fr; }
   .summary-panel { position: static; }

@@ -4,45 +4,45 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 
-export interface EcommerceCustomer {
+export interface ClienteEcommerce {
   id: number;
-  email: string;
-  fullName: string;
-  phone?: string;
-  documentNumber?: string;
-  address?: string;
-  city?: string;
-  district?: string;
-  emailVerified: boolean;
-  createdAt: Date;
+  correo: string;
+  nombreCompleto: string;
+  telefono?: string;
+  numeroDocumento?: string;
+  direccion?: string;
+  ciudad?: string;
+  distrito?: string;
+  correoVerificado: boolean;
+  creadoEn: Date;
 }
 
-export interface AuthResponse {
+export interface RespuestaAutenticacion {
   token: string;
-  refreshToken: string;
-  refreshTokenExpires: Date;
-  customer: EcommerceCustomer;
+  tokenRefresco: string;
+  expiracionTokenRefresco: Date;
+  cliente: ClienteEcommerce;
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  fullName: string;
-  phone?: string;
+export interface DatosRegistro {
+  correo: string;
+  contrasena: string;
+  nombreCompleto: string;
+  telefono?: string;
 }
 
-export interface LoginData {
-  email: string;
-  password: string;
+export interface DatosInicioSesion {
+  correo: string;
+  contrasena: string;
 }
 
-export interface UpdateProfileData {
-  fullName: string;
-  phone?: string;
-  documentNumber?: string;
-  address?: string;
-  city?: string;
-  district?: string;
+export interface DatosActualizarPerfil {
+  nombreCompleto: string;
+  telefono?: string;
+  numeroDocumento?: string;
+  direccion?: string;
+  ciudad?: string;
+  distrito?: string;
 }
 
 @Injectable({
@@ -50,125 +50,123 @@ export interface UpdateProfileData {
 })
 export class EcommerceAuthService {
   private apiUrl = `${environment.apiUrl}/ecommerce/auth`;
-  private currentCustomerSubject = new BehaviorSubject<EcommerceCustomer | null>(null);
-  public currentCustomer$ = this.currentCustomerSubject.asObservable();
+  private sujetoClienteActual = new BehaviorSubject<ClienteEcommerce | null>(null);
+  public clienteActual$ = this.sujetoClienteActual.asObservable();
 
   private tokenKey = 'ecommerce_token';
   private customerKey = 'ecommerce_customer';
   private refreshTokenKey = 'ecommerce_refresh_token';
 
   constructor(private http: HttpClient, private router: Router) {
-    this.loadFromStorage();
+    this.cargarDeStorage();
   }
 
-  private loadFromStorage() {
+  private cargarDeStorage() {
     const token = localStorage.getItem(this.tokenKey);
     const customerData = localStorage.getItem(this.customerKey);
 
     if (token && customerData) {
       try {
-        // Si el token ya expiró, limpiar sesión automáticamente
-        if (this.isTokenExpired(token)) {
-          this.logout();
+        if (this.tokenExpirado(token)) {
+          this.cerrarSesion();
           return;
         }
-        const customer = JSON.parse(customerData);
-        this.currentCustomerSubject.next(customer);
+        const cliente = JSON.parse(customerData);
+        this.sujetoClienteActual.next(cliente);
       } catch (e) {
-        this.logout();
+        this.cerrarSesion();
       }
     }
   }
 
-  register(data: RegisterData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
-      tap(response => this.handleAuthResponse(response))
+  registrar(datos: DatosRegistro): Observable<RespuestaAutenticacion> {
+    return this.http.post<RespuestaAutenticacion>(`${this.apiUrl}/register`, datos).pipe(
+      tap(respuesta => this.manejarRespuestaAuth(respuesta))
     );
   }
 
-  login(data: LoginData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data).pipe(
-      tap(response => this.handleAuthResponse(response))
+  iniciarSesion(datos: DatosInicioSesion): Observable<RespuestaAutenticacion> {
+    return this.http.post<RespuestaAutenticacion>(`${this.apiUrl}/login`, datos).pipe(
+      tap(respuesta => this.manejarRespuestaAuth(respuesta))
     );
   }
 
-  logout() {
+  cerrarSesion() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.customerKey);
     localStorage.removeItem(this.refreshTokenKey);
-    this.currentCustomerSubject.next(null);
+    this.sujetoClienteActual.next(null);
     this.router.navigate(['/login']);
   }
 
-  refreshToken(): Observable<AuthResponse> {
-    const token = this.getRefreshToken();
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken: token }).pipe(
-      tap(response => this.handleAuthResponse(response))
+  refrescarToken(): Observable<RespuestaAutenticacion> {
+    const token = this.obtenerRefreshToken();
+    return this.http.post<RespuestaAutenticacion>(`${this.apiUrl}/refresh-token`, { tokenRefresco: token }).pipe(
+      tap(respuesta => this.manejarRespuestaAuth(respuesta))
     );
   }
 
-  getRefreshToken(): string | null {
+  obtenerRefreshToken(): string | null {
     return localStorage.getItem(this.refreshTokenKey);
   }
 
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  olvidoContrasena(correo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { correo });
   }
 
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+  restablecerContrasena(token: string, nuevaContrasena: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { token, nuevaContrasena });
   }
 
-  getProfile(): Observable<EcommerceCustomer> {
-    return this.http.get<EcommerceCustomer>(`${this.apiUrl}/profile`).pipe(
-      tap(customer => {
-        this.currentCustomerSubject.next(customer);
-        localStorage.setItem(this.customerKey, JSON.stringify(customer));
+  obtenerPerfil(): Observable<ClienteEcommerce> {
+    return this.http.get<ClienteEcommerce>(`${this.apiUrl}/profile`).pipe(
+      tap(cliente => {
+        this.sujetoClienteActual.next(cliente);
+        localStorage.setItem(this.customerKey, JSON.stringify(cliente));
       })
     );
   }
 
-  updateProfile(data: UpdateProfileData): Observable<EcommerceCustomer> {
-    return this.http.put<EcommerceCustomer>(`${this.apiUrl}/profile`, data).pipe(
-      tap(customer => {
-        this.currentCustomerSubject.next(customer);
-        localStorage.setItem(this.customerKey, JSON.stringify(customer));
+  actualizarPerfil(datos: DatosActualizarPerfil): Observable<ClienteEcommerce> {
+    return this.http.put<ClienteEcommerce>(`${this.apiUrl}/profile`, datos).pipe(
+      tap(cliente => {
+        this.sujetoClienteActual.next(cliente);
+        localStorage.setItem(this.customerKey, JSON.stringify(cliente));
       })
     );
   }
 
-  private handleAuthResponse(response: AuthResponse) {
-    localStorage.setItem(this.tokenKey, response.token);
-    localStorage.setItem(this.customerKey, JSON.stringify(response.customer));
-    if (response.refreshToken) {
-      localStorage.setItem(this.refreshTokenKey, response.refreshToken);
+  private manejarRespuestaAuth(respuesta: RespuestaAutenticacion) {
+    localStorage.setItem(this.tokenKey, respuesta.token);
+    localStorage.setItem(this.customerKey, JSON.stringify(respuesta.cliente));
+    if (respuesta.tokenRefresco) {
+      localStorage.setItem(this.refreshTokenKey, respuesta.tokenRefresco);
     }
-    this.currentCustomerSubject.next(response.customer);
+    this.sujetoClienteActual.next(respuesta.cliente);
   }
 
-  getToken(): string | null {
+  obtenerToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 
-  isAuthenticated(): boolean {
-    const token = this.getToken();
+  estaAutenticado(): boolean {
+    const token = this.obtenerToken();
     if (!token) return false;
-    return !this.isTokenExpired(token);
+    return !this.tokenExpirado(token);
   }
 
   /** Decodifica el payload JWT y verifica si ya expiró */
-  private isTokenExpired(token: string): boolean {
+  private tokenExpirado(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (!payload.exp) return false;
-      // exp está en segundos, Date.now() en milisegundos
       return Date.now() >= payload.exp * 1000;
     } catch {
-      return true; // token malformado → considerar expirado
+      return true;
     }
   }
 
-  getCurrentCustomer(): EcommerceCustomer | null {
-    return this.currentCustomerSubject.value;
+  obtenerClienteActual(): ClienteEcommerce | null {
+    return this.sujetoClienteActual.value;
   }
 }

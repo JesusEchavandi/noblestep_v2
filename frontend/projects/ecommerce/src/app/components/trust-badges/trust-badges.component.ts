@@ -93,6 +93,22 @@ import { CommonModule } from '@angular/common';
       color: var(--color-text-muted);
     }
 
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .badge-item { padding: 0.875rem 1.25rem; }
+      .icon { width: 40px; height: 40px; font-size: 1.4rem; }
+      .text strong { font-size: 0.8rem; }
+      .text span { font-size: 0.7rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .badge-item { padding: 1.5rem 2.5rem; }
+      .icon { width: 56px; height: 56px; font-size: 2rem; }
+      .text strong { font-size: 0.95rem; }
+      .text span { font-size: 0.825rem; }
+    }
+
     @media (max-width: 768px) {
       .trust-badges {
         grid-template-columns: repeat(2, 1fr);

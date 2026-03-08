@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Category, CreateCategory } from '../models/category.model';
+import { Categoria, CrearCategoria } from '../models/category.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -11,23 +11,23 @@ export class CategoryService {
   private readonly API_URL = `${environment.apiUrl}/categories`;
   private http = inject(HttpClient);
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(this.API_URL);
+  obtenerCategorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(this.API_URL);
   }
 
-  getCategory(id: number): Observable<Category> {
-    return this.http.get<Category>(`${this.API_URL}/${id}`);
+  obtenerCategoria(id: number): Observable<Categoria> {
+    return this.http.get<Categoria>(`${this.API_URL}/${id}`);
   }
 
-  createCategory(category: CreateCategory): Observable<Category> {
-    return this.http.post<Category>(this.API_URL, category);
+  crearCategoria(categoria: CrearCategoria): Observable<Categoria> {
+    return this.http.post<Categoria>(this.API_URL, categoria);
   }
 
-  updateCategory(id: number, category: CreateCategory): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/${id}`, category);
+  actualizarCategoria(id: number, categoria: CrearCategoria): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${id}`, categoria);
   }
 
-  deleteCategory(id: number): Observable<void> {
+  eliminarCategoria(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 }

@@ -4,26 +4,26 @@ using NobleStep.Api.DTOs;
 
 namespace NobleStep.Api.Services;
 
-public interface IEmailService
+public interface IServicioCorreo
 {
-    Task SendPasswordResetEmailAsync(string toEmail, string resetToken, string customerName);
-    Task SendOrderConfirmationEmailAsync(string toEmail, string orderNumber, string customerName, decimal total, List<OrderDetailResponseDto> items);
-    Task SendOrderStatusUpdateEmailAsync(string toEmail, string orderNumber, string customerName, string newStatus);
-    Task SendWelcomeEmailAsync(string toEmail, string customerName);
+    Task EnviarCorreoRestablecimientoAsync(string correoDestino, string tokenRestablecimiento, string nombreCliente);
+    Task EnviarCorreoConfirmacionPedidoAsync(string correoDestino, string numeroPedido, string nombreCliente, decimal total, List<RespuestaDetallePedidoDto> items);
+    Task EnviarCorreoActualizacionEstadoPedidoAsync(string correoDestino, string numeroPedido, string nombreCliente, string nuevoEstado);
+    Task EnviarCorreoBienvenidaAsync(string correoDestino, string nombreCliente);
 }
 
-public class EmailService : IEmailService
+public class ServicioCorreo : IServicioCorreo
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<EmailService> _logger;
+    private readonly ILogger<ServicioCorreo> _logger;
 
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+    public ServicioCorreo(IConfiguration configuration, ILogger<ServicioCorreo> logger)
     {
         _configuration = configuration;
         _logger = logger;
     }
 
-    public async Task SendPasswordResetEmailAsync(string toEmail, string resetToken, string customerName)
+    public async Task EnviarCorreoRestablecimientoAsync(string correoDestino, string tokenRestablecimiento, string nombreCliente)
     {
         try
         {
@@ -34,7 +34,7 @@ public class EmailService : IEmailService
             var smtpUsername = _configuration["Email:SmtpUsername"] ?? fromEmail;
             var smtpPassword = _configuration["Email:SmtpPassword"] ?? "";
             
-            var resetLink = $"{_configuration["App:FrontendUrl"]}/reset-password?token={resetToken}";
+            var resetLink = $"{_configuration["App:FrontendUrl"]}/reset-password?token={tokenRestablecimiento}";
 
             var subject = "Restablecer tu contraseña - NobleStep";
             var body = $@"
@@ -55,7 +55,7 @@ public class EmailService : IEmailService
                             <h1>NobleStep Shop</h1>
                         </div>
                         <div class='content'>
-                            <h2>Hola {customerName},</h2>
+                            <h2>Hola {nombreCliente},</h2>
                             <p>Recibimos una solicitud para restablecer tu contraseña.</p>
                             <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
                             <div style='text-align: center;'>
@@ -74,16 +74,16 @@ public class EmailService : IEmailService
                 </html>
             ";
 
-            await SendEmailAsync(fromEmail, fromName, toEmail, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
+            await EnviarCorreoAsync(fromEmail, fromName, correoDestino, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enviando email de recuperación de contraseña a {Email}", toEmail);
+            _logger.LogError(ex, "Error enviando email de recuperación de contraseña a {Email}", correoDestino);
             throw;
         }
     }
 
-    public async Task SendOrderConfirmationEmailAsync(string toEmail, string orderNumber, string customerName, decimal total, List<OrderDetailResponseDto> items)
+    public async Task EnviarCorreoConfirmacionPedidoAsync(string correoDestino, string numeroPedido, string nombreCliente, decimal total, List<RespuestaDetallePedidoDto> items)
     {
         try
         {
@@ -96,14 +96,14 @@ public class EmailService : IEmailService
 
             var itemsHtml = string.Join("", items.Select(item => $@"
                 <tr>
-                    <td style='padding: 10px; border-bottom: 1px solid #ddd;'>{item.ProductName} {(item.ProductSize != null ? $"(Talla: {item.ProductSize})" : "")}</td>
-                    <td style='padding: 10px; border-bottom: 1px solid #ddd; text-align: center;'>{item.Quantity}</td>
-                    <td style='padding: 10px; border-bottom: 1px solid #ddd; text-align: right;'>S/ {item.UnitPrice:F2}</td>
+                    <td style='padding: 10px; border-bottom: 1px solid #ddd;'>{item.NombreProducto} {(item.TallaProducto != null ? $"(Talla: {item.TallaProducto})" : "")}</td>
+                    <td style='padding: 10px; border-bottom: 1px solid #ddd; text-align: center;'>{item.Cantidad}</td>
+                    <td style='padding: 10px; border-bottom: 1px solid #ddd; text-align: right;'>S/ {item.PrecioUnitario:F2}</td>
                     <td style='padding: 10px; border-bottom: 1px solid #ddd; text-align: right;'><strong>S/ {item.Subtotal:F2}</strong></td>
                 </tr>
             "));
 
-            var subject = $"✅ Confirmación de Pedido #{orderNumber} - NobleStep";
+            var subject = $"✅ Confirmación de Pedido #{numeroPedido} - NobleStep";
             var body = $@"
                 <html>
                 <head>
@@ -134,12 +134,12 @@ public class EmailService : IEmailService
                             <p style='margin: 10px 0 0 0; opacity: 0.9;'>NobleStep Shop</p>
                         </div>
                         <div class='content'>
-                            <h2 style='color: #1f2937;'>¡Gracias por tu compra, {customerName}!</h2>
+                            <h2 style='color: #1f2937;'>¡Gracias por tu compra, {nombreCliente}!</h2>
                             <p>Hemos recibido tu pedido exitosamente y estamos preparándolo con mucho cuidado.</p>
                             
                             <div class='order-number'>
                                 <h3>Número de Pedido</h3>
-                                <p style='margin: 0; font-size: 24px; font-weight: bold; color: #2563eb;'>#{orderNumber}</p>
+                                <p style='margin: 0; font-size: 24px; font-weight: bold; color: #2563eb;'>#{numeroPedido}</p>
                             </div>
 
                             <h3 style='color: #1f2937; margin-top: 30px;'>Resumen de tu pedido</h3>
@@ -192,16 +192,16 @@ public class EmailService : IEmailService
                 </html>
             ";
 
-            await SendEmailAsync(fromEmail, fromName, toEmail, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
+            await EnviarCorreoAsync(fromEmail, fromName, correoDestino, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enviando email de confirmación de pedido a {Email}", toEmail);
+            _logger.LogError(ex, "Error enviando email de confirmación de pedido a {Email}", correoDestino);
             // No lanzar excepción para no bloquear la creación del pedido
         }
     }
 
-    public async Task SendOrderStatusUpdateEmailAsync(string toEmail, string orderNumber, string customerName, string newStatus)
+    public async Task EnviarCorreoActualizacionEstadoPedidoAsync(string correoDestino, string numeroPedido, string nombreCliente, string nuevoEstado)
     {
         try
         {
@@ -221,9 +221,9 @@ public class EmailService : IEmailService
                 { "Cancelado", ("❌", "Pedido Cancelado", "Tu pedido ha sido cancelado.", "#ef4444") }
             };
 
-            var (icon, title, message, color) = statusMessages.GetValueOrDefault(newStatus, ("📋", "Actualización de Pedido", "El estado de tu pedido ha cambiado.", "#6b7280"));
+            var (icon, title, message, color) = statusMessages.GetValueOrDefault(nuevoEstado, ("📋", "Actualización de Pedido", "El estado de tu pedido ha cambiado.", "#6b7280"));
 
-            var subject = $"{icon} Actualización de Pedido #{orderNumber} - NobleStep";
+            var subject = $"{icon} Actualización de Pedido #{numeroPedido} - NobleStep";
             var body = $@"
                 <html>
                 <head>
@@ -246,12 +246,12 @@ public class EmailService : IEmailService
                         </div>
                         <div class='content'>
                             <div class='status-icon'>{icon}</div>
-                            <h2 style='text-align: center; color: #1f2937;'>Hola {customerName},</h2>
+                            <h2 style='text-align: center; color: #1f2937;'>Hola {nombreCliente},</h2>
                             <p style='text-align: center; font-size: 16px;'>{message}</p>
                             
                             <div class='order-box'>
-                                <p style='margin: 0;'><strong>Número de Pedido:</strong> #{orderNumber}</p>
-                                <p style='margin: 10px 0 0 0;'><strong>Nuevo Estado:</strong> <span style='color: {color}; font-weight: 600;'>{newStatus}</span></p>
+                                <p style='margin: 0;'><strong>Número de Pedido:</strong> #{numeroPedido}</p>
+                                <p style='margin: 10px 0 0 0;'><strong>Nuevo Estado:</strong> <span style='color: {color}; font-weight: 600;'>{nuevoEstado}</span></p>
                             </div>
 
                             <div style='text-align: center;'>
@@ -270,15 +270,15 @@ public class EmailService : IEmailService
                 </html>
             ";
 
-            await SendEmailAsync(fromEmail, fromName, toEmail, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
+            await EnviarCorreoAsync(fromEmail, fromName, correoDestino, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enviando email de actualización de estado a {Email}", toEmail);
+            _logger.LogError(ex, "Error enviando email de actualización de estado a {Email}", correoDestino);
         }
     }
 
-    public async Task SendWelcomeEmailAsync(string toEmail, string customerName)
+    public async Task EnviarCorreoBienvenidaAsync(string correoDestino, string nombreCliente)
     {
         try
         {
@@ -310,7 +310,7 @@ public class EmailService : IEmailService
                             <p style='margin: 10px 0 0 0; opacity: 0.9;'>El calzado perfecto para cada paso</p>
                         </div>
                         <div class='content'>
-                            <h2 style='color: #1f2937;'>Hola {customerName},</h2>
+                            <h2 style='color: #1f2937;'>Hola {nombreCliente},</h2>
                             <p>¡Nos encanta tenerte aquí! Gracias por crear tu cuenta en NobleStep Shop.</p>
                             <p>Estamos comprometidos en ofrecerte la mejor experiencia de compra con calzado de alta calidad.</p>
 
@@ -355,20 +355,20 @@ public class EmailService : IEmailService
                 </html>
             ";
 
-            await SendEmailAsync(fromEmail, fromName, toEmail, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
+            await EnviarCorreoAsync(fromEmail, fromName, correoDestino, subject, body, smtpHost, smtpPort, smtpUsername, smtpPassword);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enviando email de bienvenida a {Email}", toEmail);
+            _logger.LogError(ex, "Error enviando email de bienvenida a {Email}", correoDestino);
         }
     }
 
-    private async Task SendEmailAsync(string fromEmail, string fromName, string toEmail, string subject, string body, 
+    private async Task EnviarCorreoAsync(string fromEmail, string fromName, string correoDestino, string subject, string body, 
         string smtpHost, int smtpPort, string smtpUsername, string smtpPassword)
     {
         using var message = new MailMessage();
         message.From = new MailAddress(fromEmail, fromName);
-        message.To.Add(new MailAddress(toEmail));
+        message.To.Add(new MailAddress(correoDestino));
         message.Subject = subject;
         message.Body = body;
         message.IsBodyHtml = true;
@@ -380,6 +380,6 @@ public class EmailService : IEmailService
         smtpClient.Timeout = Math.Max(1, timeoutSeconds) * 1000;
 
         await smtpClient.SendMailAsync(message);
-        _logger.LogInformation("Email enviado exitosamente a {Email}", toEmail);
+        _logger.LogInformation("Email enviado exitosamente a {Email}", correoDestino);
     }
 }

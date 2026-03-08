@@ -1,11 +1,11 @@
-export interface Category {
+export interface Categoria {
   id: number;
-  name: string;
-  description: string;
-  isActive: boolean;
+  nombre: string;
+  descripcion: string;
+  activo: boolean;
 }
 
-export interface CreateCategory {
-  name: string;
-  description: string;
+export interface CrearCategoria {
+  nombre: string;
+  descripcion: string;
 }

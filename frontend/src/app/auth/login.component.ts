@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { LoginRequest } from '../models/user.model';
+import { SolicitudInicioSesion } from '../models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -71,7 +71,7 @@ import { LoginRequest } from '../models/user.model';
                       class="form-control form-control-lg"
                       id="username"
                       name="username"
-                      [(ngModel)]="credentials.username"
+                      [(ngModel)]="credentials.nombreUsuario"
                       required
                       placeholder="Ingrese su usuario"
                       style="background-color: rgba(255, 255, 255, 0.95); border: 2px solid var(--color-gray-200);"
@@ -87,7 +87,7 @@ import { LoginRequest } from '../models/user.model';
                       class="form-control form-control-lg"
                       id="password"
                       name="password"
-                      [(ngModel)]="credentials.password"
+                      [(ngModel)]="credentials.contrasena"
                       required
                       placeholder="Ingrese su contraseña"
                       style="background-color: rgba(255, 255, 255, 0.95); border: 2px solid var(--color-gray-200);"
@@ -270,15 +270,26 @@ import { LoginRequest } from '../models/user.model';
         filter: drop-shadow(0 6px 12px rgba(254, 206, 168, 0.5));
       }
     }
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .lock-container { width: 80px; height: 80px; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .lock-container { width: 120px; height: 120px; }
+      .login-card .card-body { padding: 3.5rem !important; }
+    }
   `]
 })
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  credentials: LoginRequest = {
-    username: '',
-    password: ''
+  credentials: SolicitudInicioSesion = {
+    nombreUsuario: '',
+    contrasena: ''
   };
 
   errorMessage = '';
@@ -290,7 +301,7 @@ export class LoginComponent {
     this.errorMessage = '';
     this.loading = true;
 
-    this.authService.login(this.credentials).subscribe({
+    this.authService.iniciarSesion(this.credentials).subscribe({
       next: () => {
         // Trigger unlock animation
         this.isUnlocking = true;

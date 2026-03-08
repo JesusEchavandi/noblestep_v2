@@ -1,37 +1,37 @@
-export interface Purchase {
+export interface Compra {
   id: number;
-  supplierId: number;
-  supplierName: string;
-  purchaseDate: Date;
-  invoiceNumber: string;
+  proveedorId: number;
+  nombreProveedor: string;
+  fechaCompra: Date;
+  numeroFactura: string;
   total: number;
-  status: string;
-  notes: string;
-  details: PurchaseDetail[];
+  estado: string;
+  notas: string;
+  detalles: DetalleCompra[];
 }
 
-export interface PurchaseDetail {
+export interface DetalleCompra {
   id: number;
-  productId: number;
-  productName: string;
-  variantId?: number;
-  size?: string;
-  quantity: number;
-  unitCost: number;
+  productoId: number;
+  nombreProducto: string;
+  varianteId?: number;
+  talla?: string;
+  cantidad: number;
+  costoUnitario: number;
   subtotal: number;
 }
 
-export interface CreatePurchase {
-  supplierId: number;
-  purchaseDate: Date;
-  invoiceNumber: string;
-  notes: string;
-  details: CreatePurchaseDetail[];
+export interface CrearCompra {
+  proveedorId: number;
+  fechaCompra: Date;
+  numeroFactura: string;
+  notas: string;
+  detalles: CrearDetalleCompra[];
 }
 
-export interface CreatePurchaseDetail {
-  productId: number;
-  variantId?: number;
-  quantity: number;
-  unitCost: number;
+export interface CrearDetalleCompra {
+  productoId: number;
+  varianteId?: number;
+  cantidad: number;
+  costoUnitario: number;
 }

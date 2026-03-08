@@ -5,7 +5,7 @@ import { ShopService } from '../../services/shop.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { MetaService } from '../../services/meta.service';
-import { Product } from '../../models/product.model';
+import { Producto } from '../../models/product.model';
 import { HeroSliderComponent } from '../../components/hero-slider/hero-slider.component';
 import { TrustBadgesComponent } from '../../components/trust-badges/trust-badges.component';
 import { CategoryGridComponent } from '../../components/category-grid/category-grid.component';
@@ -25,8 +25,8 @@ import { CategoryGridComponent } from '../../components/category-grid/category-g
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  featuredProducts: Product[] = [];
-  loading = true;
+  productosDestacados: Producto[] = [];
+  cargando = true;
 
   @ViewChild('productsGrid') productsGridRef?: ElementRef;
 
@@ -38,36 +38,35 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.metaService.updateMetaTags({
-      title: 'NobleStep — Calzado Premium',
-      description: 'Descubre nuestra colección de calzado premium. Zapatos, zapatillas y más con envío gratis en compras mayores a S/100.',
-      type: 'website'
+    this.metaService.actualizarMetaEtiquetas({
+      titulo: 'NobleStep — Calzado Premium',
+      descripcion: 'Descubre nuestra colección de calzado premium. Zapatos, zapatillas y más con envío gratis en compras mayores a S/100.',
+      tipo: 'website'
     });
-    this.loadFeaturedProducts();
+    this.cargarProductosDestacados();
   }
 
-  loadFeaturedProducts() {
-    this.loading = true;
-    this.shopService.getProducts().subscribe({
-      next: (products: any) => {
-        // Soporte para respuesta array o paginada {items:[]}
-        const list = Array.isArray(products) ? products : (products.items || products.data || []);
-        this.featuredProducts = list.slice(0, 8);
-        this.loading = false;
+  cargarProductosDestacados() {
+    this.cargando = true;
+    this.shopService.obtenerProductos(undefined, undefined, undefined, undefined, 1, 8).subscribe({
+      next: (response: any) => {
+        const lista = response.items || (Array.isArray(response) ? response : []);
+        this.productosDestacados = lista.slice(0, 8);
+        this.cargando = false;
       },
       error: (err) => {
         console.error('Error cargando productos:', err);
-        this.loading = false;
+        this.cargando = false;
       }
     });
   }
 
-  addToCart(product: Product) {
-    const result = this.cartService.addToCart(product);
-    if (result.success) {
-      this.notificationService.success(`✓ ${product.name} agregado al carrito`);
+  agregarAlCarrito(producto: Producto) {
+    const resultado = this.cartService.agregarAlCarrito(producto);
+    if (resultado.success) {
+      this.notificationService.success(`✓ ${producto.nombre} agregado al carrito`);
     } else {
-      this.notificationService.error(result.message);
+      this.notificationService.error(resultado.message);
     }
   }
 
@@ -78,20 +77,20 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  isNew(product: Product): boolean {
-    if (!product.createdAt) return false;
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return new Date(product.createdAt) > thirtyDaysAgo;
+  esNuevo(producto: Producto): boolean {
+    if (!producto.creadoEn) return false;
+    const haceTreintaDias = new Date();
+    haceTreintaDias.setDate(haceTreintaDias.getDate() - 30);
+    return new Date(producto.creadoEn) > haceTreintaDias;
   }
 
-  isLowStock(product: Product): boolean {
-    return product.stock > 0 && product.stock < 5;
+  esBajoStock(producto: Producto): boolean {
+    return producto.stock > 0 && producto.stock < 5;
   }
 
-  getProductImage(product: Product): string {
-    if (product.imageUrl) return product.imageUrl;
-    const n = (product.name + ' ' + (product.categoryName || '')).toLowerCase();
+  obtenerImagenProducto(producto: Producto): string {
+    if (producto.urlImagen) return producto.urlImagen;
+    const n = (producto.nombre + ' ' + (producto.nombreCategoria || '')).toLowerCase();
     if (n.includes('running') || n.includes('runner')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80';
     if (n.includes('sneaker') || n.includes('zapatilla')) return 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&q=80';
     if (n.includes('formal') || n.includes('oxford') || n.includes('vestir') || n.includes('clásic')) return 'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=600&q=80';
@@ -112,6 +111,6 @@ export class HomeComponent implements OnInit {
       'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80',
       'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80',
     ];
-    return fallbacks[product.id % fallbacks.length];
+    return fallbacks[producto.id % fallbacks.length];
   }
 }

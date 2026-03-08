@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # ── MySQL Database ──────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: noblestep-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-noblestep_dev_2026}
+      MYSQL_DATABASE: noblestep_db
+      MYSQL_USER: noblestep
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-noblestep_dev_2026}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../database/noblestep_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-noblestep_dev_2026}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Backend API (.NET 8) ────────────────────────
+  api:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile
+    container_name: noblestep-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      NOBLESTEP_DB_CONNECTION: "Server=db;Port=3306;Database=noblestep_db;User=noblestep;Password=${MYSQL_PASSWORD:-noblestep_dev_2026};"
+      NOBLESTEP_JWT_SECRET: "DEV-SECRET-KEY-CHANGE-IN-PRODUCTION-MIN-32-CHARS!!"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  db_data:
+    driver: local

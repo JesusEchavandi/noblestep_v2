@@ -1,50 +1,50 @@
-export interface ProductVariant {
+export interface VarianteProducto {
   id: number;
-  productId: number;
-  productName: string;
-  brand: string;
-  size: string;
+  productoId: number;
+  nombreProducto: string;
+  marca: string;
+  talla: string;
   stock: number;
-  isActive: boolean;
+  activo: boolean;
 }
 
-export interface Product {
+export interface Producto {
   id: number;
-  name: string;
-  brand: string;
-  categoryId: number;
-  categoryName: string;
-  size: string;
-  price: number;
-  salePrice: number;
+  nombre: string;
+  marca: string;
+  categoriaId: number;
+  nombreCategoria: string;
+  talla: string;
+  precio: number;
+  precioVenta: number;
   stock: number;
-  imageUrl?: string;
-  description?: string;
-  isActive: boolean;
-  variants?: ProductVariant[];
+  urlImagen?: string;
+  descripcion?: string;
+  activo: boolean;
+  variantes?: VarianteProducto[];
 }
 
-export interface CreateProduct {
-  name: string;
-  brand: string;
-  categoryId: number;
-  size: string;
-  price: number;
-  salePrice: number;
+export interface CrearProducto {
+  nombre: string;
+  marca: string;
+  categoriaId: number;
+  talla: string;
+  precio: number;
+  precioVenta: number;
   stock: number;
-  imageUrl?: string;
-  description?: string;
+  urlImagen?: string;
+  descripcion?: string;
 }
 
-export interface UpdateProduct extends CreateProduct {
-  isActive: boolean;
+export interface ActualizarProducto extends CrearProducto {
+  activo: boolean;
 }
 
-export interface CreateVariant {
-  size: string;
+export interface CrearVariante {
+  talla: string;
   stock: number;
 }
 
-export interface UpdateVariantStock {
+export interface ActualizarStockVariante {
   stock: number;
 }

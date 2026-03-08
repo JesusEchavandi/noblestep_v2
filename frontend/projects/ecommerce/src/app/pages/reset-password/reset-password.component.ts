@@ -17,13 +17,13 @@ import { NotificationService } from '../../services/notification.service';
           <p>Ingresa tu nueva contraseña</p>
         </div>
 
-        <form (ngSubmit)="onSubmit()" class="reset-form">
+        <form (ngSubmit)="alEnviar()" class="reset-form">
           <div class="form-group">
             <label for="newPassword">Nueva Contraseña</label>
             <input
               type="password"
               id="newPassword"
-              [(ngModel)]="newPassword"
+              [(ngModel)]="nuevaContrasena"
               name="newPassword"
               placeholder="••••••••"
               required
@@ -36,15 +36,15 @@ import { NotificationService } from '../../services/notification.service';
             <input
               type="password"
               id="confirmPassword"
-              [(ngModel)]="confirmPassword"
+              [(ngModel)]="confirmarContrasena"
               name="confirmPassword"
               placeholder="••••••••"
               required
             />
           </div>
 
-          <button type="submit" class="btn-primary" [disabled]="loading">
-            {{ loading ? 'Restableciendo...' : 'Restablecer Contraseña' }}
+          <button type="submit" class="btn-primary" [disabled]="cargando">
+            {{ cargando ? 'Restableciendo...' : 'Restablecer Contraseña' }}
           </button>
 
           <div class="back-to-login">
@@ -155,13 +155,39 @@ import { NotificationService } from '../../services/notification.service';
     .link:hover {
       text-decoration: underline;
     }
+
+    /* Responsive */
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .reset-card { padding: 2.25rem; max-width: 440px; }
+      .reset-header h1 { font-size: 1.6rem; }
+      .form-group input { padding: 0.65rem; font-size: 0.9rem; }
+      .btn-primary { padding: 0.75rem; font-size: 0.9rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .reset-card { padding: 3.5rem; max-width: 560px; }
+      .reset-header h1 { font-size: 2.5rem; }
+      .reset-header p { font-size: 1.1rem; }
+      .form-group label { font-size: 1.05rem; }
+      .form-group input { padding: 1rem; font-size: 1.1rem; }
+      .btn-primary { padding: 1.1rem; font-size: 1.1rem; }
+    }
+
+    @media (max-width: 480px) {
+      .reset-container { padding: 1rem; }
+      .reset-card { padding: 1.75rem; }
+      .reset-header h1 { font-size: 1.5rem; }
+    }
   `]
 })
 export class ResetPasswordComponent implements OnInit {
   token = '';
-  newPassword = '';
-  confirmPassword = '';
-  loading = false;
+  nuevaContrasena = '';
+  confirmarContrasena = '';
+  cargando = false;
 
   constructor(
     private authService: EcommerceAuthService,
@@ -179,31 +205,31 @@ export class ResetPasswordComponent implements OnInit {
     }
   }
 
-  onSubmit() {
-    if (!this.newPassword || !this.confirmPassword) {
+  alEnviar() {
+    if (!this.nuevaContrasena || !this.confirmarContrasena) {
       this.notificationService.warning('Por favor completa todos los campos');
       return;
     }
 
-    if (this.newPassword.length < 6) {
+    if (this.nuevaContrasena.length < 6) {
       this.notificationService.warning('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
-    if (this.newPassword !== this.confirmPassword) {
+    if (this.nuevaContrasena !== this.confirmarContrasena) {
       this.notificationService.warning('Las contraseñas no coinciden');
       return;
     }
 
-    this.loading = true;
-    this.authService.resetPassword(this.token, this.newPassword).subscribe({
-      next: (response) => {
-        this.loading = false;
+    this.cargando = true;
+    this.authService.restablecerContrasena(this.token, this.nuevaContrasena).subscribe({
+      next: (respuesta: any) => {
+        this.cargando = false;
         this.notificationService.success('Contraseña restablecida exitosamente');
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        this.loading = false;
+      error: (error: any) => {
+        this.cargando = false;
         this.notificationService.error(error.error?.message || 'Error al restablecer la contraseña');
       }
     });

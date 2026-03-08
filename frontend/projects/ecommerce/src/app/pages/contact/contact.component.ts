@@ -12,15 +12,15 @@ import { NotificationService } from '../../services/notification.service';
   styleUrls: ['./contact.component.css']
 })
 export class ContactComponent {
-  contactForm = {
+  formularioContacto = {
     name: '',
     email: '',
     phone: '',
     message: ''
   };
   
-  submitting = false;
-  submitted = false;
+  enviando = false;
+  enviado = false;
   error = false;
 
   constructor(
@@ -28,23 +28,23 @@ export class ContactComponent {
     private notificationService: NotificationService
   ) {}
 
-  onSubmit() {
-    if (this.isFormValid()) {
-      this.submitting = true;
+  alEnviar() {
+    if (this.esFormularioValido()) {
+      this.enviando = true;
       
-      this.shopService.submitContact(this.contactForm).subscribe({
+      this.shopService.enviarContacto(this.formularioContacto).subscribe({
         next: () => {
-          this.submitting = false;
-          this.submitted = true;
+          this.enviando = false;
+          this.enviado = true;
           this.notificationService.success('✓ Mensaje enviado correctamente. Nos contactaremos pronto.');
-          this.resetForm();
+          this.reiniciarFormulario();
           
           // Ocultar mensaje de éxito después de 5 segundos
-          setTimeout(() => this.submitted = false, 5000);
+          setTimeout(() => this.enviado = false, 5000);
         },
         error: (err) => {
-          console.error('Error submitting contact form:', err);
-          this.submitting = false;
+          console.error('Error al enviar formulario de contacto:', err);
+          this.enviando = false;
           this.error = true;
           this.notificationService.error('Error al enviar el mensaje. Por favor, intenta nuevamente.');
           
@@ -57,15 +57,15 @@ export class ContactComponent {
     }
   }
 
-  isFormValid(): boolean {
-    return !!(this.contactForm.name && 
-              this.contactForm.email && 
-              this.contactForm.phone && 
-              this.contactForm.message);
+  esFormularioValido(): boolean {
+    return !!(this.formularioContacto.name && 
+              this.formularioContacto.email && 
+              this.formularioContacto.phone && 
+              this.formularioContacto.message);
   }
 
-  resetForm() {
-    this.contactForm = {
+  reiniciarFormulario() {
+    this.formularioContacto = {
       name: '',
       email: '',
       phone: '',

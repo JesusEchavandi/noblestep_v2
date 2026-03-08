@@ -1,35 +1,35 @@
-export interface Supplier {
+export interface Proveedor {
   id: number;
-  companyName: string;
-  contactName: string;
-  documentNumber: string;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  country: string;
-  isActive: boolean;
+  nombreEmpresa: string;
+  nombreContacto: string;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  direccion: string;
+  ciudad: string;
+  pais: string;
+  activo: boolean;
 }
 
-export interface CreateSupplier {
-  companyName: string;
-  contactName: string;
-  documentNumber: string;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  country: string;
+export interface CrearProveedor {
+  nombreEmpresa: string;
+  nombreContacto: string;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  direccion: string;
+  ciudad: string;
+  pais: string;
 }
 
-export interface UpdateSupplier {
-  companyName: string;
-  contactName: string;
-  documentNumber: string;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  country: string;
-  isActive: boolean;
+export interface ActualizarProveedor {
+  nombreEmpresa: string;
+  nombreContacto: string;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  direccion: string;
+  ciudad: string;
+  pais: string;
+  activo: boolean;
 }

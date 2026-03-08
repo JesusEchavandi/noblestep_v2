@@ -1,15 +1,15 @@
-export interface Customer {
+export interface Cliente {
   id: number;
-  fullName: string;
-  documentNumber: string;
-  phone: string;
-  email: string;
-  isActive: boolean;
+  nombreCompleto: string;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  activo: boolean;
 }
 
-export interface CreateCustomer {
-  fullName: string;
-  documentNumber: string;
-  phone: string;
-  email: string;
+export interface CrearCliente {
+  nombreCompleto: string;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
 }

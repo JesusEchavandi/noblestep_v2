@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupplierService } from '../services/supplier.service';
 import { AuthService } from '../services/auth.service';
-import { Supplier, CreateSupplier } from '../models/supplier.model';
+import { Proveedor, CrearProveedor } from '../models/supplier.model';
 
 @Component({
   selector: 'app-supplier-list',
@@ -17,12 +17,12 @@ import { Supplier, CreateSupplier } from '../models/supplier.model';
       </div>
 
       <div class="row">
-        <div class="col-lg-8">
+        <div class="col-12">
           <div class="card">
             <div class="card-header">
               <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-list-ul"></i> Lista de Proveedores</h5>
-                <span class="badge bg-info">{{ filteredSuppliers.length }} registros</span>
+                <span class="badge bg-info">{{ proveedoresFiltrados.length }} registros</span>
               </div>
             </div>
             <div class="card-body">
@@ -36,36 +36,36 @@ import { Supplier, CreateSupplier } from '../models/supplier.model';
                         type="text" 
                         class="form-control" 
                         placeholder="Buscar por empresa o contacto..."
-                        [(ngModel)]="filters.searchText"
-                        (ngModelChange)="applyFilters()"
+                        [(ngModel)]="filtros.textoBusqueda"
+                        (ngModelChange)="aplicarFiltros()"
                       />
                     </div>
                   </div>
                   <div class="col-md-3">
                     <select 
                       class="form-select" 
-                      [(ngModel)]="filters.city"
-                      (ngModelChange)="applyFilters()"
+                      [(ngModel)]="filtros.ciudad"
+                      (ngModelChange)="aplicarFiltros()"
                     >
                       <option value="">Todas las ciudades</option>
-                      <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+                      <option *ngFor="let ciudad of ciudades" [value]="ciudad">{{ ciudad }}</option>
                     </select>
                   </div>
                   <div class="col-md-3">
                     <select 
                       class="form-select" 
-                      [(ngModel)]="filters.country"
-                      (ngModelChange)="applyFilters()"
+                      [(ngModel)]="filtros.pais"
+                      (ngModelChange)="aplicarFiltros()"
                     >
                       <option value="">Todos los países</option>
-                      <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+                      <option *ngFor="let pais of paises" [value]="pais">{{ pais }}</option>
                     </select>
                   </div>
                   <div class="col-md-2">
                     <select 
                       class="form-select" 
-                      [(ngModel)]="filters.status"
-                      (ngModelChange)="applyFilters()"
+                      [(ngModel)]="filtros.estado"
+                      (ngModelChange)="aplicarFiltros()"
                     >
                       <option value="">Todos</option>
                       <option value="active">Activos</option>
@@ -75,7 +75,7 @@ import { Supplier, CreateSupplier } from '../models/supplier.model';
                 </div>
                 <div class="row mt-2">
                   <div class="col-12">
-                    <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
+                    <button class="btn btn-sm btn-outline-secondary" (click)="limpiarFiltros()">
                       <i class="bi bi-x-circle"></i> Limpiar filtros
                     </button>
                   </div>
@@ -88,66 +88,66 @@ import { Supplier, CreateSupplier } from '../models/supplier.model';
                 </div>
               </div>
 
-              <div *ngIf="!loading && filteredSuppliers.length === 0" class="text-center py-5">
+              <div *ngIf="!loading && proveedoresFiltrados.length === 0" class="text-center py-5">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-secondary);"></i>
                 <p class="text-muted mt-3">No se encontraron proveedores</p>
               </div>
 
-              <div *ngIf="!loading && filteredSuppliers.length > 0" class="table-responsive">
+              <div *ngIf="!loading && proveedoresFiltrados.length > 0" class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th style="cursor: pointer;" (click)="sortBy('companyName')">
+                      <th style="cursor: pointer;" (click)="ordenarPor('nombreEmpresa')">
                         Empresa 
-                        <i class="bi" [ngClass]="getSortIcon('companyName')"></i>
+                        <i class="bi" [ngClass]="obtenerIconoOrden('nombreEmpresa')"></i>
                       </th>
-                      <th style="cursor: pointer;" (click)="sortBy('contactName')">
+                      <th style="cursor: pointer;" (click)="ordenarPor('nombreContacto')">
                         Contacto 
-                        <i class="bi" [ngClass]="getSortIcon('contactName')"></i>
+                        <i class="bi" [ngClass]="obtenerIconoOrden('nombreContacto')"></i>
                       </th>
                       <th>RUC/Documento</th>
                       <th>Teléfono</th>
                       <th>Email</th>
-                      <th style="cursor: pointer;" (click)="sortBy('city')">
+                      <th style="cursor: pointer;" (click)="ordenarPor('ciudad')">
                         Ciudad 
-                        <i class="bi" [ngClass]="getSortIcon('city')"></i>
+                        <i class="bi" [ngClass]="obtenerIconoOrden('ciudad')"></i>
                       </th>
                       <th>Estado</th>
-                      <th *ngIf="isAdmin" class="text-end">Acciones</th>
+                      <th *ngIf="esAdmin" class="text-end">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let supplier of filteredSuppliers">
+                    <tr *ngFor="let prov of proveedoresPaginados">
                       <td>
-                        <strong>{{ supplier.companyName }}</strong>
+                        <strong>{{ prov.nombreEmpresa }}</strong>
                       </td>
-                      <td>{{ supplier.contactName }}</td>
+                      <td>{{ prov.nombreContacto }}</td>
                       <td>
-                        <code>{{ supplier.documentNumber }}</code>
+                        <code>{{ prov.numeroDocumento }}</code>
                       </td>
                       <td>
-                        <a [href]="'tel:' + supplier.phone" class="text-decoration-none">
-                          <i class="bi bi-telephone"></i> {{ supplier.phone }}
+                        <a [href]="'tel:' + prov.telefono" class="text-decoration-none">
+                          <i class="bi bi-telephone"></i> {{ prov.telefono }}
                         </a>
                       </td>
                       <td>
-                        <a [href]="'mailto:' + supplier.email" class="text-decoration-none">
-                          <i class="bi bi-envelope"></i> {{ supplier.email }}
+                        <a [href]="'mailto:' + prov.correo" class="text-decoration-none">
+                          <i class="bi bi-envelope"></i> {{ prov.correo }}
                         </a>
                       </td>
                       <td>
-                        <i class="bi bi-geo-alt"></i> {{ supplier.city || 'N/A' }}
+                        <i class="bi bi-geo-alt"></i> {{ prov.ciudad || 'N/A' }}
                       </td>
                       <td>
-                        <span class="badge" [class.bg-success]="supplier.isActive" [class.bg-secondary]="!supplier.isActive">
-                          {{ supplier.isActive ? 'Activo' : 'Inactivo' }}
+                        <span class="badge" [class.bg-success]="prov.activo" [class.bg-secondary]="!prov.activo">
+                          {{ prov.activo ? 'Activo' : 'Inactivo' }}
                         </span>
                       </td>
-                      <td *ngIf="isAdmin" class="text-end">
-                        <button (click)="editSupplier(supplier)" class="btn btn-sm btn-outline-primary me-2" title="Editar">
+                      <td *ngIf="esAdmin" class="text-end">
+                        <button (click)="editarProveedor(prov)" class="btn btn-sm btn-outline-primary me-2" title="Editar">
                           <i class="bi bi-pencil"></i>
                         </button>
-                        <button (click)="deleteSupplier(supplier.id)" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                        <button (click)="eliminarProveedor(prov.id)" class="btn btn-sm btn-outline-danger" title="Eliminar">
                           <i class="bi bi-trash"></i>
                         </button>
                       </td>
@@ -155,145 +155,96 @@ import { Supplier, CreateSupplier } from '../models/supplier.model';
                   </tbody>
                 </table>
               </div>
+              
+              <!-- Paginación -->
+              <div *ngIf="totalPaginas > 1" class="d-flex justify-content-between align-items-center mt-3">
+                <small class="text-muted">
+                  {{ (paginaActual-1)*tamanoPagina+1 }}–{{ paginaActual*tamanoPagina > proveedoresFiltrados.length ? proveedoresFiltrados.length : paginaActual*tamanoPagina }} de {{ proveedoresFiltrados.length }}
+                </small>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item" [class.disabled]="paginaActual===1">
+                    <button class="page-link" (click)="irAPagina(paginaActual-1)">‹</button>
+                  </li>
+                  <li *ngFor="let p of paginas" class="page-item" [class.active]="p===paginaActual">
+                    <button class="page-link" (click)="irAPagina(p)">{{ p }}</button>
+                  </li>
+                  <li class="page-item" [class.disabled]="paginaActual===totalPaginas">
+                    <button class="page-link" (click)="irAPagina(paginaActual+1)">›</button>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="col-md-4" *ngIf="isAdmin">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0">{{ isEditMode ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor' }}</h5>
+      <!-- Formulario crear/editar (debajo, ancho completo) -->
+      <div class="card mt-4" *ngIf="esAdmin">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ modoEdicion ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor' }}</h5>
+          <button *ngIf="modoEdicion" type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">
+            <i class="bi bi-x-lg"></i> Cancelar
+          </button>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #supplierForm="ngForm">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label for="nombreEmpresa" class="form-label">Nombre de Empresa *</label>
+                <input type="text" class="form-control" id="nombreEmpresa" name="nombreEmpresa"
+                  [(ngModel)]="proveedor.nombreEmpresa" required />
+              </div>
+              <div class="col-md-3">
+                <label for="nombreContacto" class="form-label">Nombre de Contacto *</label>
+                <input type="text" class="form-control" id="nombreContacto" name="nombreContacto"
+                  [(ngModel)]="proveedor.nombreContacto" required />
+              </div>
+              <div class="col-md-2">
+                <label for="numeroDocumento" class="form-label">RUC/Documento *</label>
+                <input type="text" class="form-control" id="numeroDocumento" name="numeroDocumento"
+                  [(ngModel)]="proveedor.numeroDocumento" required />
+              </div>
+              <div class="col-md-2">
+                <label for="telefono" class="form-label">Teléfono *</label>
+                <input type="tel" class="form-control" id="telefono" name="telefono"
+                  [(ngModel)]="proveedor.telefono" required />
+              </div>
+              <div class="col-md-2">
+                <label for="correo" class="form-label">Email *</label>
+                <input type="email" class="form-control" id="correo" name="correo"
+                  [(ngModel)]="proveedor.correo" required />
+              </div>
+              <div class="col-md-3">
+                <label for="direccion" class="form-label">Dirección</label>
+                <input type="text" class="form-control" id="direccion" name="direccion"
+                  [(ngModel)]="proveedor.direccion" />
+              </div>
+              <div class="col-md-2">
+                <label for="ciudad" class="form-label">Ciudad</label>
+                <input type="text" class="form-control" id="ciudad" name="ciudad"
+                  [(ngModel)]="proveedor.ciudad" />
+              </div>
+              <div class="col-md-2">
+                <label for="pais" class="form-label">País</label>
+                <input type="text" class="form-control" id="pais" name="pais"
+                  [(ngModel)]="proveedor.pais" />
+              </div>
+              <div class="col-md-2" *ngIf="modoEdicion">
+                <label class="form-label">&nbsp;</label>
+                <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" id="activo" name="activo"
+                    [(ngModel)]="proveedor.activo" />
+                  <label class="form-check-label" for="activo">Activo</label>
+                </div>
+              </div>
+              <div class="col-md-3 d-flex align-items-end gap-2">
+                <button *ngIf="modoEdicion" type="button" class="btn btn-secondary" (click)="cancelarEdicion()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" [disabled]="!supplierForm.form.valid || guardando">
+                  {{ guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Crear') }}
+                </button>
+              </div>
             </div>
-            <div class="card-body">
-              <form (ngSubmit)="onSubmit()" #supplierForm="ngForm">
-                <div class="mb-3">
-                  <label for="companyName" class="form-label">Nombre de Empresa *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="companyName"
-                    name="companyName"
-                    [(ngModel)]="supplier.companyName"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="contactName" class="form-label">Nombre de Contacto *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="contactName"
-                    name="contactName"
-                    [(ngModel)]="supplier.contactName"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="documentNumber" class="form-label">RUC/Documento *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="documentNumber"
-                    name="documentNumber"
-                    [(ngModel)]="supplier.documentNumber"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="phone" class="form-label">Teléfono *</label>
-                  <input
-                    type="tel"
-                    class="form-control"
-                    id="phone"
-                    name="phone"
-                    [(ngModel)]="supplier.phone"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="email" class="form-label">Email *</label>
-                  <input
-                    type="email"
-                    class="form-control"
-                    id="email"
-                    name="email"
-                    [(ngModel)]="supplier.email"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="address" class="form-label">Dirección</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="address"
-                    name="address"
-                    [(ngModel)]="supplier.address"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="city" class="form-label">Ciudad</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="city"
-                    name="city"
-                    [(ngModel)]="supplier.city"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="country" class="form-label">País</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="country"
-                    name="country"
-                    [(ngModel)]="supplier.country"
-                  />
-                </div>
-
-                <div class="mb-3" *ngIf="isEditMode">
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="isActive"
-                      name="isActive"
-                      [(ngModel)]="supplier.isActive"
-                    />
-                    <label class="form-check-label" for="isActive">
-                      Activo
-                    </label>
-                  </div>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2">
-                  <button
-                    *ngIf="isEditMode"
-                    type="button"
-                    class="btn btn-secondary"
-                    (click)="cancelEdit()"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    class="btn btn-primary"
-                    [disabled]="!supplierForm.form.valid || saving"
-                  >
-                    {{ saving ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear') }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
@@ -303,215 +254,214 @@ export class SupplierListComponent implements OnInit {
   private supplierService = inject(SupplierService);
   private authService = inject(AuthService);
 
-  suppliers: Supplier[] = [];
-  filteredSuppliers: Supplier[] = [];
-  cities: string[] = [];
-  countries: string[] = [];
+  proveedores: Proveedor[] = [];
+  proveedoresFiltrados: Proveedor[] = [];
+  proveedoresPaginados: Proveedor[] = [];
+  ciudades: string[] = [];
+  paises: string[] = [];
   
-  filters = {
-    searchText: '',
-    city: '',
-    country: '',
-    status: ''
+  filtros = {
+    textoBusqueda: '',
+    ciudad: '',
+    pais: '',
+    estado: ''
   };
 
-  sortColumn: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  columnaOrden: string = '';
+  direccionOrden: 'asc' | 'desc' = 'asc';
 
-  supplier: any = {
-    companyName: '',
-    contactName: '',
-    documentNumber: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    country: '',
-    isActive: true
+  // Paginación
+  paginaActual = 1;
+  tamanoPagina = 10;
+  totalPaginas = 1;
+  paginas: number[] = [];
+
+  proveedor: any = {
+    nombreEmpresa: '',
+    nombreContacto: '',
+    numeroDocumento: '',
+    telefono: '',
+    correo: '',
+    direccion: '',
+    ciudad: '',
+    pais: '',
+    activo: true
   };
   loading = true;
-  saving = false;
-  isEditMode = false;
-  editingId = 0;
-  isAdmin = this.authService.hasRole('Administrator');
+  guardando = false;
+  modoEdicion = false;
+  editandoId = 0;
+  esAdmin = this.authService.tieneRol('Administrador');
 
   ngOnInit(): void {
-    this.loadSuppliers();
+    this.cargarProveedores();
   }
 
-  loadSuppliers(): void {
+  cargarProveedores(): void {
     this.loading = true;
-    this.supplierService.getSuppliers().subscribe({
-      next: (data) => {
-        this.suppliers = data;
-        this.filteredSuppliers = data;
-        this.extractFilterOptions();
+    this.supplierService.obtenerProveedores().subscribe({
+      next: (datos) => {
+        this.proveedores = datos;
+        this.aplicarFiltros();
+        this.extraerOpcionesFiltro();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error al cargar proveedores:', error);
+      error: (err: any) => {
+        console.error('Error al cargar proveedores:', err);
         this.loading = false;
       }
     });
   }
 
-  extractFilterOptions(): void {
-    // Extract unique cities
-    const citySet = new Set(this.suppliers
-      .map(s => s.city)
-      .filter(city => city && city.trim() !== ''));
-    this.cities = Array.from(citySet).sort();
+  extraerOpcionesFiltro(): void {
+    const setCiudades = new Set(this.proveedores
+      .map(s => s.ciudad)
+      .filter(c => c && c.trim() !== ''));
+    this.ciudades = Array.from(setCiudades).sort();
 
-    // Extract unique countries
-    const countrySet = new Set(this.suppliers
-      .map(s => s.country)
-      .filter(country => country && country.trim() !== ''));
-    this.countries = Array.from(countrySet).sort();
+    const setPaises = new Set(this.proveedores
+      .map(s => s.pais)
+      .filter(p => p && p.trim() !== ''));
+    this.paises = Array.from(setPaises).sort();
   }
 
-  applyFilters(): void {
-    this.filteredSuppliers = this.suppliers.filter(supplier => {
-      // Search text filter
-      const searchMatch = !this.filters.searchText || 
-        supplier.companyName.toLowerCase().includes(this.filters.searchText.toLowerCase()) ||
-        supplier.contactName.toLowerCase().includes(this.filters.searchText.toLowerCase()) ||
-        supplier.documentNumber.toLowerCase().includes(this.filters.searchText.toLowerCase()) ||
-        supplier.email.toLowerCase().includes(this.filters.searchText.toLowerCase());
+  aplicarFiltros(): void {
+    this.proveedoresFiltrados = this.proveedores.filter(prov => {
+      const coincideBusqueda = !this.filtros.textoBusqueda || 
+        prov.nombreEmpresa.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
+        prov.nombreContacto.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
+        prov.numeroDocumento.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
+        prov.correo.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase());
 
-      // City filter
-      const cityMatch = !this.filters.city || supplier.city === this.filters.city;
+      const coincideCiudad = !this.filtros.ciudad || prov.ciudad === this.filtros.ciudad;
+      const coincidePais = !this.filtros.pais || prov.pais === this.filtros.pais;
+      const coincideEstado = !this.filtros.estado || 
+        (this.filtros.estado === 'active' && prov.activo) ||
+        (this.filtros.estado === 'inactive' && !prov.activo);
 
-      // Country filter
-      const countryMatch = !this.filters.country || supplier.country === this.filters.country;
-
-      // Status filter
-      const statusMatch = !this.filters.status || 
-        (this.filters.status === 'active' && supplier.isActive) ||
-        (this.filters.status === 'inactive' && !supplier.isActive);
-
-      return searchMatch && cityMatch && countryMatch && statusMatch;
+      return coincideBusqueda && coincideCiudad && coincidePais && coincideEstado;
     });
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
   }
 
-  clearFilters(): void {
-    this.filters = {
-      searchText: '',
-      city: '',
-      country: '',
-      status: ''
-    };
-    this.filteredSuppliers = this.suppliers;
+  limpiarFiltros(): void {
+    this.filtros = { textoBusqueda: '', ciudad: '', pais: '', estado: '' };
+    this.proveedoresFiltrados = this.proveedores;
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
   }
 
-  sortBy(column: string): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  ordenarPor(columna: string): void {
+    if (this.columnaOrden === columna) {
+      this.direccionOrden = this.direccionOrden === 'asc' ? 'desc' : 'asc';
     } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+      this.columnaOrden = columna;
+      this.direccionOrden = 'asc';
     }
-
-    this.filteredSuppliers.sort((a: any, b: any) => {
-      const aVal = a[column] || '';
-      const bVal = b[column] || '';
-      
-      if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+    this.proveedoresFiltrados.sort((a: any, b: any) => {
+      const aVal = a[columna] || '';
+      const bVal = b[columna] || '';
+      if (aVal < bVal) return this.direccionOrden === 'asc' ? -1 : 1;
+      if (aVal > bVal) return this.direccionOrden === 'asc' ? 1 : -1;
       return 0;
     });
+    this.actualizarPaginacion();
   }
 
-  getSortIcon(column: string): string {
-    if (this.sortColumn !== column) return 'bi-arrow-down-up';
-    return this.sortDirection === 'asc' ? 'bi-arrow-up' : 'bi-arrow-down';
+  obtenerIconoOrden(columna: string): string {
+    if (this.columnaOrden !== columna) return 'bi-arrow-down-up';
+    return this.direccionOrden === 'asc' ? 'bi-arrow-up' : 'bi-arrow-down';
+  }
+
+  actualizarPaginacion(): void {
+    this.totalPaginas = Math.max(1, Math.ceil(this.proveedoresFiltrados.length / this.tamanoPagina));
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = this.totalPaginas;
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    this.proveedoresPaginados = this.proveedoresFiltrados.slice(inicio, inicio + this.tamanoPagina);
+    this.paginas = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
+
+  irAPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.actualizarPaginacion();
   }
 
   onSubmit(): void {
-    if (this.saving) return;
-    
-    this.saving = true;
+    if (this.guardando) return;
+    this.guardando = true;
 
-    if (this.isEditMode) {
-      this.supplierService.updateSupplier(this.editingId, this.supplier).subscribe({
+    if (this.modoEdicion) {
+      this.supplierService.actualizarProveedor(this.editandoId, this.proveedor).subscribe({
         next: () => {
           alert('✅ Proveedor actualizado correctamente');
-          this.loadSuppliers();
-          this.resetForm();
+          this.cargarProveedores();
+          this.resetFormulario();
         },
-        error: (error) => {
-          console.error('Error al actualizar proveedor:', error);
-          const errorMsg = error?.error?.message || error?.message || 'Error al actualizar el proveedor';
-          alert('❌ Error: ' + errorMsg);
-          this.saving = false;
+        error: (err: any) => {
+          console.error('Error al actualizar proveedor:', err);
+          alert('❌ Error: ' + (err?.error?.message || 'Error al actualizar el proveedor'));
+          this.guardando = false;
         }
       });
     } else {
-      this.supplierService.createSupplier(this.supplier).subscribe({
+      this.supplierService.crearProveedor(this.proveedor).subscribe({
         next: () => {
           alert('✅ Proveedor creado correctamente');
-          this.loadSuppliers();
-          this.resetForm();
+          this.cargarProveedores();
+          this.resetFormulario();
         },
-        error: (error) => {
-          console.error('Error al crear proveedor:', error);
-          const errorMsg = error?.error?.message || error?.message || 'Error al crear el proveedor';
-          alert('❌ Error: ' + errorMsg);
-          this.saving = false;
+        error: (err: any) => {
+          console.error('Error al crear proveedor:', err);
+          alert('❌ Error: ' + (err?.error?.message || 'Error al crear el proveedor'));
+          this.guardando = false;
         }
       });
     }
   }
 
-  editSupplier(supplier: Supplier): void {
-    this.isEditMode = true;
-    this.editingId = supplier.id;
-    this.supplier = {
-      companyName: supplier.companyName,
-      contactName: supplier.contactName,
-      documentNumber: supplier.documentNumber,
-      phone: supplier.phone,
-      email: supplier.email,
-      address: supplier.address,
-      city: supplier.city,
-      country: supplier.country,
-      isActive: supplier.isActive
+  editarProveedor(prov: Proveedor): void {
+    this.modoEdicion = true;
+    this.editandoId = prov.id;
+    this.proveedor = {
+      nombreEmpresa: prov.nombreEmpresa,
+      nombreContacto: prov.nombreContacto,
+      numeroDocumento: prov.numeroDocumento,
+      telefono: prov.telefono,
+      correo: prov.correo,
+      direccion: prov.direccion,
+      ciudad: prov.ciudad,
+      pais: prov.pais,
+      activo: prov.activo
     };
   }
 
-  deleteSupplier(id: number): void {
+  eliminarProveedor(id: number): void {
     if (confirm('¿Está seguro que desea eliminar este proveedor?')) {
-      this.supplierService.deleteSupplier(id).subscribe({
+      this.supplierService.eliminarProveedor(id).subscribe({
         next: () => {
           alert('✅ Proveedor eliminado correctamente');
-          this.loadSuppliers();
+          this.cargarProveedores();
         },
-        error: (error) => {
-          console.error('Error al eliminar proveedor:', error);
-          const errorMsg = error?.error?.message || error?.message || 'Error al eliminar el proveedor';
-          alert('❌ Error: ' + errorMsg);
+        error: (err: any) => {
+          alert('❌ Error: ' + (err?.error?.message || 'Error al eliminar el proveedor'));
         }
       });
     }
   }
 
-  cancelEdit(): void {
-    this.resetForm();
+  cancelarEdicion(): void {
+    this.resetFormulario();
   }
 
-  resetForm(): void {
-    this.supplier = {
-      companyName: '',
-      contactName: '',
-      documentNumber: '',
-      phone: '',
-      email: '',
-      address: '',
-      city: '',
-      country: '',
-      isActive: true
+  resetFormulario(): void {
+    this.proveedor = {
+      nombreEmpresa: '', nombreContacto: '', numeroDocumento: '',
+      telefono: '', correo: '', direccion: '', ciudad: '', pais: '', activo: true
     };
-    this.isEditMode = false;
-    this.editingId = 0;
-    this.saving = false;
+    this.modoEdicion = false;
+    this.editandoId = 0;
+    this.guardando = false;
   }
 }

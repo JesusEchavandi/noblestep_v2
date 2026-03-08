@@ -1,68 +1,69 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
-export interface OrderItem {
-  productId: number;
-  variantId?: number;  // ID de la variante (talla) — obligatorio si el producto tiene variantes
-  quantity: number;
+export interface ItemPedido {
+  productoId: number;
+  varianteId?: number;
+  cantidad: number;
 }
 
-export interface CreateOrderData {
-  customerFullName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
-  customerCity: string;
-  customerDistrict: string;
-  customerReference?: string;
-  customerDocumentNumber?: string;
-  paymentMethod: string;
-  paymentDetails?: string;
-  paymentProofBase64?: string;
-  invoiceType: string;
-  companyName?: string;
-  companyRUC?: string;
-  companyAddress?: string;
-  items: OrderItem[];
+export interface DatosCrearPedido {
+  nombreCompletoCliente: string;
+  correoCliente: string;
+  telefonoCliente: string;
+  direccionCliente: string;
+  ciudadCliente: string;
+  distritoCliente: string;
+  referenciaCliente?: string;
+  documentoCliente?: string;
+  metodoPago: string;
+  detallePago?: string;
+  comprobantePagoBase64?: string;
+  tipoComprobante: string;
+  nombreEmpresa?: string;
+  rucEmpresa?: string;
+  direccionEmpresa?: string;
+  items: ItemPedido[];
 }
 
-export interface OrderDetail {
+export interface DetallePedido {
   id: number;
-  productId: number;
-  productName: string;
-  productCode: string;
-  productSize?: string;
-  quantity: number;
-  unitPrice: number;
+  productoId: number;
+  nombreProducto: string;
+  codigoProducto: string;
+  tallaProducto?: string;
+  cantidad: number;
+  precioUnitario: number;
   subtotal: number;
 }
 
-export interface Order {
+export interface Pedido {
   id: number;
-  orderNumber: string;
-  customerFullName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
-  customerCity: string;
-  customerDistrict: string;
-  customerReference?: string;
+  numeroPedido: string;
+  nombreCompletoCliente: string;
+  correoCliente: string;
+  telefonoCliente: string;
+  direccionCliente: string;
+  ciudadCliente: string;
+  distritoCliente: string;
+  referenciaCliente?: string;
   subtotal: number;
-  shippingCost: number;
+  costoEnvio: number;
   total: number;
-  paymentMethod: string;
-  paymentStatus: string;
-  orderStatus: string;
-  paymentProofUrl?: string;
-  adminNotes?: string;
-  invoiceType: string;
-  companyName?: string;
-  companyRUC?: string;
-  orderDate: Date;
-  deliveredDate?: Date;
-  items: OrderDetail[];
+  metodoPago: string;
+  estadoPago: string;
+  estadoPedido: string;
+  urlComprobantePago?: string;
+  notasAdmin?: string;
+  tipoComprobante: string;
+  nombreEmpresa?: string;
+  rucEmpresa?: string;
+  fechaPedido: Date;
+  fechaEntregado?: Date;
+  items: DetallePedido[];
 }
 
 @Injectable({
@@ -73,15 +74,17 @@ export class OrderService {
 
   constructor(private http: HttpClient) { }
 
-  createOrder(orderData: CreateOrderData): Observable<Order> {
-    return this.http.post<Order>(this.apiUrl, orderData);
+  crearPedido(datosPedido: DatosCrearPedido): Observable<Pedido> {
+    return this.http.post<Pedido>(this.apiUrl, datosPedido);
   }
 
-  getMyOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/my-orders`);
+  obtenerMisPedidos(): Observable<Pedido[]> {
+    return this.http.get<{ datos: Pedido[]; pagina: number; tamanoPagina: number; total: number; totalPaginas: number }>(`${this.apiUrl}/my-orders`).pipe(
+      map(res => res.datos)
+    );
   }
 
-  getOrder(id: number): Observable<Order> {
-    return this.http.get<Order>(`${this.apiUrl}/${id}`);
+  obtenerPedido(id: number): Observable<Pedido> {
+    return this.http.get<Pedido>(`${this.apiUrl}/${id}`);
   }
 }

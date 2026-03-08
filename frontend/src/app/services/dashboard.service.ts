@@ -3,66 +3,66 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface DashboardMetrics {
-  totalSales: number;
-  totalSalesCount: number;
-  todaySales: number;
-  todaySalesCount: number;
-  monthSales: number;
-  monthSalesCount: number;
-  totalProducts: number;
-  activeProducts: number;
-  lowStockProducts: number;
-  totalCustomers: number;
-  totalSuppliers: number;
-  totalPurchases: number;
-  totalPurchasesCount: number;
-  averageSaleAmount: number;
+export interface MetricasPanel {
+  totalVentas: number;
+  cantidadTotalVentas: number;
+  ventasHoy: number;
+  cantidadVentasHoy: number;
+  ventasMes: number;
+  cantidadVentasMes: number;
+  totalProductos: number;
+  productosActivos: number;
+  productosBajoStock: number;
+  totalClientes: number;
+  totalProveedores: number;
+  totalCompras: number;
+  cantidadTotalCompras: number;
+  montoPromedioVenta: number;
 }
 
-export interface DailySales {
-  date: string;
+export interface VentasDiarias {
+  fecha: string;
   total: number;
-  count: number;
+  cantidad: number;
 }
 
-export interface MonthlySales {
-  year: number;
-  month: number;
-  monthName: string;
+export interface VentasMensuales {
+  anio: number;
+  mes: number;
+  nombreMes: string;
   total: number;
-  count: number;
+  cantidad: number;
 }
 
-export interface SalesChartData {
-  last7Days: DailySales[];
-  last6Months: MonthlySales[];
+export interface DatosGraficoVentas {
+  ultimos7Dias: VentasDiarias[];
+  ultimos6Meses: VentasMensuales[];
 }
 
-export interface TopProduct {
-  productId: number;
-  productName: string;
-  brand: string;
-  totalQuantitySold: number;
-  totalRevenue: number;
+export interface ProductoTop {
+  productoId: number;
+  nombreProducto: string;
+  marca: string;
+  cantidadTotalVendida: number;
+  ingresosTotales: number;
 }
 
-export interface LowStockProduct {
+export interface ProductoBajoStock {
   id: number;
-  name: string;
-  brand: string;
-  size: string;
+  nombre: string;
+  marca: string;
+  talla: string;
   stock: number;
-  price: number;
+  precio: number;
 }
 
-export interface RecentSale {
+export interface VentaReciente {
   id: number;
-  saleDate: string;
-  customerName: string;
+  fechaVenta: string;
+  nombreCliente: string;
   total: number;
-  status: string;
-  itemsCount: number;
+  estado: string;
+  cantidadItems: number;
 }
 
 @Injectable({
@@ -72,23 +72,23 @@ export class DashboardService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/dashboard`;
 
-  getMetrics(): Observable<DashboardMetrics> {
-    return this.http.get<DashboardMetrics>(`${this.apiUrl}/metrics`);
+  obtenerMetricas(): Observable<MetricasPanel> {
+    return this.http.get<MetricasPanel>(`${this.apiUrl}/metrics`);
   }
 
-  getSalesChartData(): Observable<SalesChartData> {
-    return this.http.get<SalesChartData>(`${this.apiUrl}/sales-chart`);
+  obtenerDatosGraficoVentas(): Observable<DatosGraficoVentas> {
+    return this.http.get<DatosGraficoVentas>(`${this.apiUrl}/sales-chart`);
   }
 
-  getTopProducts(limit: number = 5): Observable<TopProduct[]> {
-    return this.http.get<TopProduct[]>(`${this.apiUrl}/top-products?limit=${limit}`);
+  obtenerProductosTop(limite: number = 5): Observable<ProductoTop[]> {
+    return this.http.get<ProductoTop[]>(`${this.apiUrl}/top-products?limit=${limite}`);
   }
 
-  getLowStockProducts(threshold: number = 10): Observable<LowStockProduct[]> {
-    return this.http.get<LowStockProduct[]>(`${this.apiUrl}/low-stock?threshold=${threshold}`);
+  obtenerProductosBajoStock(umbral: number = 10): Observable<ProductoBajoStock[]> {
+    return this.http.get<ProductoBajoStock[]>(`${this.apiUrl}/low-stock?threshold=${umbral}`);
   }
 
-  getRecentSales(limit: number = 10): Observable<RecentSale[]> {
-    return this.http.get<RecentSale[]>(`${this.apiUrl}/recent-sales?limit=${limit}`);
+  obtenerVentasRecientes(limite: number = 10): Observable<VentaReciente[]> {
+    return this.http.get<VentaReciente[]>(`${this.apiUrl}/recent-sales?limit=${limite}`);
   }
 }

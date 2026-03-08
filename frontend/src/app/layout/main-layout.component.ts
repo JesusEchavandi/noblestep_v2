@@ -73,9 +73,9 @@ import { environment } from '../../environments/environment';
 
             <!-- User Info -->
             <span class="user-name">
-              <i class="fi fi-rr-circle-user"></i> {{ currentUser?.fullName }}
+              <i class="fi fi-rr-circle-user"></i> {{ currentUser?.nombreCompleto }}
             </span>
-            <span class="badge user-role">{{ currentUser?.role }}</span>
+            <span class="badge user-role">{{ currentUser?.rol }}</span>
             <button class="btn btn-outline-light btn-sm ms-3" (click)="logout()">
               <i class="fi fi-rr-sign-out-alt"></i> Cerrar Sesión
             </button>
@@ -84,20 +84,20 @@ import { environment } from '../../environments/environment';
       </header>
 
       <!-- Vertical Sidebar -->
-      <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <aside class="sidebar" [class.collapsed]="sidebarCollapsed" [class.mobile-open]="mobileMenuOpen">
         <nav class="sidebar-nav">
-          <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+          <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()">
             <i class="fi fi-rr-dashboard"></i>
             <span class="nav-text">Tablero</span>
           </a>
 
           <div class="nav-section">
             <div class="section-title">Inventario</div>
-            <a class="nav-item" routerLink="/products" routerLinkActive="active">
+            <a class="nav-item" routerLink="/products" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-box-alt"></i>
               <span class="nav-text">Productos</span>
             </a>
-            <a class="nav-item" routerLink="/categories" routerLinkActive="active">
+            <a class="nav-item" routerLink="/categories" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-apps"></i>
               <span class="nav-text">Categorías</span>
             </a>
@@ -105,11 +105,11 @@ import { environment } from '../../environments/environment';
 
           <div class="nav-section">
             <div class="section-title">Contactos</div>
-            <a class="nav-item" routerLink="/customers" routerLinkActive="active">
+            <a class="nav-item" routerLink="/customers" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-users"></i>
               <span class="nav-text">Clientes</span>
             </a>
-            <a class="nav-item" routerLink="/suppliers" routerLinkActive="active">
+            <a class="nav-item" routerLink="/suppliers" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-truck-side"></i>
               <span class="nav-text">Proveedores</span>
             </a>
@@ -117,15 +117,15 @@ import { environment } from '../../environments/environment';
 
           <div class="nav-section">
             <div class="section-title">Transacciones</div>
-            <a class="nav-item" routerLink="/sales" routerLinkActive="active">
+            <a class="nav-item" routerLink="/sales" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-shopping-cart-check"></i>
               <span class="nav-text">Ventas</span>
             </a>
-            <a class="nav-item" routerLink="/purchases" routerLinkActive="active">
+            <a class="nav-item" routerLink="/purchases" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-receipt"></i>
               <span class="nav-text">Compras</span>
             </a>
-            <a class="nav-item" routerLink="/ecommerce-orders" routerLinkActive="active">
+            <a class="nav-item" routerLink="/ecommerce-orders" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-store-alt"></i>
               <span class="nav-text">Pedidos E-commerce</span>
             </a>
@@ -133,21 +133,24 @@ import { environment } from '../../environments/environment';
 
           <div class="nav-section">
             <div class="section-title">Análisis</div>
-            <a class="nav-item" routerLink="/reports" routerLinkActive="active">
+            <a class="nav-item" routerLink="/reports" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-chart-histogram"></i>
               <span class="nav-text">Reportes</span>
             </a>
           </div>
 
-          <div class="nav-section" *ngIf="currentUser?.role === 'Administrator'">
+          <div class="nav-section" *ngIf="currentUser?.rol === 'Administrador'">
             <div class="section-title">Administración</div>
-            <a class="nav-item" routerLink="/users" routerLinkActive="active">
+            <a class="nav-item" routerLink="/users" routerLinkActive="active" (click)="closeMobileMenu()">
               <i class="fi fi-rr-user-gear"></i>
               <span class="nav-text">Usuarios</span>
             </a>
           </div>
         </nav>
       </aside>
+
+      <!-- Mobile overlay -->
+      <div class="mobile-overlay" [class.active]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
 
       <!-- Main Content -->
       <main class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
@@ -385,13 +388,32 @@ import { environment } from '../../environments/environment';
     .main-content {
       margin-top: 70px;
       margin-left: 280px;
-      padding: 2rem;
+      padding: 1.5rem;
       min-height: calc(100vh - 140px);
       transition: margin-left 0.3s ease;
     }
 
     .main-content.sidebar-collapsed {
       margin-left: 80px;
+    }
+
+    /* Responsive main content per resolution */
+    @media (min-width: 1400px) {
+      .main-content {
+        padding: 2rem;
+      }
+    }
+
+    @media (min-width: 1920px) {
+      .main-content {
+        padding: 2.5rem 3rem;
+      }
+    }
+
+    @media (max-width: 1399px) {
+      .main-content {
+        padding: 1rem 1.25rem;
+      }
     }
 
     /* Footer */
@@ -580,12 +602,21 @@ import { environment } from '../../environments/environment';
         display: none;
       }
 
-      .sidebar {
-        transform: translateX(-100%);
+      .user-role {
+        display: none;
       }
 
-      .sidebar:not(.collapsed) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+      }
+
+      .sidebar.mobile-open {
         transform: translateX(0);
+      }
+
+      .sidebar.collapsed {
+        width: 280px;
       }
 
       .main-content,
@@ -598,14 +629,163 @@ import { environment } from '../../environments/environment';
         right: -1rem;
       }
     }
+
+    .mobile-overlay {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-overlay {
+        display: block;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    /* Laptop 15" (1366px) — sidebar + header compact */
+    @media (max-width: 1399px) and (min-width: 769px) {
+      .top-header {
+        height: 60px;
+      }
+
+      .header-content {
+        padding: 0 1.25rem;
+      }
+
+      .app-title {
+        font-size: 1.35rem;
+        gap: 0.5rem;
+      }
+
+      .app-logo {
+        height: 36px;
+      }
+
+      .sidebar {
+        top: 60px;
+        width: 240px;
+        height: calc(100vh - 60px);
+      }
+
+      .sidebar.collapsed {
+        width: 64px;
+      }
+
+      .main-content {
+        margin-top: 60px;
+        margin-left: 240px;
+      }
+
+      .main-content.sidebar-collapsed {
+        margin-left: 64px;
+      }
+
+      .app-footer {
+        margin-left: 240px;
+      }
+
+      .app-footer.sidebar-collapsed {
+        margin-left: 64px;
+      }
+
+      .nav-item {
+        padding: 0.7rem 1.25rem;
+        font-size: 0.875rem;
+      }
+
+      .section-title {
+        font-size: 0.65rem;
+        padding: 0 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .nav-section {
+        margin-bottom: 1.25rem;
+      }
+
+      .user-name {
+        font-size: 0.85rem;
+      }
+
+      .user-role {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      .btn-icon {
+        font-size: 1.1rem;
+        padding: 0.35rem;
+      }
+    }
+
+    /* QHD 27" (2560px) — más espacio */
+    @media (min-width: 1920px) {
+      .top-header {
+        height: 76px;
+      }
+
+      .sidebar {
+        top: 76px;
+        width: 300px;
+        height: calc(100vh - 76px);
+      }
+
+      .main-content {
+        margin-top: 76px;
+        margin-left: 300px;
+      }
+
+      .main-content.sidebar-collapsed {
+        margin-left: 80px;
+      }
+
+      .app-footer {
+        margin-left: 300px;
+      }
+
+      .app-footer.sidebar-collapsed {
+        margin-left: 80px;
+      }
+
+      .app-title {
+        font-size: 1.85rem;
+      }
+
+      .app-logo {
+        height: 50px;
+      }
+
+      .nav-item {
+        padding: 1.1rem 1.75rem;
+        font-size: 1.05rem;
+      }
+
+      .nav-item i {
+        font-size: 1.35rem;
+      }
+    }
   `]
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   
-  currentUser = this.authService.getCurrentUser();
+  currentUser = this.authService.obtenerUsuarioActual();
   sidebarCollapsed = false;
+  mobileMenuOpen = false;
   showNotifications = false;
   notifications: Notification[] = [];
   unreadCount = 0;
@@ -633,7 +813,15 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   }
 
   toggleSidebar(): void {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
+    if (window.innerWidth <= 768) {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+    } else {
+      this.sidebarCollapsed = !this.sidebarCollapsed;
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
   }
 
   toggleNotifications(): void {
@@ -676,6 +864,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout();
+    this.authService.cerrarSesion();
   }
 }

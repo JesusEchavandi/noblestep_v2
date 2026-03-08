@@ -1,61 +1,59 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Product, CartItem, ProductSize } from '../models/product.model';
+import { Producto, ItemCarrito, TallaProducto } from '../models/product.model';
 
-export { CartItem };
+export { ItemCarrito };
 
 /** Estructura mínima persistida en localStorage — no incluye datos de producto */
-interface LeanCartItem {
-  productId: number;
-  variantId?: number;
-  quantity: number;
-  selectedSize?: string;
+interface ItemCarritoLean {
+  productoId: number;
+  varianteId?: number;
+  cantidad: number;
+  tallaSeleccionada?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private cartItems: CartItem[] = [];
-  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+  private itemsCarrito: ItemCarrito[] = [];
+  private sujetoCarrito = new BehaviorSubject<ItemCarrito[]>([]);
 
-  cart$ = this.cartSubject.asObservable();
+  carrito$ = this.sujetoCarrito.asObservable();
 
   constructor() {
-    // Cart starts empty; call rehydrateCart(products) after loading products from backend
-    this.loadLeanCart();
+    this.cargarCarritoLean();
   }
 
   /** Persiste solo IDs y cantidades — nunca precios ni datos de producto */
-  private saveLeanCart(): void {
-    const lean: LeanCartItem[] = this.cartItems.map(item => ({
-      productId: item.product.id,
-      variantId: item.variantId,
-      quantity: item.quantity,
-      selectedSize: item.selectedSize
+  private guardarCarritoLean(): void {
+    const lean: ItemCarritoLean[] = this.itemsCarrito.map(item => ({
+      productoId: item.producto.id,
+      varianteId: item.varianteId,
+      cantidad: item.cantidad,
+      tallaSeleccionada: item.tallaSeleccionada
     }));
     localStorage.setItem('cart', JSON.stringify(lean));
-    this.cartSubject.next([...this.cartItems]);
+    this.sujetoCarrito.next([...this.itemsCarrito]);
   }
 
   /**
    * Carga el carrito lean desde localStorage.
-   * Los CartItem sin producto completo NO se emiten hasta rehidratación.
+   * Los ItemCarrito sin producto completo NO se emiten hasta rehidratación.
    */
-  private loadLeanCart(): void {
+  private cargarCarritoLean(): void {
     try {
       const saved = localStorage.getItem('cart');
       if (saved) {
-        const lean: LeanCartItem[] = JSON.parse(saved);
-        // Validar estructura básica
+        const lean: ItemCarritoLean[] = JSON.parse(saved);
         if (Array.isArray(lean)) {
-          this.cartItems = lean
-            .filter(i => i && typeof i.productId === 'number' && typeof i.quantity === 'number')
+          this.itemsCarrito = lean
+            .filter(i => i && typeof i.productoId === 'number' && typeof i.cantidad === 'number')
             .map(i => ({
-              product: { id: i.productId } as Product, // placeholder hasta rehidratación
-              variantId: i.variantId,
-              quantity: i.quantity,
-              selectedSize: i.selectedSize
+              producto: { id: i.productoId } as Producto, // placeholder hasta rehidratación
+              varianteId: i.varianteId,
+              cantidad: i.cantidad,
+              tallaSeleccionada: i.tallaSeleccionada
             }));
         }
       }
@@ -69,108 +67,108 @@ export class CartService {
    * Llamar desde app.component o catalog después de obtener los productos.
    * Elimina del carrito productos que ya no existen o están inactivos.
    */
-  rehydrateCart(availableProducts: Product[]): void {
-    const productMap = new Map(availableProducts.map(p => [p.id, p]));
-    this.cartItems = this.cartItems
+  rehidratarCarrito(productosDisponibles: Producto[]): void {
+    const mapaProductos = new Map(productosDisponibles.map(p => [p.id, p]));
+    this.itemsCarrito = this.itemsCarrito
       .map(item => {
-        const product = productMap.get(item.product.id);
-        if (!product) return null;
-        return { ...item, product };
+        const producto = mapaProductos.get(item.producto.id);
+        if (!producto) return null;
+        return { ...item, producto };
       })
-      .filter((item): item is CartItem => item !== null);
-    this.cartSubject.next([...this.cartItems]);
+      .filter((item): item is ItemCarrito => item !== null);
+    this.sujetoCarrito.next([...this.itemsCarrito]);
   }
 
-  addToCart(
-    product: Product,
-    quantity: number = 1,
-    variant?: ProductSize
+  agregarAlCarrito(
+    producto: Producto,
+    cantidad: number = 1,
+    variante?: TallaProducto
   ): { success: boolean; message: string } {
-    const hasVariants = product.sizes && product.sizes.length > 0;
-    if (hasVariants && !variant) {
+    const tieneVariantes = producto.tallas && producto.tallas.length > 0;
+    if (tieneVariantes && !variante) {
       return { success: false, message: 'Debes seleccionar una talla' };
     }
-    const stockAvailable = variant ? variant.stock : product.stock;
-    if (stockAvailable <= 0) {
+    const stockDisponible = variante ? variante.stock : producto.stock;
+    if (stockDisponible <= 0) {
       return { success: false, message: 'No hay stock disponible para esta talla' };
     }
-    const existingItem = this.cartItems.find(item =>
-      item.product.id === product.id &&
-      (variant ? item.variantId === variant.variantId : !item.variantId)
+    const itemExistente = this.itemsCarrito.find(item =>
+      item.producto.id === producto.id &&
+      (variante ? item.varianteId === variante.varianteId : !item.varianteId)
     );
-    if (existingItem) {
-      const newQty = existingItem.quantity + quantity;
-      if (newQty > stockAvailable) {
-        return { success: false, message: `Solo hay ${stockAvailable} unidades disponibles en talla ${variant?.size ?? ''}` };
+    if (itemExistente) {
+      const nuevaCantidad = itemExistente.cantidad + cantidad;
+      if (nuevaCantidad > stockDisponible) {
+        return { success: false, message: `Solo hay ${stockDisponible} unidades disponibles en talla ${variante?.talla ?? ''}` };
       }
-      existingItem.quantity = newQty;
+      itemExistente.cantidad = nuevaCantidad;
     } else {
-      if (quantity > stockAvailable) {
-        return { success: false, message: `Solo hay ${stockAvailable} unidades disponibles` };
+      if (cantidad > stockDisponible) {
+        return { success: false, message: `Solo hay ${stockDisponible} unidades disponibles` };
       }
-      this.cartItems.push({
-        product,
-        quantity,
-        variantId: variant?.variantId,
-        selectedSize: variant?.size ?? product.size
+      this.itemsCarrito.push({
+        producto,
+        cantidad,
+        varianteId: variante?.varianteId,
+        tallaSeleccionada: variante?.talla ?? producto.talla
       });
     }
-    this.saveLeanCart();
+    this.guardarCarritoLean();
     return { success: true, message: 'Producto agregado al carrito' };
   }
 
-  removeFromCart(productId: number, variantId?: number): void {
-    this.cartItems = this.cartItems.filter(item =>
-      !(item.product.id === productId &&
-        (variantId ? item.variantId === variantId : !item.variantId))
+  quitarDelCarrito(productoId: number, varianteId?: number): void {
+    this.itemsCarrito = this.itemsCarrito.filter(item =>
+      !(item.producto.id === productoId &&
+        (varianteId ? item.varianteId === varianteId : !item.varianteId))
     );
-    this.saveLeanCart();
+    this.guardarCarritoLean();
   }
 
-  updateQuantity(productId: number, quantity: number, variantId?: number): void {
-    const item = this.cartItems.find(item =>
-      item.product.id === productId &&
-      (variantId ? item.variantId === variantId : !item.variantId)
+  actualizarCantidad(productoId: number, cantidad: number, varianteId?: number): void {
+    const item = this.itemsCarrito.find(item =>
+      item.producto.id === productoId &&
+      (varianteId ? item.varianteId === varianteId : !item.varianteId)
     );
     if (item) {
-      if (quantity <= 0) {
-        this.removeFromCart(productId, variantId);
+      if (cantidad <= 0) {
+        this.quitarDelCarrito(productoId, varianteId);
       } else {
-        item.quantity = quantity;
-        this.saveLeanCart();
+        item.cantidad = cantidad;
+        this.guardarCarritoLean();
       }
     }
   }
 
-  clearCart(): void {
-    this.cartItems = [];
-    this.saveLeanCart();
+  vaciarCarrito(): void {
+    this.itemsCarrito = [];
+    this.guardarCarritoLean();
   }
 
-  getCartItems(): CartItem[] {
-    return [...this.cartItems];
+  obtenerItemsCarrito(): ItemCarrito[] {
+    return [...this.itemsCarrito];
   }
 
-  getItemCount(): number {
-    return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+  obtenerCantidadItems(): number {
+    return this.itemsCarrito.reduce((total, item) => total + item.cantidad, 0);
   }
 
-  getLeanItemCount(): number {
+  obtenerCantidadItemsLean(): number {
     try {
       const saved = localStorage.getItem('cart');
       if (saved) {
-        const lean: LeanCartItem[] = JSON.parse(saved);
+        const lean: ItemCarritoLean[] = JSON.parse(saved);
         if (Array.isArray(lean)) {
-          return lean.reduce((sum, i) => sum + (i.quantity || 0), 0);
+          return lean.reduce((sum, i) => sum + (i.cantidad || 0), 0);
         }
       }
     } catch { /* ignore */ }
     return 0;
   }
 
-  getTotal(): number {
-    return this.cartItems.reduce(
-      (total, item) => total + ((item.product.salePrice || item.product.price) * item.quantity),
+  obtenerTotal(): number {
+    return this.itemsCarrito.reduce(
+      (total, item) => total + ((item.producto.precioVenta || item.producto.precio) * item.cantidad),
       0
     );
   }

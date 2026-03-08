@@ -1,32 +1,32 @@
-export interface Sale {
+export interface Venta {
   id: number;
-  customerId: number;
-  customerName: string;
-  saleDate: Date;
+  clienteId: number;
+  nombreCliente: string;
+  fechaVenta: Date;
   total: number;
-  status: string;
-  paymentMethod: string;
-  paymentStatus?: string;
-  transactionId?: string;
-  details: SaleDetail[];
+  estado: string;
+  metodoPago: string;
+  estadoPago?: string;
+  idTransaccion?: string;
+  detalles: DetalleVenta[];
 }
 
-export interface SaleDetail {
-  productId: number;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
+export interface DetalleVenta {
+  productoId: number;
+  nombreProducto: string;
+  cantidad: number;
+  precioUnitario: number;
   subtotal: number;
 }
 
-export interface CreateSale {
-  customerId: number;
-  paymentMethod: string;
-  transactionId?: string;
-  details: CreateSaleDetail[];
+export interface CrearVenta {
+  clienteId: number;
+  metodoPago: string;
+  idTransaccion?: string;
+  detalles: CrearDetalleVenta[];
 }
 
-export interface CreateSaleDetail {
-  productId: number;
-  quantity: number;
+export interface CrearDetalleVenta {
+  productoId: number;
+  cantidad: number;
 }

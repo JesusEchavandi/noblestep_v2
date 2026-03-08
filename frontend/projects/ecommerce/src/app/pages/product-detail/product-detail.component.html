@@ -7,12 +7,12 @@
       <i class="fi fi-rr-angle-right"></i>
       <a routerLink="/catalog">Catálogo</a>
       <i class="fi fi-rr-angle-right"></i>
-      <span *ngIf="product">{{ product.name }}</span>
+      <span *ngIf="producto">{{ producto.nombre }}</span>
     </div>
   </div>
 
   <!-- Skeleton Loading -->
-  <div *ngIf="loading" class="container pd-skeleton">
+  <div *ngIf="cargando" class="container pd-skeleton">
     <div class="skeleton-gallery">
       <div class="skeleton-main"></div>
       <div class="skeleton-thumbs">
@@ -28,7 +28,7 @@
   </div>
 
   <!-- Error -->
-  <div *ngIf="error && !loading" class="container pd-error">
+  <div *ngIf="error && !cargando" class="container pd-error">
     <div class="error-box">
       <i class="fi fi-rr-box-open"></i>
       <h2>Producto no encontrado</h2>
@@ -38,7 +38,7 @@
   </div>
 
   <!-- Producto -->
-  <div *ngIf="product && !loading" class="container pd-layout">
+  <div *ngIf="producto && !cargando" class="container pd-layout">
 
     <!-- ===== GALERÍA ===== -->
     <div class="pd-gallery">
@@ -46,26 +46,26 @@
       <!-- Miniaturas verticales -->
       <div class="thumbs-rail">
         <button
-          *ngFor="let img of galleryImages; let i = index"
+          *ngFor="let img of imagenesGaleria; let i = index"
           class="thumb-btn"
-          [class.active]="activeImageIndex === i"
+          [class.active]="indiceImagenActiva === i"
           (click)="setActiveImage(i)">
-          <img [src]="img" [alt]="product.name + ' ' + (i+1)"
+          <img [src]="img" [alt]="producto.nombre + ' ' + (i+1)"
             (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&q=60'" />
         </button>
       </div>
 
       <!-- Imagen principal -->
-      <div class="main-img-wrap" (mousemove)="onZoomMove($event)" (mouseleave)="zoomActive=false" (mouseenter)="zoomActive=true">
-        <div class="badge-overlay" *ngIf="product.salePrice && product.salePrice < product.price">
-          <span class="badge-sale">-{{ getDiscountPercent() }}%</span>
+      <div class="main-img-wrap" (mousemove)="onZoomMove($event)" (mouseleave)="zoomActivo=false" (mouseenter)="zoomActivo=true">
+        <div class="badge-overlay" *ngIf="producto.precioVenta && producto.precioVenta < producto.precio">
+          <span class="badge-sale">-{{ obtenerPorcentajeDescuento() }}%</span>
         </div>
-        <div class="badge-overlay top-right" *ngIf="product.stock <= 5 && product.stock > 0">
-          <span class="badge-low">Últimas {{ product.stock }}</span>
+        <div class="badge-overlay top-right" *ngIf="producto.stock <= 5 && producto.stock > 0">
+          <span class="badge-low">Últimas {{ producto.stock }}</span>
         </div>
         <img
-          [src]="galleryImages[activeImageIndex]"
-          [alt]="product.name"
+          [src]="imagenesGaleria[indiceImagenActiva]"
+          [alt]="producto.nombre"
           class="main-img"
           (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80'"
           (click)="openLightbox()" />
@@ -73,10 +73,10 @@
       </div>
 
       <!-- Lightbox -->
-      <div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
+      <div class="lightbox" *ngIf="lightboxAbierto" (click)="closeLightbox()">
         <button class="lightbox-close" (click)="closeLightbox()"><i class="fi fi-rr-cross"></i></button>
         <button class="lightbox-prev" (click)="prevImage(); $event.stopPropagation()"><i class="fi fi-rr-angle-left"></i></button>
-        <img [src]="galleryImages[activeImageIndex]" [alt]="product.name" (click)="$event.stopPropagation()" />
+        <img [src]="imagenesGaleria[indiceImagenActiva]" [alt]="producto.nombre" (click)="$event.stopPropagation()" />
         <button class="lightbox-next" (click)="nextImage(); $event.stopPropagation()"><i class="fi fi-rr-angle-right"></i></button>
       </div>
     </div>
@@ -86,82 +86,82 @@
 
       <!-- Badge categoría -->
       <div class="cat-pill">
-        <i class="fi fi-rr-tag"></i> {{ product.categoryName }}
+        <i class="fi fi-rr-tag"></i> {{ producto.nombreCategoria }}
       </div>
 
       <!-- Título -->
-      <h1 class="pd-title">{{ product.name }}</h1>
+      <h1 class="pd-title">{{ producto.nombre }}</h1>
 
       <!-- Marca + código -->
       <div class="pd-meta">
-        <span *ngIf="product.brand" class="meta-brand"><i class="fi fi-rr-star"></i> {{ product.brand }}</span>
-        <span class="meta-code">REF: #{{ product.id }}</span>
+        <span *ngIf="producto.marca" class="meta-brand"><i class="fi fi-rr-star"></i> {{ producto.marca }}</span>
+        <span class="meta-code">REF: #{{ producto.id }}</span>
       </div>
 
       <!-- Precio -->
       <div class="price-row">
-        <span class="price-main">S/ {{ (product.salePrice || product.price) | number:'1.2-2' }}</span>
-        <span *ngIf="product.salePrice && product.salePrice < product.price" class="price-old">
-          S/ {{ product.price | number:'1.2-2' }}
+        <span class="price-main">S/ {{ (producto.precioVenta || producto.precio) | number:'1.2-2' }}</span>
+        <span *ngIf="producto.precioVenta && producto.precioVenta < producto.precio" class="price-old">
+          S/ {{ producto.precio | number:'1.2-2' }}
         </span>
-        <span *ngIf="product.salePrice && product.salePrice < product.price" class="discount-chip">
-          Ahorras S/ {{ (product.price - product.salePrice) | number:'1.2-2' }}
+        <span *ngIf="producto.precioVenta && producto.precioVenta < producto.precio" class="discount-chip">
+          Ahorras S/ {{ (producto.precio - producto.precioVenta) | number:'1.2-2' }}
         </span>
       </div>
 
       <!-- Stock -->
-      <div class="stock-row" [ngClass]="{'stock-ok': product.stock > 5, 'stock-low': product.stock <= 5 && product.stock > 0, 'stock-out': product.stock === 0}">
-        <i class="fi" [ngClass]="product.stock > 0 ? 'fi-rr-check' : 'fi-rr-cross-circle'"></i>
-        <span *ngIf="product.stock > 5">En stock — disponible</span>
-        <span *ngIf="product.stock <= 5 && product.stock > 0">¡Solo quedan {{ product.stock }} unidades!</span>
-        <span *ngIf="product.stock === 0">Agotado temporalmente</span>
+      <div class="stock-row" [ngClass]="{'stock-ok': producto.stock > 5, 'stock-low': producto.stock <= 5 && producto.stock > 0, 'stock-out': producto.stock === 0}">
+        <i class="fi" [ngClass]="producto.stock > 0 ? 'fi-rr-check' : 'fi-rr-cross-circle'"></i>
+        <span *ngIf="producto.stock > 5">En stock — disponible</span>
+        <span *ngIf="producto.stock <= 5 && producto.stock > 0">¡Solo quedan {{ producto.stock }} unidades!</span>
+        <span *ngIf="producto.stock === 0">Agotado temporalmente</span>
       </div>
 
       <!-- Selector de talla -->
-      <div class="size-section" *ngIf="(product.sizes || []).length > 0">
+      <div class="size-section" *ngIf="(producto.tallas || []).length > 0">
         <div class="size-header">
           <span class="size-label"><i class="fi fi-rr-ruler"></i> Talla</span>
-          <span class="size-selected" *ngIf="selectedSize">Seleccionada: <strong>{{ selectedSize }}</strong></span>
-          <span class="size-guide" *ngIf="!selectedSize">Elige una talla</span>
+          <span class="size-selected" *ngIf="tallaSeleccionada">Seleccionada: <strong>{{ tallaSeleccionada }}</strong></span>
+          <span class="size-guide" *ngIf="!tallaSeleccionada">Elige una talla</span>
         </div>
         <div class="size-grid">
           <button
-            *ngFor="let s of product.sizes"
+            *ngFor="let s of producto.tallas"
             class="size-chip"
-            [class.active]="selectedSize === s.size"
-            [disabled]="!s.available"
-            (click)="selectSize(s.size, s.variantId)">
-            {{ s.size }}
+            [class.active]="tallaSeleccionada === s.talla"
+            [disabled]="!s.disponible"
+            (click)="seleccionarTalla(s.talla, s.varianteId)">
+            {{ s.talla }}
           </button>
         </div>
-        <p class="size-warn" *ngIf="(product.sizes || []).length > 1 && !selectedSize">
+        <p class="size-warn" *ngIf="(producto.tallas || []).length > 1 && !tallaSeleccionada">
           <i class="fi fi-rr-info"></i> Debes seleccionar una talla para continuar
         </p>
       </div>
 
       <!-- Descripción -->
-      <div class="desc-section" *ngIf="product.description">
-        <p class="desc-text">{{ product.description }}</p>
+      <div class="desc-section" *ngIf="producto.descripcion">
+        <p class="desc-text">{{ producto.descripcion }}</p>
       </div>
 
       <!-- Cantidad + Agregar al carrito -->
-      <div class="purchase-box" *ngIf="product.stock > 0">
+      <div class="purchase-box" *ngIf="producto.stock > 0">
         <div class="qty-row">
           <span class="qty-label">Cantidad</span>
           <div class="qty-ctrl">
-            <button class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
+            <button class="qty-btn" (click)="disminuirCantidad()" [disabled]="cantidad <= 1">
               <i class="fi fi-rr-minus-small"></i>
             </button>
-            <span class="qty-val">{{ quantity }}</span>
-            <button class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity >= product.stock">
+            <span class="qty-val">{{ cantidad }}</span>
+            <button class="qty-btn" (click)="aumentarCantidad()" [disabled]="cantidad >= producto.stock">
               <i class="fi fi-rr-plus-small"></i>
             </button>
           </div>
-          <span class="qty-total">= S/ {{ ((product.salePrice || product.price) * quantity) | number:'1.2-2' }}</span>
+          <span class="qty-total">= S/ {{ ((producto.precioVenta || producto.precio) * cantidad) | number:'1.2-2' }}</span>
         </div>
 
-        <button class="btn-add-cart" (click)="addToCart()"
-          [disabled]="((product.sizes || []).length > 1 && !selectedSize)">
+        <button class="btn-add-cart" (click)="agregarAlCarrito()"
+          [disabled]="((producto.tallas || []).length > 1 && !tallaSeleccionada)">
           <i class="fi fi-rr-shopping-bag"></i>
           Agregar al carrito
         </button>
@@ -173,7 +173,7 @@
       </div>
 
       <!-- Sin stock -->
-      <div class="out-of-stock-box" *ngIf="product.stock === 0">
+      <div class="out-of-stock-box" *ngIf="producto.stock === 0">
         <p><i class="fi fi-rr-exclamation"></i> Producto temporalmente agotado</p>
         <button class="btn-wsp" (click)="consultarPorWsp()">
           <i class="fi fi-brands-whatsapp"></i> Avisar cuando esté disponible
@@ -212,19 +212,19 @@
   </div>
 
   <!-- Productos relacionados -->
-  <div *ngIf="product && !loading && relatedProducts.length > 0" class="related-section">
+  <div *ngIf="producto && !cargando && productosRelacionados.length > 0" class="related-section">
     <div class="container">
       <h2 class="related-title">También te puede interesar</h2>
       <div class="related-grid">
-        <a *ngFor="let rel of relatedProducts | slice:0:4"
+        <a *ngFor="let rel of productosRelacionados | slice:0:4"
           [routerLink]="['/product', rel.id]" class="related-card">
           <div class="rel-img-wrap">
-            <img [src]="getProductImage(rel)" [alt]="rel.name"
+            <img [src]="obtenerImagenProducto(rel)" [alt]="rel.nombre"
               (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80'" />
           </div>
           <div class="rel-info">
-            <span class="rel-name">{{ rel.name }}</span>
-            <span class="rel-price">S/ {{ (rel.salePrice || rel.price) | number:'1.2-2' }}</span>
+            <span class="rel-name">{{ rel.nombre }}</span>
+            <span class="rel-price">S/ {{ (rel.precioVenta || rel.precio) | number:'1.2-2' }}</span>
           </div>
         </a>
       </div>

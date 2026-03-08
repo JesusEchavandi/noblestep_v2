@@ -1,29 +1,29 @@
 <div class="catalog-page">
   <div class="container">
 
-    <!-- Header -->
+    <!-- Encabezado -->
     <div class="catalog-header">
       <h1>Catálogo de Productos</h1>
-      <p>{{ filteredProducts.length || products.length }} productos encontrados</p>
+      <p>{{ productosFiltrados.length || productos.length }} productos encontrados</p>
     </div>
 
-    <!-- Mobile filter btn -->
-    <button class="btn-mobile-filter" (click)="toggleFilters()">
+    <!-- Botón filtros móvil -->
+    <button class="btn-mobile-filter" (click)="alternarFiltros()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
       Filtros
     </button>
 
     <div class="catalog-layout">
 
-      <!-- SIDEBAR -->
-      <aside class="sidebar" [class.open]="filtersOpen">
+      <!-- BARRA LATERAL -->
+      <aside class="sidebar" [class.open]="filtrosAbiertos">
 
         <!-- Búsqueda -->
         <div class="sidebar-section">
           <h3>Buscar</h3>
           <div class="sidebar-search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Buscar productos..." />
+            <input type="text" [(ngModel)]="terminoBusqueda" (keyup.enter)="onBuscar()" placeholder="Buscar productos..." />
           </div>
         </div>
 
@@ -32,13 +32,13 @@
           <h3>Categoría</h3>
           <ul class="category-list">
             <li>
-              <button [class.active]="selectedCategoryId === null" (click)="onCategoryChange(null)">
-                Todos <span class="cat-count">{{ products.length }}</span>
+              <button [class.active]="categoriaSeleccionadaId === null" (click)="onCambioCategoria(null)">
+                Todos <span class="cat-count">{{ productos.length }}</span>
               </button>
             </li>
-            <li *ngFor="let cat of categories">
-              <button [class.active]="selectedCategoryId === cat.id" (click)="onCategoryChange(cat.id)">
-                {{ cat.name }} <span class="cat-count">{{ cat.productCount }}</span>
+            <li *ngFor="let cat of categorias">
+              <button [class.active]="categoriaSeleccionadaId === cat.id" (click)="onCambioCategoria(cat.id)">
+                {{ cat.nombre }} <span class="cat-count">{{ cat.cantidadProductos }}</span>
               </button>
             </li>
           </ul>
@@ -48,35 +48,35 @@
         <div class="sidebar-section">
           <h3>Precio (S/)</h3>
           <div class="price-inputs">
-            <input type="number" [(ngModel)]="minPrice" placeholder="Mín" />
+            <input type="number" [(ngModel)]="precioMinimo" placeholder="Mín" />
             <span class="price-sep">—</span>
-            <input type="number" [(ngModel)]="maxPrice" placeholder="Máx" />
+            <input type="number" [(ngModel)]="precioMaximo" placeholder="Máx" />
           </div>
-          <button class="btn-apply" (click)="onPriceFilter()">Aplicar</button>
+          <button class="btn-apply" (click)="onFiltroPrecio()">Aplicar</button>
         </div>
 
         <!-- Stock -->
         <div class="sidebar-section">
           <h3>Stock</h3>
           <label class="stock-toggle">
-            <input type="checkbox" [(ngModel)]="hideOutOfStock" (change)="toggleStockFilter()" />
+            <input type="checkbox" [(ngModel)]="ocultarSinStock" (change)="alternarFiltroStock()" />
             Ocultar sin stock
           </label>
         </div>
 
-        <button class="btn-clear-filters" (click)="clearFilters()">Limpiar filtros</button>
+        <button class="btn-clear-filters" (click)="limpiarFiltros()">Limpiar filtros</button>
       </aside>
 
-      <!-- PRODUCTS AREA -->
+      <!-- ÁREA DE PRODUCTOS -->
       <main class="products-area">
 
-        <!-- Toolbar -->
+        <!-- Barra de herramientas -->
         <div class="toolbar">
           <p class="results-count">
-            <strong>{{ (filteredProducts.length || products.length) }}</strong> productos
+            <strong>{{ (productosFiltrados.length || productos.length) }}</strong> productos
           </p>
           <div class="toolbar-right">
-            <select class="sort-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+            <select class="sort-select" [(ngModel)]="ordenarPor" (change)="onCambioOrden()">
               <option value="relevance">Relevancia</option>
               <option value="price-asc">Precio: Menor → Mayor</option>
               <option value="price-desc">Precio: Mayor → Menor</option>
@@ -85,8 +85,8 @@
           </div>
         </div>
 
-        <!-- Loading skeleton -->
-        <div *ngIf="loading" class="skeleton-grid">
+        <!-- Esqueleto de carga -->
+        <div *ngIf="cargando" class="skeleton-grid">
           <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
             <div class="skeleton-img"></div>
             <div class="skeleton-body">
@@ -97,58 +97,58 @@
           </div>
         </div>
 
-        <!-- Empty state -->
-        <div *ngIf="!loading && filteredProducts.length === 0 && products.length === 0" class="products-grid">
+        <!-- Estado vacío -->
+        <div *ngIf="!cargando && productosFiltrados.length === 0 && productos.length === 0" class="products-grid">
           <div class="empty-state">
             <div class="empty-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             </div>
             <h3>Sin productos</h3>
             <p>No encontramos productos con esos filtros</p>
-            <button class="btn-show-all" (click)="clearFilters()">Ver todos los productos</button>
+            <button class="btn-show-all" (click)="limpiarFiltros()">Ver todos los productos</button>
           </div>
         </div>
 
-        <!-- Products grid -->
-        <div *ngIf="!loading && (filteredProducts.length > 0 || products.length > 0)" class="products-grid">
+        <!-- Grilla de productos -->
+        <div *ngIf="!cargando && (productosFiltrados.length > 0 || productos.length > 0)" class="products-grid">
           <div class="product-card"
-               *ngFor="let product of (filteredProducts.length ? filteredProducts : products)"
-               [routerLink]="['/product', product.id]">
+               *ngFor="let producto of (productosFiltrados.length ? productosFiltrados : productos)"
+               [routerLink]="['/product', producto.id]">
 
-            <!-- Image -->
+            <!-- Imagen -->
             <div class="card-image-wrap">
-              <img *ngIf="getProductImage(product)" [src]="getProductImage(product)" [alt]="product.name" loading="lazy" />
-              <div *ngIf="!getProductImage(product)" class="img-placeholder">
+              <img *ngIf="obtenerImagenProducto(producto)" [src]="obtenerImagenProducto(producto)" [alt]="producto.nombre" loading="lazy" />
+              <div *ngIf="!obtenerImagenProducto(producto)" class="img-placeholder">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </div>
 
               <!-- Badge -->
               <span class="card-badge" [ngClass]="{
-                'badge-out': product.stock === 0,
-                'badge-new': product.stock > 10,
-                'badge-sale': product.stock <= 10 && product.stock > 0
+                'badge-out': producto.stock === 0,
+                'badge-new': producto.stock > 10,
+                'badge-sale': producto.stock <= 10 && producto.stock > 0
               }">
-                {{ product.stock === 0 ? 'Agotado' : product.stock <= 10 ? 'Últimas' : 'Nuevo' }}
+                {{ producto.stock === 0 ? 'Agotado' : producto.stock <= 10 ? 'Últimas' : 'Nuevo' }}
               </span>
 
-              <!-- Hover actions -->
+              <!-- Acciones hover -->
               <div class="card-actions" (click)="$event.stopPropagation()">
-                <button class="action-btn" (click)="onQuickView(product)" title="Vista rápida">
+                <button class="action-btn" (click)="onVistaRapida(producto)" title="Vista rápida">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
 
-            <!-- Body -->
+            <!-- Cuerpo -->
             <div class="card-body">
-              <p class="card-category">{{ product.categoryName }}</p>
-              <h3 class="card-name">{{ product.name }}</h3>
-              <p class="card-desc">{{ product.description }}</p>
+              <p class="card-category">{{ producto.nombreCategoria }}</p>
+              <h3 class="card-name">{{ producto.nombre }}</h3>
+              <p class="card-desc">{{ producto.descripcion }}</p>
               <div class="card-footer">
-                <div class="card-price">S/ {{ product.salePrice | number:'1.2-2' }}</div>
+                <div class="card-price">S/ {{ producto.precioVenta | number:'1.2-2' }}</div>
                 <button class="btn-add-cart"
-                        [disabled]="product.stock === 0"
-                        (click)="addToCart(product); $event.stopPropagation()">
+                        [disabled]="producto.stock === 0"
+                        (click)="agregarAlCarrito(producto); $event.stopPropagation()">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Cart
                 </button>
@@ -157,30 +157,42 @@
           </div>
         </div>
 
-        <!-- Quick View Modal -->
-        <div *ngIf="showQuickView && selectedProduct" class="qv-overlay" (click)="closeQuickView()">
+        <!-- Paginación -->
+        <nav *ngIf="totalPaginas > 1" class="pagination" aria-label="Paginación de productos">
+          <button class="page-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)" title="Primera página">«</button>
+          <button class="page-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)" title="Anterior">‹</button>
+          <button *ngFor="let p of paginasVisibles"
+                  class="page-btn" [class.active]="p === paginaActual"
+                  (click)="cambiarPagina(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)" title="Siguiente">›</button>
+          <button class="page-btn" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)" title="Última página">»</button>
+          <span class="page-info">{{ paginaActual }} de {{ totalPaginas }} ({{ totalItems }} productos)</span>
+        </nav>
+
+        <!-- Modal Vista Rápida -->
+        <div *ngIf="mostrarVistaRapida && productoSeleccionado" class="qv-overlay" (click)="cerrarVistaRapida()">
           <div class="qv-modal" (click)="$event.stopPropagation()">
-            <button class="qv-close" (click)="closeQuickView()">✕</button>
+            <button class="qv-close" (click)="cerrarVistaRapida()">✕</button>
 
             <div class="qv-image">
-              <img *ngIf="getProductImage(selectedProduct)" [src]="getProductImage(selectedProduct)" [alt]="selectedProduct.name" />
-              <div *ngIf="!getProductImage(selectedProduct)" class="img-placeholder">
+              <img *ngIf="obtenerImagenProducto(productoSeleccionado)" [src]="obtenerImagenProducto(productoSeleccionado)" [alt]="productoSeleccionado.nombre" />
+              <div *ngIf="!obtenerImagenProducto(productoSeleccionado)" class="img-placeholder">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </div>
             </div>
 
             <div class="qv-info">
-              <p class="qv-cat">{{ selectedProduct.categoryName }}</p>
-              <h3 class="qv-name">{{ selectedProduct.name }}</h3>
-              <p class="qv-price">S/ {{ selectedProduct.salePrice | number:'1.2-2' }}</p>
-              <p class="qv-desc">{{ selectedProduct.description }}</p>
-              <span class="qv-stock" [class.out]="selectedProduct.stock === 0">
-                {{ selectedProduct.stock > 0 ? 'En stock (' + selectedProduct.stock + ' disponibles)' : 'Sin stock' }}
+              <p class="qv-cat">{{ productoSeleccionado.nombreCategoria }}</p>
+              <h3 class="qv-name">{{ productoSeleccionado.nombre }}</h3>
+              <p class="qv-price">S/ {{ productoSeleccionado.precioVenta | number:'1.2-2' }}</p>
+              <p class="qv-desc">{{ productoSeleccionado.descripcion }}</p>
+              <span class="qv-stock" [class.out]="productoSeleccionado.stock === 0">
+                {{ productoSeleccionado.stock > 0 ? 'En stock (' + productoSeleccionado.stock + ' disponibles)' : 'Sin stock' }}
               </span>
               <div class="qv-actions">
-                <a [routerLink]="['/product', selectedProduct.id]" class="qv-btn-detail">Ver detalles</a>
-                <button class="qv-btn-cart" [disabled]="selectedProduct.stock === 0" (click)="addToCartFromQuickView()">
-                  {{ selectedProduct.stock > 0 ? '+ Agregar al carrito' : 'Sin stock' }}
+                <a [routerLink]="['/product', productoSeleccionado.id]" class="qv-btn-detail">Ver detalles</a>
+                <button class="qv-btn-cart" [disabled]="productoSeleccionado.stock === 0" (click)="agregarDesdeVistaRapida()">
+                  {{ productoSeleccionado.stock > 0 ? '+ Agregar al carrito' : 'Sin stock' }}
                 </button>
               </div>
             </div>

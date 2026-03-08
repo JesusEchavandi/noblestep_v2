@@ -1,13 +1,13 @@
 import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Product } from '../../models/product.model';
+import { Producto } from '../../models/product.model';
 
 @Component({
   selector: 'app-sticky-add-to-cart',
   standalone: true,
   imports: [CommonModule],
   template: `
-    @if (showSticky) {
+    @if (mostrarFijo) {
       <div class="sticky-cart" [@slideDown]>
         <div class="sticky-content">
           <div class="product-summary">
@@ -15,23 +15,23 @@ import { Product } from '../../models/product.model';
               <span class="placeholder-icon">📦</span>
             </div>
             <div class="product-info">
-              <h4 class="product-name">{{ product?.name }}</h4>
-              <p class="product-price">{{ formatPrice(product?.salePrice || 0) }}</p>
+              <h4 class="product-name">{{ producto?.nombre }}</h4>
+              <p class="product-price">{{ formatearPrecio(producto?.precioVenta || 0) }}</p>
             </div>
           </div>
           
           <div class="actions">
             <div class="quantity-selector">
-              <button class="qty-btn" (click)="decreaseQty()" [disabled]="quantity <= 1">
+              <button class="qty-btn" (click)="disminuirCantidad()" [disabled]="cantidad <= 1">
                 −
               </button>
-              <span class="qty-display">{{ quantity }}</span>
-              <button class="qty-btn" (click)="increaseQty()" [disabled]="quantity >= (product?.stock || 0)">
+              <span class="qty-display">{{ cantidad }}</span>
+              <button class="qty-btn" (click)="aumentarCantidad()" [disabled]="cantidad >= (producto?.stock || 0)">
                 +
               </button>
             </div>
             
-            <button class="add-to-cart-btn" (click)="addToCart()" [disabled]="!product || product.stock === 0">
+            <button class="add-to-cart-btn" (click)="agregarAlCarrito()" [disabled]="!producto || producto.stock === 0">
               <span class="icon">🛒</span>
               <span>Agregar al Carrito</span>
             </button>
@@ -194,6 +194,22 @@ import { Product } from '../../models/product.model';
       font-size: var(--font-size-lg);
     }
 
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .sticky-content { padding: var(--spacing-sm) 1.25rem; }
+      .product-name { font-size: var(--font-size-sm); }
+      .product-price { font-size: var(--font-size-base); }
+      .add-to-cart-btn { padding: var(--spacing-sm) var(--spacing-lg); font-size: var(--font-size-sm); }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .sticky-content { max-width: 1440px; margin: 0 auto; }
+      .product-name { font-size: var(--font-size-lg); }
+      .product-price { font-size: var(--font-size-xl); }
+      .add-to-cart-btn { padding: var(--spacing-md) var(--spacing-2xl); font-size: var(--font-size-base); }
+    }
+
     @media (max-width: 768px) {
       .sticky-cart {
         top: 60px;
@@ -223,45 +239,45 @@ import { Product } from '../../models/product.model';
   `]
 })
 export class StickyAddToCartComponent {
-  @Input() product: Product | null = null;
-  @Input() quantity: number = 1;
-  @Output() quantityChange = new EventEmitter<number>();
-  @Output() addToCartClick = new EventEmitter<void>();
+  @Input() producto: Producto | null = null;
+  @Input() cantidad: number = 1;
+  @Output() cambioCantidad = new EventEmitter<number>();
+  @Output() clicAgregarAlCarrito = new EventEmitter<void>();
 
-  showSticky = false;
-  private originalButtonPosition = 0;
+  mostrarFijo = false;
+  private posicionBotonOriginal = 0;
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    if (!this.originalButtonPosition) {
-      const addToCartButton = document.querySelector('.product-actions');
-      if (addToCartButton) {
-        this.originalButtonPosition = addToCartButton.getBoundingClientRect().top + window.pageYOffset;
+    if (!this.posicionBotonOriginal) {
+      const botonAgregar = document.querySelector('.product-actions');
+      if (botonAgregar) {
+        this.posicionBotonOriginal = botonAgregar.getBoundingClientRect().top + window.pageYOffset;
       }
     }
 
-    this.showSticky = window.pageYOffset > this.originalButtonPosition + 100;
+    this.mostrarFijo = window.pageYOffset > this.posicionBotonOriginal + 100;
   }
 
-  increaseQty() {
-    if (this.product && this.quantity < this.product.stock) {
-      this.quantity++;
-      this.quantityChange.emit(this.quantity);
+  aumentarCantidad() {
+    if (this.producto && this.cantidad < this.producto.stock) {
+      this.cantidad++;
+      this.cambioCantidad.emit(this.cantidad);
     }
   }
 
-  decreaseQty() {
-    if (this.quantity > 1) {
-      this.quantity--;
-      this.quantityChange.emit(this.quantity);
+  disminuirCantidad() {
+    if (this.cantidad > 1) {
+      this.cantidad--;
+      this.cambioCantidad.emit(this.cantidad);
     }
   }
 
-  addToCart() {
-    this.addToCartClick.emit();
+  agregarAlCarrito() {
+    this.clicAgregarAlCarrito.emit();
   }
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 }

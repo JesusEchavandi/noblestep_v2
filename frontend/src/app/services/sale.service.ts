@@ -2,9 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Sale, CreateSale } from '../models/sale.model';
+import { Venta, CrearVenta } from '../models/sale.model';
 import { environment } from '../../environments/environment';
-import { PagedResult } from './product.service';
+import { ResultadoPaginado } from './product.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,38 +14,38 @@ export class SaleService {
   private http = inject(HttpClient);
 
   /** Devuelve todas las ventas (pageSize=100 para compatibilidad con componentes existentes) */
-  getSales(): Observable<Sale[]> {
-    return this.http.get<PagedResult<Sale>>(`${this.API_URL}?page=1&pageSize=100`)
-      .pipe(map(res => res.data));
+  obtenerVentas(): Observable<Venta[]> {
+    return this.http.get<ResultadoPaginado<Venta>>(`${this.API_URL}?page=1&pageSize=100`)
+      .pipe(map(res => res.datos));
   }
 
   /** Versión paginada */
-  getSalesPaged(page = 1, pageSize = 50): Observable<PagedResult<Sale>> {
-    return this.http.get<PagedResult<Sale>>(`${this.API_URL}?page=${page}&pageSize=${pageSize}`);
+  obtenerVentasPaginadas(pagina = 1, tamanoPagina = 50): Observable<ResultadoPaginado<Venta>> {
+    return this.http.get<ResultadoPaginado<Venta>>(`${this.API_URL}?page=${pagina}&pageSize=${tamanoPagina}`);
   }
 
-  getSale(id: number): Observable<Sale> {
-    return this.http.get<Sale>(`${this.API_URL}/${id}`);
+  obtenerVenta(id: number): Observable<Venta> {
+    return this.http.get<Venta>(`${this.API_URL}/${id}`);
   }
 
-  createSale(sale: CreateSale): Observable<Sale> {
-    return this.http.post<Sale>(this.API_URL, sale);
+  crearVenta(venta: CrearVenta): Observable<Venta> {
+    return this.http.post<Venta>(this.API_URL, venta);
   }
 
-  getSalesByDate(startDate?: string, endDate?: string): Observable<any> {
+  obtenerVentasPorFecha(fechaInicio?: string, fechaFin?: string): Observable<any> {
     let url = `${this.API_URL}/reports/by-date`;
     const params = [];
-    if (startDate) params.push(`startDate=${startDate}`);
-    if (endDate) params.push(`endDate=${endDate}`);
+    if (fechaInicio) params.push(`startDate=${fechaInicio}`);
+    if (fechaFin) params.push(`endDate=${fechaFin}`);
     if (params.length > 0) url += `?${params.join('&')}`;
     return this.http.get<any>(url);
   }
 
-  getBestSellingProducts(limit: number = 10): Observable<any> {
-    return this.http.get<any>(`${this.API_URL}/reports/best-selling?limit=${limit}`);
+  obtenerProductosMasVendidos(limite: number = 10): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/reports/best-selling?limit=${limite}`);
   }
 
-  getTotalSales(): Observable<any> {
+  obtenerTotalVentas(): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/reports/total`);
   }
 }

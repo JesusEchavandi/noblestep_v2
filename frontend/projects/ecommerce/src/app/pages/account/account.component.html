@@ -1,7 +1,7 @@
 <div class="account-container">
   <div class="account-header">
     <h1>Mi Cuenta</h1>
-    <p>Bienvenido, {{ customer?.fullName }}</p>
+    <p>Bienvenido, {{ cliente?.nombreCompleto }}</p>
   </div>
 
   <div class="account-content">
@@ -10,26 +10,26 @@
       <nav class="account-nav">
         <button 
           class="nav-item" 
-          [class.active]="activeTab === 'orders'"
-          (click)="setActiveTab('orders')">
+          [class.active]="pestanaActiva === 'pedidos'"
+          (click)="establecerPestanaActiva('pedidos')">
           <i class="icon">📦</i>
           <span>Mis Pedidos</span>
         </button>
         <button 
           class="nav-item" 
-          [class.active]="activeTab === 'profile'"
-          (click)="setActiveTab('profile')">
+          [class.active]="pestanaActiva === 'perfil'"
+          (click)="establecerPestanaActiva('perfil')">
           <i class="icon">👤</i>
           <span>Mi Perfil</span>
         </button>
         <button 
           class="nav-item" 
-          [class.active]="activeTab === 'settings'"
-          (click)="setActiveTab('settings')">
+          [class.active]="pestanaActiva === 'configuracion'"
+          (click)="establecerPestanaActiva('configuracion')">
           <i class="icon">⚙️</i>
           <span>Configuración</span>
         </button>
-        <button class="nav-item logout" (click)="logout()">
+        <button class="nav-item logout" (click)="cerrarSesion()">
           <i class="icon">🚪</i>
           <span>Cerrar Sesión</span>
         </button>
@@ -39,12 +39,104 @@
     <!-- Main Content -->
     <div class="account-main">
       <!-- Mis Pedidos -->
+      <div *ngIf="pestanaActiva === 'pedidos'" class="tab-content">
+        <div class="tab-header">
+          <h2>Mis Pedidos</h2>
+          <p>Historial de todos tus pedidos</p>
+        </div>
+
+        <div *ngIf="cargando" class="loading">
+          <p>Cargando pedidos...</p>
+        </div>
+
+        <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
+          <p>📦 Aún no tienes pedidos</p>
+          <button class="btn-primary" routerLink="/tienda">Explorar Tienda</button>
+        </div>
+
+        <div *ngIf="!cargando && pedidos.length > 0" class="orders-list">
+          <div class="order-card" *ngFor="let pedido of pedidos">
+            <div class="order-header">
+              <div class="order-info">
+                <h3>Pedido #{{ pedido.numeroPedido }}</h3>
+                <span class="order-date">{{ formatearFecha(pedido.fechaPedido) }}</span>
+              </div>
+              <span class="status-badge" [style.background]="obtenerColorEstado(pedido.estadoPedido)">
+                {{ obtenerIconoEstadoPedido(pedido.estadoPedido) }} {{ obtenerTextoEstado(pedido.estadoPedido) }}
+              </span>
+            </div>
+
+            <div class="order-body">
+              <!-- Timeline -->
+              <div class="order-timeline">
+                <div class="timeline-step">
+                  <div class="step-icon" [class.done]="true">📝</div>
+                  <span class="step-label">Pedido</span>
+                </div>
+                <div class="timeline-step">
+                  <div class="step-icon" [class.done]="pedido.estadoPedido === 'EnProceso' || pedido.estadoPedido === 'Enviado' || pedido.estadoPedido === 'Entregado'"
+                       [class.active]="pedido.estadoPedido === 'EnProceso'">📦</div>
+                  <span class="step-label" [class.active]="pedido.estadoPedido === 'EnProceso'">En Proceso</span>
+                </div>
+                <div class="timeline-step">
+                  <div class="step-icon" [class.done]="pedido.estadoPedido === 'Enviado' || pedido.estadoPedido === 'Entregado'"
+                       [class.active]="pedido.estadoPedido === 'Enviado'">🚚</div>
+                  <span class="step-label" [class.active]="pedido.estadoPedido === 'Enviado'">Enviado</span>
+                </div>
+                <div class="timeline-step">
+                  <div class="step-icon" [class.done]="pedido.estadoPedido === 'Entregado'"
+                       [class.active]="pedido.estadoPedido === 'Entregado'">✅</div>
+                  <span class="step-label" [class.active]="pedido.estadoPedido === 'Entregado'">Entregado</span>
+                </div>
+              </div>
+
+              <!-- Items del pedido -->
+              <div class="order-items">
+                <div class="order-item" *ngFor="let item of pedido.items">
+                  <div class="item-info">
+                    <strong>{{ item.nombreProducto }}</strong>
+                    <small>{{ item.codigoProducto }}{{ item.tallaProducto ? ' · Talla: ' + item.tallaProducto : '' }}</small>
+                  </div>
+                  <div class="item-details">
+                    <span>{{ item.cantidad }} x {{ formatearPrecio(item.precioUnitario) }}</span>
+                    <strong>{{ formatearPrecio(item.subtotal) }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Resumen -->
+              <div class="order-summary">
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <span>{{ formatearPrecio(pedido.subtotal) }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Envío</span>
+                  <span>{{ pedido.costoEnvio > 0 ? formatearPrecio(pedido.costoEnvio) : 'Gratis' }}</span>
+                </div>
+                <div class="summary-row total">
+                  <strong>Total</strong>
+                  <strong>{{ formatearPrecio(pedido.total) }}</strong>
+                </div>
+              </div>
+
+              <!-- Info de pago -->
+              <div class="order-footer">
+                <div class="payment-info">
+                  <span>💳 {{ obtenerNombreMetodoPago(pedido.metodoPago) }}</span>
+                  <span>Estado de pago: {{ obtenerTextoEstadoPago(pedido.estadoPago) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Mi Perfil -->
-      <div *ngIf="activeTab === 'profile'" class="tab-content">
+      <div *ngIf="pestanaActiva === 'perfil'" class="tab-content">
         <div class="tab-header">
           <h2>Mi Perfil</h2>
-          <button *ngIf="!editingProfile" class="btn-secondary" (click)="toggleEditProfile()">
+          <button *ngIf="!editandoPerfil" class="btn-secondary" (click)="alternarEditarPerfil()">
             Editar Perfil
           </button>
         </div>
@@ -53,82 +145,82 @@
           <div class="profile-section">
             <h3>Información Personal</h3>
             
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Nombre Completo</label>
-              <p>{{ customer?.fullName }}</p>
+              <p>{{ cliente?.nombreCompleto }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Nombre Completo</label>
-              <input type="text" [(ngModel)]="profileForm.fullName" />
+              <input type="text" [(ngModel)]="formularioPerfil.nombreCompleto" />
             </div>
 
             <div class="form-group">
               <label>Correo Electrónico</label>
-              <p>{{ customer?.email }}</p>
+              <p>{{ cliente?.correo }}</p>
               <small>El correo no se puede modificar</small>
             </div>
 
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Teléfono</label>
-              <p>{{ customer?.phone || 'No especificado' }}</p>
+              <p>{{ cliente?.telefono || 'No especificado' }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="profileForm.phone" />
+              <input type="tel" [(ngModel)]="formularioPerfil.telefono" />
             </div>
 
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Documento de Identidad</label>
-              <p>{{ customer?.documentNumber || 'No especificado' }}</p>
+              <p>{{ cliente?.numeroDocumento || 'No especificado' }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Documento de Identidad</label>
-              <input type="text" [(ngModel)]="profileForm.documentNumber" />
+              <input type="text" [(ngModel)]="formularioPerfil.numeroDocumento" />
             </div>
           </div>
 
           <div class="profile-section">
             <h3>Dirección de Envío</h3>
 
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Dirección</label>
-              <p>{{ customer?.address || 'No especificada' }}</p>
+              <p>{{ cliente?.direccion || 'No especificada' }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Dirección</label>
-              <input type="text" [(ngModel)]="profileForm.address" />
+              <input type="text" [(ngModel)]="formularioPerfil.direccion" />
             </div>
 
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Ciudad</label>
-              <p>{{ customer?.city || 'No especificada' }}</p>
+              <p>{{ cliente?.ciudad || 'No especificada' }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Ciudad</label>
-              <input type="text" [(ngModel)]="profileForm.city" />
+              <input type="text" [(ngModel)]="formularioPerfil.ciudad" />
             </div>
 
-            <div class="form-group" *ngIf="!editingProfile">
+            <div class="form-group" *ngIf="!editandoPerfil">
               <label>Distrito</label>
-              <p>{{ customer?.district || 'No especificado' }}</p>
+              <p>{{ cliente?.distrito || 'No especificado' }}</p>
             </div>
-            <div class="form-group" *ngIf="editingProfile">
+            <div class="form-group" *ngIf="editandoPerfil">
               <label>Distrito</label>
-              <input type="text" [(ngModel)]="profileForm.district" />
+              <input type="text" [(ngModel)]="formularioPerfil.distrito" />
             </div>
           </div>
 
-          <div class="profile-actions" *ngIf="editingProfile">
-            <button class="btn-secondary" (click)="toggleEditProfile()">Cancelar</button>
-            <button class="btn-primary" (click)="saveProfile()" [disabled]="loading">
-              {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
+          <div class="profile-actions" *ngIf="editandoPerfil">
+            <button class="btn-secondary" (click)="alternarEditarPerfil()">Cancelar</button>
+            <button class="btn-primary" (click)="guardarPerfil()" [disabled]="cargando">
+              {{ cargando ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
           </div>
         </div>
       </div>
 
       <!-- Configuración -->
-      <div *ngIf="activeTab === 'settings'" class="tab-content">
+      <div *ngIf="pestanaActiva === 'configuracion'" class="tab-content">
         <div class="tab-header">
           <h2>Configuración</h2>
         </div>
@@ -136,8 +228,8 @@
         <div class="settings-content">
           <div class="settings-section">
             <h3>Cuenta</h3>
-            <p *ngIf="customer">Miembro desde: {{ formatDate(customer.createdAt) }}</p>
-            <p>Estado de email: {{ customer?.emailVerified ? 'Verificado' : 'No verificado' }}</p>
+            <p *ngIf="cliente">Miembro desde: {{ formatearFecha(cliente.creadoEn) }}</p>
+            <p>Estado de email: {{ cliente?.correoVerificado ? 'Verificado' : 'No verificado' }}</p>
           </div>
 
           <div class="settings-section">

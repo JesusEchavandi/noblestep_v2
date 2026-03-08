@@ -15,19 +15,19 @@ import { ShopService } from '../../services/shop.service';
           <p class="section-sub">Encuentra el calzado ideal para cada ocasión</p>
         </div>
         <div class="category-grid">
-          @for (category of categories; track category.id) {
+          @for (category of categorias; track category.id) {
             <a [routerLink]="['/catalog']" [queryParams]="{category: category.id}" class="category-card">
-              <div class="cat-bg" [style.background]="getBgColor($index)"></div>
+              <div class="cat-bg" [style.background]="obtenerColorFondo($index)"></div>
               <div class="cat-img-wrap">
-                <img [src]="getCategoryImage(category.name)" [alt]="category.name" class="cat-img" loading="lazy" />
+                <img [src]="category.imagen" [alt]="category.nombre" class="cat-img" loading="lazy" />
               </div>
               <div class="cat-body">
                 <div class="cat-icon-wrap">
-                  <i [class]="'fi ' + getFlaticon(category.name)"></i>
+                  <i [class]="'fi ' + obtenerIcono(category.nombre)"></i>
                 </div>
                 <div class="cat-info">
-                  <h3 class="cat-name">{{ category.name }}</h3>
-                  <p class="cat-count"><i class="fi fi-rr-box-alt"></i> {{ category.productCount }} productos</p>
+                  <h3 class="cat-name">{{ category.nombre }}</h3>
+                  <p class="cat-count"><i class="fi fi-rr-box-alt"></i> {{ category.cantidadProductos }} productos</p>
                 </div>
                 <div class="cat-arrow">
                   <i class="fi fi-rr-arrow-right"></i>
@@ -153,6 +153,32 @@ import { ShopService } from '../../services/shop.service';
       transition: color 0.3s, transform 0.3s;
     }
     .category-card:hover .cat-arrow { color: #1a1a1a; transform: translateX(4px); }
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .container { max-width: 100%; padding: 0 1.25rem; }
+      .category-section { padding: 2.5rem 0; }
+      .category-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+      .cat-img-wrap { height: 150px; }
+      .section-title { font-size: 1.6rem; }
+      .cat-body { padding: 0.9rem 1rem; }
+      .cat-name { font-size: 0.92rem; }
+      .cat-count { font-size: 0.72rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .container { max-width: 1440px; }
+      .category-section { padding: 5rem 0; }
+      .category-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.75rem; }
+      .cat-img-wrap { height: 220px; }
+      .section-title { font-size: 2.5rem; }
+      .cat-body { padding: 1.25rem 1.5rem; }
+      .cat-name { font-size: 1.15rem; }
+      .cat-count { font-size: 0.85rem; }
+      .cat-arrow { font-size: 1.15rem; }
+    }
+
     @media (max-width: 768px) {
       .category-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
       .cat-img-wrap { height: 130px; }
@@ -164,34 +190,35 @@ import { ShopService } from '../../services/shop.service';
   `]
 })
 export class CategoryGridComponent implements OnInit {
-  categories: any[] = [];
+  categorias: any[] = [];
 
   constructor(private shopService: ShopService) {}
 
   ngOnInit() {
-    this.loadCategories();
+    this.cargarCategorias();
   }
 
-  loadCategories() {
-    this.shopService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories.map((cat: any, index: number) => ({
+  cargarCategorias() {
+    this.shopService.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.categorias = categorias.map((cat: any, index: number) => ({
           ...cat,
-          icon: this.getCategoryIcon(index),
-          productCount: Math.floor(Math.random() * 50) + 10 // Temporal
+          icono: this.obtenerIconoCategoria(index),
+          cantidadProductos: cat.cantidadProductos || Math.floor(Math.random() * 50) + 10,
+          imagen: this.obtenerImagenCategoria(cat.nombre, index)
         }));
       },
-      error: (err) => console.error('Error loading categories:', err)
+      error: (err) => console.error('Error al cargar categorías:', err)
     });
   }
 
-  getCategoryIcon(index: number): string {
-    const icons = ['fi-rr-boot', 'fi-rr-vest', 'fi-rr-running', 'fi-rr-gem', 'fi-rr-briefcase', 'fi-rr-backpack', 'fi-rr-glasses', 'fi-rr-headphones'];
-    return icons[index % icons.length];
+  obtenerIconoCategoria(index: number): string {
+    const iconos = ['fi-rr-boot', 'fi-rr-vest', 'fi-rr-running', 'fi-rr-gem', 'fi-rr-briefcase', 'fi-rr-backpack', 'fi-rr-glasses', 'fi-rr-headphones'];
+    return iconos[index % iconos.length];
   }
 
-  getFlaticon(name: string): string {
-    const n = name.toLowerCase();
+  obtenerIcono(nombre: string): string {
+    const n = nombre.toLowerCase();
     if (n.includes('sneaker') || n.includes('zapatilla') || n.includes('running') || n.includes('sport')) return 'fi-rr-running';
     if (n.includes('formal') || n.includes('oxford') || n.includes('vestir')) return 'fi-rr-vest';
     if (n.includes('bota') || n.includes('boot')) return 'fi-rr-boot';
@@ -203,13 +230,13 @@ export class CategoryGridComponent implements OnInit {
     return 'fi-rr-shoe-prints';
   }
 
-  getBgColor(index: number): string {
-    const colors = ['#1a1a1a', '#99B898', '#E84A5F', '#FECEA8', '#2A363B', '#FF847C'];
-    return colors[index % colors.length];
+  obtenerColorFondo(index: number): string {
+    const colores = ['#1a1a1a', '#99B898', '#E84A5F', '#FECEA8', '#2A363B', '#FF847C'];
+    return colores[index % colores.length];
   }
 
-  getCategoryImage(name: string): string {
-    const n = name.toLowerCase();
+  obtenerImagenCategoria(nombre: string, index: number = 0): string {
+    const n = nombre.toLowerCase();
     if (n.includes('sneaker') || n.includes('zapatilla') || n.includes('running') || n.includes('sport')) {
       return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80';
     }
@@ -240,6 +267,6 @@ export class CategoryGridComponent implements OnInit {
       'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=600&q=80',
       'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=600&q=80',
     ];
-    return defaults[Math.floor(Math.random() * defaults.length)];
+    return defaults[index % defaults.length];
   }
 }

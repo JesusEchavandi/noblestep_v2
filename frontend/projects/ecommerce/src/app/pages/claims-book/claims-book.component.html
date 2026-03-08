@@ -1,0 +1,165 @@
+<div class="claims-page">
+  <div class="container">
+
+    <!-- Header obligatorio INDECOPI -->
+    <div class="claims-header">
+      <h1>📋 Libro de Reclamaciones</h1>
+      <p class="legal-ref">Conforme a lo establecido en el Código de Protección y Defensa del Consumidor (Ley N° 29571) y el D.S. 011-2011-PCM</p>
+      <div class="company-info">
+        <p><strong>Razón Social:</strong> NobleStep E.I.R.L.</p>
+        <p><strong>RUC:</strong> 20XXXXXXXXX</p>
+        <p><strong>Dirección:</strong> Lima, Perú</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form *ngIf="!enviado" (ngSubmit)="enviarReclamacion()" class="claims-form">
+
+      <!-- Sección 1: Datos del consumidor -->
+      <fieldset>
+        <legend>1. Identificación del Consumidor</legend>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de documento *</label>
+            <select [(ngModel)]="reclamacion.tipoDocumento" name="tipoDoc">
+              <option value="DNI">DNI</option>
+              <option value="CE">Carné de Extranjería</option>
+              <option value="PASAPORTE">Pasaporte</option>
+              <option value="RUC">RUC</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número de documento *</label>
+            <input type="text" [(ngModel)]="reclamacion.numeroDocumento" name="numDoc" required maxlength="15" placeholder="Ej: 12345678">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombres *</label>
+            <input type="text" [(ngModel)]="reclamacion.nombres" name="nombres" required placeholder="Tus nombres">
+          </div>
+          <div class="form-group">
+            <label>Apellidos *</label>
+            <input type="text" [(ngModel)]="reclamacion.apellidos" name="apellidos" required placeholder="Tus apellidos">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Correo electrónico *</label>
+            <input type="email" [(ngModel)]="reclamacion.correo" name="correo" required placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" [(ngModel)]="reclamacion.telefono" name="telefono" placeholder="+51 999 999 999">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="reclamacion.direccion" name="direccion" placeholder="Tu dirección">
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="reclamacion.menorEdad" name="menorEdad">
+            Soy menor de edad
+          </label>
+        </div>
+
+        <div *ngIf="reclamacion.menorEdad" class="minor-section">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombres del apoderado</label>
+              <input type="text" [(ngModel)]="reclamacion.apoderadoNombres" name="apoderadoNombres">
+            </div>
+            <div class="form-group">
+              <label>Correo del apoderado</label>
+              <input type="email" [(ngModel)]="reclamacion.apoderadoCorreo" name="apoderadoCorreo">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Sección 2: Tipo de reclamación -->
+      <fieldset>
+        <legend>2. Tipo de Reclamación</legend>
+
+        <div class="type-selector">
+          <label class="type-option" [class.selected]="reclamacion.tipoReclamacion === 'reclamo'">
+            <input type="radio" [(ngModel)]="reclamacion.tipoReclamacion" name="tipo" value="reclamo">
+            <div class="type-content">
+              <strong>Reclamo</strong>
+              <span>Disconformidad relacionada a los productos o servicios adquiridos.</span>
+            </div>
+          </label>
+          <label class="type-option" [class.selected]="reclamacion.tipoReclamacion === 'queja'">
+            <input type="radio" [(ngModel)]="reclamacion.tipoReclamacion" name="tipo" value="queja">
+            <div class="type-content">
+              <strong>Queja</strong>
+              <span>Disconformidad no relacionada a los productos o servicios, sino al servicio de atención.</span>
+            </div>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Sección 3: Detalle -->
+      <fieldset>
+        <legend>3. Detalle de la Reclamación</legend>
+
+        <div class="form-group">
+          <label>Monto reclamado (S/)</label>
+          <input type="number" [(ngModel)]="reclamacion.montoReclamado" name="monto" min="0" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label>Descripción del producto o servicio *</label>
+          <textarea [(ngModel)]="reclamacion.descripcionProducto" name="descProducto" rows="3" required
+                    placeholder="Describa el producto o servicio objeto del reclamo (orden #, producto, fecha de compra, etc.)"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Detalle del {{ reclamacion.tipoReclamacion === 'reclamo' ? 'reclamo' : 'queja' }} *</label>
+          <textarea [(ngModel)]="reclamacion.detalleReclamacion" name="detalle" rows="4" required
+                    placeholder="Explique detalladamente su reclamación o queja"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Pedido/acción solicitada</label>
+          <textarea [(ngModel)]="reclamacion.pedidoAccion" name="pedido" rows="3"
+                    placeholder="Indique qué solución espera de nosotros"></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Aceptación -->
+      <div class="form-group checkbox-group accept-terms">
+        <label>
+          <input type="checkbox" [(ngModel)]="reclamacion.aceptaTerminos" name="acepta">
+          He leído y acepto la <a routerLink="/privacy" target="_blank">Política de Privacidad</a> y autorizo el uso de mis datos para el procesamiento de esta reclamación. *
+        </label>
+      </div>
+
+      <p class="note">* La empresa tiene un plazo máximo de 30 días calendario para dar respuesta a su reclamo (Art. 24.1 del Código de Protección y Defensa del Consumidor).</p>
+
+      <button type="submit" class="submit-btn" [disabled]="enviando">
+        {{ enviando ? 'Enviando...' : 'Enviar Reclamación' }}
+      </button>
+    </form>
+
+    <!-- Confirmación -->
+    <div *ngIf="enviado" class="confirmation">
+      <div class="confirm-icon">✅</div>
+      <h2>Reclamación Registrada</h2>
+      <p class="claim-number">N° {{ numeroReclamo }}</p>
+      <p>Su {{ reclamacion.tipoReclamacion }} ha sido registrado exitosamente. Recibirá una copia en su correo electrónico.</p>
+      <p>De acuerdo con la normativa vigente, le daremos respuesta en un plazo máximo de <strong>30 días calendario</strong>.</p>
+      <div class="confirm-actions">
+        <button (click)="nuevaReclamacion()" class="new-btn">Nueva reclamación</button>
+        <a routerLink="/" class="home-link">Volver al inicio</a>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -7,11 +7,15 @@ using NobleStep.Api.Models;
 
 namespace NobleStep.Api.Services;
 
+/// <summary>
+/// Servicio de autenticación para usuarios del sistema administrativo.
+/// Maneja login, registro, refresh token y revocación.
+/// </summary>
 public class AuthService
 {
     private readonly AppDbContext _context;
     private readonly TokenService _tokenService;
-    private const int RefreshTokenDays = 30;
+    private const int DiasRefreshToken = 30;
 
     public AuthService(AppDbContext context, TokenService tokenService)
     {
@@ -19,124 +23,136 @@ public class AuthService
         _tokenService = tokenService;
     }
 
-    public async Task<LoginResponseWithRefreshDto?> LoginAsync(LoginDto loginDto)
+    /// <summary>
+    /// Autentica un usuario con sus credenciales y genera tokens de acceso.
+    /// </summary>
+    public async Task<RespuestaInicioSesionConRefrescoDto?> LoginAsync(InicioSesionDto inicioSesionDto)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == loginDto.Username && u.IsActive);
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.NombreUsuario == inicioSesionDto.NombreUsuario && u.Activo);
 
-        if (user == null)
+        if (usuario == null)
             return null;
 
-        if (!VerifyPassword(loginDto.Password, user.PasswordHash))
+        if (!VerificarContrasena(inicioSesionDto.Contrasena, usuario.HashContrasena))
             return null;
 
-        var token = _tokenService.GenerateToken(user);
-        var expiration = _tokenService.GetTokenExpiration();
+        var token = _tokenService.GenerarToken(usuario);
+        var expiracion = _tokenService.ObtenerExpiracionToken();
 
         // Generar refresh token y guardarlo hasheado
-        var (refreshTokenPlain, refreshTokenHash) = GenerateRefreshToken();
-        user.RefreshTokenHash = refreshTokenHash;
-        user.RefreshTokenExpires = DateTime.UtcNow.AddDays(RefreshTokenDays);
+        var (refreshTokenPlain, refreshTokenHash) = GenerarRefreshToken();
+        usuario.HashTokenRefresco = refreshTokenHash;
+        usuario.ExpiracionTokenRefresco = DateTime.UtcNow.AddDays(DiasRefreshToken);
         await _context.SaveChangesAsync();
 
-        return new LoginResponseWithRefreshDto
+        return new RespuestaInicioSesionConRefrescoDto
         {
             Token = token,
-            RefreshToken = refreshTokenPlain,
-            Username = user.Username,
-            FullName = user.FullName,
-            Role = user.Role,
-            ExpiresAt = expiration,
-            RefreshTokenExpiresAt = user.RefreshTokenExpires.Value
+            TokenRefresco = refreshTokenPlain,
+            NombreUsuario = usuario.NombreUsuario,
+            NombreCompleto = usuario.NombreCompleto,
+            Rol = usuario.Rol,
+            ExpiraEn = expiracion,
+            ExpiracionTokenRefresco = usuario.ExpiracionTokenRefresco.Value
         };
     }
 
-    public async Task<LoginResponseWithRefreshDto?> RefreshAsync(string refreshTokenPlain)
+    /// <summary>
+    /// Renueva los tokens usando un refresh token válido (rotación de tokens).
+    /// </summary>
+    public async Task<RespuestaInicioSesionConRefrescoDto?> RefreshAsync(string refreshTokenPlain)
     {
         // Hashear el token recibido para comparar con el de la BD
-        var tokenHash = HashRefreshToken(refreshTokenPlain);
+        var tokenHash = HashearRefreshToken(refreshTokenPlain);
 
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.RefreshTokenHash == tokenHash && u.IsActive);
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.HashTokenRefresco == tokenHash && u.Activo);
 
-        if (user == null)
+        if (usuario == null)
             return null;
 
-        if (user.RefreshTokenExpires == null || user.RefreshTokenExpires < DateTime.UtcNow)
+        if (usuario.ExpiracionTokenRefresco == null || usuario.ExpiracionTokenRefresco < DateTime.UtcNow)
             return null;
 
         // Rotación: invalidar el token anterior, emitir uno nuevo
-        var token = _tokenService.GenerateToken(user);
-        var expiration = _tokenService.GetTokenExpiration();
+        var token = _tokenService.GenerarToken(usuario);
+        var expiracion = _tokenService.ObtenerExpiracionToken();
 
-        var (newRefreshTokenPlain, newRefreshTokenHash) = GenerateRefreshToken();
-        user.RefreshTokenHash = newRefreshTokenHash;
-        user.RefreshTokenExpires = DateTime.UtcNow.AddDays(RefreshTokenDays);
+        var (nuevoRefreshTokenPlain, nuevoRefreshTokenHash) = GenerarRefreshToken();
+        usuario.HashTokenRefresco = nuevoRefreshTokenHash;
+        usuario.ExpiracionTokenRefresco = DateTime.UtcNow.AddDays(DiasRefreshToken);
         await _context.SaveChangesAsync();
 
-        return new LoginResponseWithRefreshDto
+        return new RespuestaInicioSesionConRefrescoDto
         {
             Token = token,
-            RefreshToken = newRefreshTokenPlain,
-            Username = user.Username,
-            FullName = user.FullName,
-            Role = user.Role,
-            ExpiresAt = expiration,
-            RefreshTokenExpiresAt = user.RefreshTokenExpires.Value
+            TokenRefresco = nuevoRefreshTokenPlain,
+            NombreUsuario = usuario.NombreUsuario,
+            NombreCompleto = usuario.NombreCompleto,
+            Rol = usuario.Rol,
+            ExpiraEn = expiracion,
+            ExpiracionTokenRefresco = usuario.ExpiracionTokenRefresco.Value
         };
     }
 
+    /// <summary>
+    /// Revoca (invalida) un refresh token.
+    /// </summary>
     public async Task<bool> RevokeAsync(string refreshTokenPlain)
     {
-        var tokenHash = HashRefreshToken(refreshTokenPlain);
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.RefreshTokenHash == tokenHash);
+        var tokenHash = HashearRefreshToken(refreshTokenPlain);
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.HashTokenRefresco == tokenHash);
 
-        if (user == null) return false;
+        if (usuario == null) return false;
 
-        user.RefreshTokenHash = null;
-        user.RefreshTokenExpires = null;
+        usuario.HashTokenRefresco = null;
+        usuario.ExpiracionTokenRefresco = null;
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<User?> RegisterAsync(RegisterDto registerDto)
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema administrativo.
+    /// </summary>
+    public async Task<Usuario?> RegisterAsync(RegistroDto registroDto)
     {
-        if (await _context.Users.AnyAsync(u => u.Username == registerDto.Username))
+        if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == registroDto.NombreUsuario))
             return null;
 
-        var user = new User
+        var usuario = new Usuario
         {
-            Username = registerDto.Username,
-            PasswordHash = HashPassword(registerDto.Password),
-            FullName = registerDto.FullName,
-            Email = registerDto.Email,
-            Role = registerDto.Role,
-            IsActive = true
+            NombreUsuario = registroDto.NombreUsuario,
+            HashContrasena = HashearContrasena(registroDto.Contrasena),
+            NombreCompleto = registroDto.NombreCompleto,
+            Correo = registroDto.Correo,
+            Rol = registroDto.Rol,
+            Activo = true
         };
 
-        _context.Users.Add(user);
+        _context.Usuarios.Add(usuario);
         await _context.SaveChangesAsync();
 
-        return user;
+        return usuario;
     }
 
-    private static (string plain, string hash) GenerateRefreshToken()
+    private static (string plain, string hash) GenerarRefreshToken()
     {
         var plain = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        var hash = HashRefreshToken(plain);
+        var hash = HashearRefreshToken(plain);
         return (plain, hash);
     }
 
-    private static string HashRefreshToken(string token)
+    private static string HashearRefreshToken(string token)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
-    private static string HashPassword(string password)
-        => BCrypt.Net.BCrypt.HashPassword(password);
+    private static string HashearContrasena(string contrasena)
+        => BCrypt.Net.BCrypt.HashPassword(contrasena);
 
-    private static bool VerifyPassword(string password, string hash)
+    private static bool VerificarContrasena(string contrasena, string hash)
     {
-        try { return BCrypt.Net.BCrypt.Verify(password, hash); }
+        try { return BCrypt.Net.BCrypt.Verify(contrasena, hash); }
         catch { return false; }
     }
 }

@@ -7,9 +7,9 @@ import { SaleService } from '../services/sale.service';
 import { CustomerService } from '../services/customer.service';
 import { ProductService } from '../services/product.service';
 import { AuthService } from '../services/auth.service';
-import { CreateSale, CreateSaleDetail } from '../models/sale.model';
-import { Customer } from '../models/customer.model';
-import { Product } from '../models/product.model';
+import { CrearVenta, CrearDetalleVenta } from '../models/sale.model';
+import { Cliente } from '../models/customer.model';
+import { Producto } from '../models/product.model';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -38,69 +38,69 @@ import { environment } from '../../environments/environment';
                       </div>
                     </div>
                     <!-- Badge cliente seleccionado -->
-                    <div *ngIf="sale.customerId > 0" class="cs-selected-badge">
+                    <div *ngIf="venta.clienteId > 0" class="cs-selected-badge">
                       <i class="fi fi-rr-check-circle"></i> Cliente asignado
                     </div>
                   </div>
 
                   <!-- Tabs modernos -->
                   <div class="cs-tabs">
-                    <button type="button" class="cs-tab" [class.active]="customerMode === 'select'" (click)="setCustomerMode('select')">
+                    <button type="button" class="cs-tab" [class.active]="modoCliente === 'select'" (click)="setModoCliente('select')">
                       <i class="fi fi-rr-users"></i>
                       <span>Cliente existente</span>
                     </button>
-                    <button type="button" class="cs-tab" [class.active]="customerMode === 'new'" (click)="setCustomerMode('new')">
+                    <button type="button" class="cs-tab" [class.active]="modoCliente === 'new'" (click)="setModoCliente('new')">
                       <i class="fi fi-rr-user-add"></i>
                       <span>Nuevo cliente</span>
                     </button>
                   </div>
 
                   <!-- Panel: Seleccionar cliente existente -->
-                  <div *ngIf="customerMode === 'select'" class="cs-panel">
+                  <div *ngIf="modoCliente === 'select'" class="cs-panel">
                     <div class="cs-search-wrap">
                       <i class="fi fi-rr-search cs-search-icon"></i>
                       <input type="text" class="cs-search-input" placeholder="Buscar por nombre o N° documento..."
-                        [(ngModel)]="customerSearch" name="customerSearch" (input)="filterCustomers()" />
+                        [(ngModel)]="busquedaCliente" name="busquedaCliente" (input)="filtrarClientes()" />
                     </div>
 
                     <div class="cs-list-wrap">
-                      <div *ngIf="filteredCustomers.length === 0" class="cs-empty">
+                      <div *ngIf="clientesFiltrados.length === 0" class="cs-empty">
                         <i class="fi fi-rr-user-slash"></i>
                         <span>No se encontraron clientes</span>
                       </div>
-                      <div *ngFor="let c of filteredCustomers | slice:0:6" class="cs-customer-item"
-                        [class.selected]="sale.customerId === c.id"
-                        (click)="selectExistingCustomer(c)">
-                        <div class="cs-avatar">{{ c.fullName.charAt(0) }}</div>
+                      <div *ngFor="let c of clientesFiltrados | slice:0:6" class="cs-customer-item"
+                        [class.selected]="venta.clienteId === c.id"
+                        (click)="seleccionarCliente(c)">
+                        <div class="cs-avatar">{{ c.nombreCompleto.charAt(0) }}</div>
                         <div class="cs-customer-info">
-                          <strong>{{ c.fullName }}</strong>
-                          <span><i class="fi fi-rr-id-card"></i> {{ c.documentNumber }}
-                            <span *ngIf="c.phone"> · <i class="fi fi-rr-phone-call"></i> {{ c.phone }}</span>
+                          <strong>{{ c.nombreCompleto }}</strong>
+                          <span><i class="fi fi-rr-id-card"></i> {{ c.numeroDocumento }}
+                            <span *ngIf="c.telefono"> · <i class="fi fi-rr-phone-call"></i> {{ c.telefono }}</span>
                           </span>
                         </div>
-                        <i *ngIf="sale.customerId === c.id" class="fi fi-rr-check-circle cs-check"></i>
+                        <i *ngIf="venta.clienteId === c.id" class="fi fi-rr-check-circle cs-check"></i>
                       </div>
-                      <div *ngIf="filteredCustomers.length > 6" class="cs-more">
-                        +{{ filteredCustomers.length - 6 }} más — afina la búsqueda
+                      <div *ngIf="clientesFiltrados.length > 6" class="cs-more">
+                        +{{ clientesFiltrados.length - 6 }} más — afina la búsqueda
                       </div>
                     </div>
 
                     <!-- Cliente seleccionado -->
-                    <div *ngIf="selectedCustomerInfo && sale.customerId > 0" class="cs-confirmed-card">
-                      <div class="cs-confirmed-avatar">{{ selectedCustomerInfo.fullName.charAt(0) }}</div>
+                    <div *ngIf="infoClienteSeleccionado && venta.clienteId > 0" class="cs-confirmed-card">
+                      <div class="cs-confirmed-avatar">{{ infoClienteSeleccionado.nombreCompleto.charAt(0) }}</div>
                       <div class="cs-confirmed-info">
-                        <strong>{{ selectedCustomerInfo.fullName }}</strong>
-                        <span *ngIf="selectedCustomerInfo.phone"><i class="fi fi-rr-phone-call"></i> {{ selectedCustomerInfo.phone }}</span>
-                        <span *ngIf="selectedCustomerInfo.email"><i class="fi fi-rr-envelope"></i> {{ selectedCustomerInfo.email }}</span>
+                        <strong>{{ infoClienteSeleccionado.nombreCompleto }}</strong>
+                        <span *ngIf="infoClienteSeleccionado.telefono"><i class="fi fi-rr-phone-call"></i> {{ infoClienteSeleccionado.telefono }}</span>
+                        <span *ngIf="infoClienteSeleccionado.correo"><i class="fi fi-rr-envelope"></i> {{ infoClienteSeleccionado.correo }}</span>
                       </div>
-                      <button type="button" class="cs-clear-btn" (click)="clearCustomer()" title="Cambiar cliente">
+                      <button type="button" class="cs-clear-btn" (click)="limpiarCliente()" title="Cambiar cliente">
                         <i class="fi fi-rr-refresh"></i>
                       </button>
                     </div>
                   </div>
 
                   <!-- Panel: Nuevo cliente con DNI -->
-                  <div *ngIf="customerMode === 'new'" class="cs-panel">
+                  <div *ngIf="modoCliente === 'new'" class="cs-panel">
 
                     <!-- DNI Lookup -->
                     <div class="cs-dni-wrap">
@@ -114,30 +114,30 @@ import { environment } from '../../environments/environment';
                       <div class="cs-dni-input-row">
                         <div class="cs-dni-field">
                           <input type="text" class="cs-dni-input" placeholder="00000000" inputmode="numeric"
-                            [(ngModel)]="dniQuery" name="dniQuery" maxlength="8"
+                            [(ngModel)]="consultaDni" name="consultaDni" maxlength="8"
                             (keyup.enter)="consultarDni()" />
-                          <span class="cs-dni-chars">{{ dniQuery.length }}/8</span>
+                          <span class="cs-dni-chars">{{ consultaDni.length }}/8</span>
                         </div>
                         <button type="button" class="cs-dni-btn" (click)="consultarDni()"
-                          [disabled]="dniLoading || dniQuery.length !== 8"
-                          [class.loading]="dniLoading">
-                          <span *ngIf="dniLoading" class="spinner-border spinner-border-sm"></span>
-                          <i *ngIf="!dniLoading" class="fi fi-rr-search"></i>
-                          {{ dniLoading ? 'Consultando...' : 'Consultar DNI' }}
+                          [disabled]="cargandoDni || consultaDni.length !== 8"
+                          [class.loading]="cargandoDni">
+                          <span *ngIf="cargandoDni" class="spinner-border spinner-border-sm"></span>
+                          <i *ngIf="!cargandoDni" class="fi fi-rr-search"></i>
+                          {{ cargandoDni ? 'Consultando...' : 'Consultar DNI' }}
                         </button>
                       </div>
-                      <div *ngIf="dniFound" class="cs-dni-result success">
+                      <div *ngIf="dniEncontrado" class="cs-dni-result success">
                         <i class="fi fi-rr-shield-check"></i>
                         <div>
                           <strong>¡Datos encontrados en RENIEC!</strong>
                           <span>Verifica los datos y completa el teléfono</span>
                         </div>
                       </div>
-                      <div *ngIf="dniError" class="cs-dni-result warning">
+                      <div *ngIf="errorDni" class="cs-dni-result warning">
                         <i class="fi fi-rr-exclamation"></i>
                         <div>
                           <strong>DNI no encontrado</strong>
-                          <span>{{ dniError }}</span>
+                          <span>{{ errorDni }}</span>
                         </div>
                       </div>
                     </div>
@@ -147,34 +147,34 @@ import { environment } from '../../environments/environment';
                       <div class="cs-field-group">
                         <div class="cs-field">
                           <label><i class="fi fi-rr-user"></i> Nombre Completo *</label>
-                          <input type="text" [(ngModel)]="newCustomer.fullName" name="newFullName"
-                            placeholder="Nombre completo" [class.filled]="newCustomer.fullName" />
+                          <input type="text" [(ngModel)]="nuevoCliente.nombreCompleto" name="nuevoNombreCompleto"
+                            placeholder="Nombre completo" [class.filled]="nuevoCliente.nombreCompleto" />
                         </div>
                         <div class="cs-field">
                           <label><i class="fi fi-rr-id-card"></i> DNI / Documento *</label>
-                          <input type="text" [(ngModel)]="newCustomer.documentNumber" name="newDocumentNumber"
-                            placeholder="Número de documento" [class.filled]="newCustomer.documentNumber" />
+                          <input type="text" [(ngModel)]="nuevoCliente.numeroDocumento" name="nuevoNumeroDocumento"
+                            placeholder="Número de documento" [class.filled]="nuevoCliente.numeroDocumento" />
                         </div>
                         <div class="cs-field">
                           <label><i class="fi fi-rr-phone-call"></i> Teléfono *</label>
-                          <input type="tel" [(ngModel)]="newCustomer.phone" name="newPhone"
-                            placeholder="987 654 321" [class.filled]="newCustomer.phone" />
+                          <input type="tel" [(ngModel)]="nuevoCliente.telefono" name="nuevoTelefono"
+                            placeholder="987 654 321" [class.filled]="nuevoCliente.telefono" />
                         </div>
                         <div class="cs-field">
                           <label><i class="fi fi-rr-envelope"></i> Email <span class="cs-optional">opcional</span></label>
-                          <input type="email" [(ngModel)]="newCustomer.email" name="newEmail"
-                            placeholder="correo@email.com" [class.filled]="newCustomer.email" />
+                          <input type="email" [(ngModel)]="nuevoCliente.correo" name="nuevoCorreo"
+                            placeholder="correo@email.com" [class.filled]="nuevoCliente.correo" />
                         </div>
                       </div>
                       <div class="cs-new-actions">
                         <button type="button" class="cs-create-btn"
                           (click)="crearYSeleccionarCliente()"
-                          [disabled]="savingCustomer || !newCustomer.fullName || !newCustomer.documentNumber || !newCustomer.phone">
-                          <span *ngIf="savingCustomer" class="spinner-border spinner-border-sm"></span>
-                          <i *ngIf="!savingCustomer" class="fi fi-rr-user-add"></i>
-                          {{ savingCustomer ? 'Guardando...' : 'Crear y seleccionar cliente' }}
+                          [disabled]="guardandoCliente || !nuevoCliente.nombreCompleto || !nuevoCliente.numeroDocumento || !nuevoCliente.telefono">
+                          <span *ngIf="guardandoCliente" class="spinner-border spinner-border-sm"></span>
+                          <i *ngIf="!guardandoCliente" class="fi fi-rr-user-add"></i>
+                          {{ guardandoCliente ? 'Guardando...' : 'Crear y seleccionar cliente' }}
                         </button>
-                        <div *ngIf="customerCreated" class="cs-created-toast">
+                        <div *ngIf="clienteCreado" class="cs-created-toast">
                           <i class="fi fi-rr-check-circle"></i> ¡Cliente creado y seleccionado!
                         </div>
                       </div>
@@ -184,22 +184,22 @@ import { environment } from '../../environments/environment';
 
                 <h5 class="mb-3">Artículos de Venta</h5>
 
-                <div *ngFor="let item of saleItems; let i = index" class="card mb-3">
+                <div *ngFor="let item of itemsVenta; let i = index" class="card mb-3">
                   <div class="card-body">
                     <div class="row align-items-end">
                       <div class="col-md-5">
                         <label class="form-label">Producto *</label>
                         <select
                           class="form-select"
-                          [(ngModel)]="item.productId"
-                          [name]="'product_' + i"
-                          (change)="onProductChange(i)"
+                          [(ngModel)]="item.productoId"
+                          [name]="'producto_' + i"
+                          (change)="onCambioProducto(i)"
                           required
                         >
                           <option [ngValue]="0" disabled>Seleccione un producto</option>
-                          <option *ngFor="let product of products" [ngValue]="product.id">
-                            {{ product.name }} - {{ product.brand }} ({{ product.size }})
-                            - Stock: {{ product.stock }}
+                          <option *ngFor="let producto of productos" [ngValue]="producto.id">
+                            {{ producto.nombre }} - {{ producto.marca }} ({{ producto.talla }})
+                            - Stock: {{ producto.stock }}
                           </option>
                         </select>
                       </div>
@@ -209,9 +209,9 @@ import { environment } from '../../environments/environment';
                         <input
                           type="number"
                           class="form-control"
-                          [(ngModel)]="item.quantity"
-                          [name]="'quantity_' + i"
-                          (change)="calculateTotal()"
+                          [(ngModel)]="item.cantidad"
+                          [name]="'cantidad_' + i"
+                          (change)="calcularTotal()"
                           min="1"
                           required
                         />
@@ -222,7 +222,7 @@ import { environment } from '../../environments/environment';
                         <input
                           type="text"
                           class="form-control"
-                          [value]="item.unitPrice | currency"
+                          [value]="item.precioUnitario | currency"
                           readonly
                         />
                       </div>
@@ -241,8 +241,8 @@ import { environment } from '../../environments/environment';
                         <button
                           type="button"
                           class="btn btn-danger btn-sm"
-                          (click)="removeItem(i)"
-                          [disabled]="saleItems.length === 1"
+                          (click)="quitarItem(i)"
+                          [disabled]="itemsVenta.length === 1"
                         >
                           Quitar
                         </button>
@@ -252,7 +252,7 @@ import { environment } from '../../environments/environment';
                 </div>
 
                 <div class="mb-4">
-                  <button type="button" class="btn btn-outline-primary" (click)="addItem()">
+                  <button type="button" class="btn btn-outline-primary" (click)="agregarItem()">
                     + Agregar Artículo
                   </button>
                 </div>
@@ -265,12 +265,12 @@ import { environment } from '../../environments/environment';
                     <div class="col-md-3">
                       <div 
                         class="payment-method-card" 
-                        [class.active]="selectedPaymentMethod === 'Efectivo'"
-                        (click)="selectPaymentMethod('Efectivo')"
+                        [class.active]="metodoPagoSeleccionado === 'Efectivo'"
+                        (click)="seleccionarMetodoPago('Efectivo')"
                       >
                         <i class="bi bi-cash-coin payment-icon"></i>
                         <div class="payment-name">Efectivo</div>
-                        <i *ngIf="selectedPaymentMethod === 'Efectivo'" class="bi bi-check-circle-fill check-icon"></i>
+                        <i *ngIf="metodoPagoSeleccionado === 'Efectivo'" class="bi bi-check-circle-fill check-icon"></i>
                       </div>
                     </div>
                     
@@ -278,13 +278,13 @@ import { environment } from '../../environments/environment';
                     <div class="col-md-3">
                       <div 
                         class="payment-method-card" 
-                        [class.active]="selectedPaymentMethod === 'Tarjeta'"
-                        [class.confirmed]="selectedPaymentMethod === 'Tarjeta' && paymentConfirmed"
-                        (click)="selectPaymentMethod('Tarjeta')"
+                        [class.active]="metodoPagoSeleccionado === 'Tarjeta'"
+                        [class.confirmed]="metodoPagoSeleccionado === 'Tarjeta' && pagoConfirmado"
+                        (click)="seleccionarMetodoPago('Tarjeta')"
                       >
                         <i class="bi bi-credit-card payment-icon"></i>
                         <div class="payment-name">Tarjeta</div>
-                        <i *ngIf="selectedPaymentMethod === 'Tarjeta' && paymentConfirmed" class="bi bi-check-circle-fill check-icon"></i>
+                        <i *ngIf="metodoPagoSeleccionado === 'Tarjeta' && pagoConfirmado" class="bi bi-check-circle-fill check-icon"></i>
                       </div>
                     </div>
                     
@@ -292,13 +292,13 @@ import { environment } from '../../environments/environment';
                     <div class="col-md-3">
                       <div 
                         class="payment-method-card" 
-                        [class.active]="selectedPaymentMethod === 'Yape'"
-                        [class.confirmed]="selectedPaymentMethod === 'Yape' && paymentConfirmed"
-                        (click)="selectPaymentMethod('Yape')"
+                        [class.active]="metodoPagoSeleccionado === 'Yape'"
+                        [class.confirmed]="metodoPagoSeleccionado === 'Yape' && pagoConfirmado"
+                        (click)="seleccionarMetodoPago('Yape')"
                       >
                         <i class="bi bi-phone payment-icon"></i>
                         <div class="payment-name">Yape</div>
-                        <i *ngIf="selectedPaymentMethod === 'Yape' && paymentConfirmed" class="bi bi-check-circle-fill check-icon"></i>
+                        <i *ngIf="metodoPagoSeleccionado === 'Yape' && pagoConfirmado" class="bi bi-check-circle-fill check-icon"></i>
                       </div>
                     </div>
                     
@@ -306,13 +306,13 @@ import { environment } from '../../environments/environment';
                     <div class="col-md-3">
                       <div 
                         class="payment-method-card" 
-                        [class.active]="selectedPaymentMethod === 'Transferencia'"
-                        [class.confirmed]="selectedPaymentMethod === 'Transferencia' && paymentConfirmed"
-                        (click)="selectPaymentMethod('Transferencia')"
+                        [class.active]="metodoPagoSeleccionado === 'Transferencia'"
+                        [class.confirmed]="metodoPagoSeleccionado === 'Transferencia' && pagoConfirmado"
+                        (click)="seleccionarMetodoPago('Transferencia')"
                       >
                         <i class="bi bi-bank payment-icon"></i>
                         <div class="payment-name">Transferencia</div>
-                        <i *ngIf="selectedPaymentMethod === 'Transferencia' && paymentConfirmed" class="bi bi-check-circle-fill check-icon"></i>
+                        <i *ngIf="metodoPagoSeleccionado === 'Transferencia' && pagoConfirmado" class="bi bi-check-circle-fill check-icon"></i>
                       </div>
                     </div>
                   </div>
@@ -320,25 +320,25 @@ import { environment } from '../../environments/environment';
 
                 <div class="row mb-4">
                   <div class="col-md-12 text-end">
-                    <h4>Total: {{ totalAmount | currency }}</h4>
+                    <h4>Total: {{ montoTotal | currency }}</h4>
                   </div>
                 </div>
 
-                <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-                  {{ errorMessage }}
+                <div *ngIf="mensajeError" class="alert alert-danger" role="alert">
+                  {{ mensajeError }}
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                  <button type="button" class="btn btn-secondary" (click)="cancel()">
+                  <button type="button" class="btn btn-secondary" (click)="cancelar()">
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     class="btn btn-primary"
-                    [disabled]="saving || !canSubmit()"
+                    [disabled]="guardando || !puedeEnviar()"
                   >
-                    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ saving ? 'Procesando...' : 'Completar Venta' }}
+                    <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ guardando ? 'Procesando...' : 'Completar Venta' }}
                   </button>
                 </div>
               </form>
@@ -349,14 +349,12 @@ import { environment } from '../../environments/environment';
     </div>
 
     <!-- Modal Yape -->
-    <div class="modal fade" [class.show]="showYapeModal" [style.display]="showYapeModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal fade" [class.show]="mostrarModalYape" [style.display]="mostrarModalYape ? 'block' : 'none'" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header" style="background: var(--color-dark); color: white;">
-            <h5 class="modal-title">
-              <i class="bi bi-phone me-2"></i>Pago con Yape
-            </h5>
-            <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+            <h5 class="modal-title"><i class="bi bi-phone me-2"></i>Pago con Yape</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="cerrarModalPago()"></button>
           </div>
           <div class="modal-body text-center p-4">
             <div class="yape-qr-container mb-4">
@@ -365,27 +363,15 @@ import { environment } from '../../environments/environment';
               </div>
               <p class="mt-3 text-muted">Escanea el código QR con tu app Yape</p>
             </div>
-            
             <div class="alert" style="background: var(--color-warning-bg); border-color: var(--color-warning-border);">
               <strong>Monto a pagar:</strong>
-              <div style="font-size: 2rem; color: var(--color-primary); font-weight: bold;">
-                {{ totalAmount | currency }}
-              </div>
+              <div style="font-size: 2rem; color: var(--color-primary); font-weight: bold;">{{ montoTotal | currency }}</div>
             </div>
-            
-            <p class="text-muted small mb-4">
-              Después de realizar el pago, presiona el botón para confirmar
-            </p>
-            
-            <button 
-              class="btn btn-lg w-100" 
-              [class.btn-primary]="!processingPayment"
-              [class.btn-secondary]="processingPayment"
-              (click)="confirmYapePayment()" 
-              [disabled]="processingPayment"
-            >
-              <span *ngIf="processingPayment" class="spinner-border spinner-border-sm me-2"></span>
-              {{ processingPayment ? 'Confirmando...' : 'Confirmar Pago Realizado' }}
+            <p class="text-muted small mb-4">Después de realizar el pago, presiona el botón para confirmar</p>
+            <button class="btn btn-lg w-100" [class.btn-primary]="!procesandoPago" [class.btn-secondary]="procesandoPago"
+              (click)="confirmarPagoYape()" [disabled]="procesandoPago">
+              <span *ngIf="procesandoPago" class="spinner-border spinner-border-sm me-2"></span>
+              {{ procesandoPago ? 'Confirmando...' : 'Confirmar Pago Realizado' }}
             </button>
           </div>
         </div>
@@ -393,140 +379,79 @@ import { environment } from '../../environments/environment';
     </div>
 
     <!-- Modal Tarjeta -->
-    <div class="modal fade" [class.show]="showCardModal" [style.display]="showCardModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal fade" [class.show]="mostrarModalTarjeta" [style.display]="mostrarModalTarjeta ? 'block' : 'none'" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header" style="background: var(--color-dark); color: white;">
-            <h5 class="modal-title">
-              <i class="bi bi-credit-card me-2"></i>Pago con Tarjeta
-            </h5>
-            <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+            <h5 class="modal-title"><i class="bi bi-credit-card me-2"></i>Pago con Tarjeta</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="cerrarModalPago()"></button>
           </div>
           <div class="modal-body p-4">
             <div class="alert" style="background: var(--color-warning-bg); border-color: var(--color-warning-border);">
               <strong>Monto a pagar:</strong>
-              <span style="font-size: 1.5rem; color: var(--color-primary); font-weight: bold; margin-left: 1rem;">
-                {{ totalAmount | currency }}
-              </span>
+              <span style="font-size: 1.5rem; color: var(--color-primary); font-weight: bold; margin-left: 1rem;">{{ montoTotal | currency }}</span>
             </div>
-
             <div class="mb-3">
               <label class="form-label">Número de Tarjeta *</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [(ngModel)]="cardData.cardNumber"
-                placeholder="1234 5678 9012 3456"
-                maxlength="19"
-              />
+              <input type="text" class="form-control" [(ngModel)]="datosTarjeta.numero" placeholder="1234 5678 9012 3456" maxlength="19" />
             </div>
-            
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label">Fecha de Expiración *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  [(ngModel)]="cardData.expiryDate"
-                  placeholder="MM/AA"
-                  maxlength="5"
-                />
+                <input type="text" class="form-control" [(ngModel)]="datosTarjeta.fechaExpiracion" placeholder="MM/AA" maxlength="5" />
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label">CVV *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  [(ngModel)]="cardData.cvv"
-                  placeholder="123"
-                  maxlength="3"
-                />
+                <input type="text" class="form-control" [(ngModel)]="datosTarjeta.cvv" placeholder="123" maxlength="3" />
               </div>
             </div>
-            
             <div class="mb-4">
               <label class="form-label">Nombre del Titular *</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [(ngModel)]="cardData.cardholderName"
-                placeholder="Nombre como aparece en la tarjeta"
-              />
+              <input type="text" class="form-control" [(ngModel)]="datosTarjeta.nombreTitular" placeholder="Nombre como aparece en la tarjeta" />
             </div>
-            
-            <button 
-              class="btn btn-lg btn-primary w-100" 
-              (click)="processCardPayment()" 
-              [disabled]="processingPayment"
-            >
-              <span *ngIf="processingPayment" class="spinner-border spinner-border-sm me-2"></span>
-              <i *ngIf="!processingPayment" class="bi bi-lock-fill me-2"></i>
-              {{ processingPayment ? 'Procesando pago...' : 'Pagar ' + (totalAmount | currency) }}
+            <button class="btn btn-lg btn-primary w-100" (click)="procesarPagoTarjeta()" [disabled]="procesandoPago">
+              <span *ngIf="procesandoPago" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!procesandoPago" class="bi bi-lock-fill me-2"></i>
+              {{ procesandoPago ? 'Procesando pago...' : 'Pagar ' + (montoTotal | currency) }}
             </button>
-            
-            <p class="text-muted text-center small mt-3 mb-0">
-              <i class="bi bi-shield-check me-1"></i>Pago seguro y encriptado
-            </p>
+            <p class="text-muted text-center small mt-3 mb-0"><i class="bi bi-shield-check me-1"></i>Pago seguro y encriptado</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Modal Transferencia -->
-    <div class="modal fade" [class.show]="showTransferModal" [style.display]="showTransferModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal fade" [class.show]="mostrarModalTransferencia" [style.display]="mostrarModalTransferencia ? 'block' : 'none'" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header" style="background: var(--color-dark); color: white;">
-            <h5 class="modal-title">
-              <i class="bi bi-bank me-2"></i>Transferencia Bancaria
-            </h5>
-            <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+            <h5 class="modal-title"><i class="bi bi-bank me-2"></i>Transferencia Bancaria</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="cerrarModalPago()"></button>
           </div>
           <div class="modal-body p-4">
             <div class="alert" style="background: var(--color-warning-bg); border-color: var(--color-warning-border);">
               <strong>Monto a pagar:</strong>
-              <span style="font-size: 1.5rem; color: var(--color-primary); font-weight: bold; margin-left: 1rem;">
-                {{ totalAmount | currency }}
-              </span>
+              <span style="font-size: 1.5rem; color: var(--color-primary); font-weight: bold; margin-left: 1rem;">{{ montoTotal | currency }}</span>
             </div>
-            
             <div class="card mb-3" style="background: var(--color-gray-50);">
               <div class="card-body">
                 <h6 class="mb-3"><i class="bi bi-building me-2"></i>Datos Bancarios</h6>
                 <div class="row g-2">
-                  <div class="col-5"><strong>Banco:</strong></div>
-                  <div class="col-7">BCP</div>
-                  
-                  <div class="col-5"><strong>Cuenta:</strong></div>
-                  <div class="col-7">191-12345678-0-90</div>
-                  
-                  <div class="col-5"><strong>CCI:</strong></div>
-                  <div class="col-7">00219100123456780090</div>
-                  
-                  <div class="col-5"><strong>Titular:</strong></div>
-                  <div class="col-7">NobleStep SAC</div>
+                  <div class="col-5"><strong>Banco:</strong></div><div class="col-7">BCP</div>
+                  <div class="col-5"><strong>Cuenta:</strong></div><div class="col-7">191-12345678-0-90</div>
+                  <div class="col-5"><strong>CCI:</strong></div><div class="col-7">00219100123456780090</div>
+                  <div class="col-5"><strong>Titular:</strong></div><div class="col-7">NobleStep SAC</div>
                 </div>
               </div>
             </div>
-            
             <div class="mb-4">
               <label class="form-label">Número de Operación *</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [(ngModel)]="operationNumber"
-                placeholder="Ingrese el número de operación"
-              />
+              <input type="text" class="form-control" [(ngModel)]="numeroOperacion" placeholder="Ingrese el número de operación" />
               <small class="text-muted">Ingrese el código que aparece en su constancia de pago</small>
             </div>
-            
-            <button 
-              class="btn btn-lg btn-primary w-100" 
-              (click)="confirmTransferPayment()" 
-              [disabled]="processingPayment"
-            >
-              <span *ngIf="processingPayment" class="spinner-border spinner-border-sm me-2"></span>
-              {{ processingPayment ? 'Confirmando...' : 'Confirmar Transferencia' }}
+            <button class="btn btn-lg btn-primary w-100" (click)="confirmarTransferencia()" [disabled]="procesandoPago">
+              <span *ngIf="procesandoPago" class="spinner-border spinner-border-sm me-2"></span>
+              {{ procesandoPago ? 'Confirmando...' : 'Confirmar Transferencia' }}
             </button>
           </div>
         </div>
@@ -534,8 +459,8 @@ import { environment } from '../../environments/environment';
     </div>
 
     <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" [class.show]="showYapeModal || showCardModal || showTransferModal" 
-         *ngIf="showYapeModal || showCardModal || showTransferModal"></div>
+    <div class="modal-backdrop fade" [class.show]="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia" 
+         *ngIf="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia"></div>
   `,
   styles: [`
     /* ===== CUSTOMER SECTION STYLES ===== */
@@ -1019,6 +944,30 @@ import { environment } from '../../environments/environment';
       animation: slideIn 0.3s ease;
     }
 
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .cs-search-input { padding: 0.65rem 0.9rem 0.65rem 2.5rem; font-size: 0.8rem; }
+      .cs-customer-item { padding: 0.6rem 0.8rem; }
+      .cs-avatar { width: 32px; height: 32px; font-size: 0.85rem; }
+      .cs-customer-info strong { font-size: 0.8rem; }
+      .cs-customer-info span { font-size: 0.7rem; }
+      .cs-dni-input { padding: 0.65rem 2.5rem 0.65rem 0.75rem; font-size: 1rem; }
+      .cs-dni-btn { padding: 0 1rem; font-size: 0.8rem; }
+      .cs-field input { padding: 0.6rem 0.85rem; font-size: 0.8rem; }
+      .cs-field label { font-size: 0.7rem; }
+      .cs-create-btn { padding: 0.7rem 1.25rem; font-size: 0.8rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .cs-search-input { padding: 0.875rem 1.25rem 0.875rem 3rem; font-size: 0.95rem; }
+      .cs-customer-item { padding: 0.875rem 1.25rem; }
+      .cs-avatar { width: 44px; height: 44px; font-size: 1.1rem; }
+      .cs-dni-input { padding: 1rem 3.5rem 1rem 1.25rem; font-size: 1.4rem; }
+      .cs-field input { padding: 0.875rem 1.25rem; font-size: 0.95rem; }
+      .cs-create-btn { padding: 1rem 2rem; font-size: 0.95rem; }
+    }
+
     @media (max-width: 768px) {
       .cs-field-group { grid-template-columns: 1fr; }
       .cs-dni-input-row { flex-direction: column; }
@@ -1149,6 +1098,21 @@ import { environment } from '../../environments/environment';
     }
 
     /* Responsive */
+
+    /* Laptop 1366px — payment cards */
+    @media (max-width: 1399px) {
+      .payment-method-card { min-height: 110px; padding: 1rem 0.75rem; }
+      .payment-icon { font-size: 2.25rem; }
+      .payment-name { font-size: 0.85rem; }
+    }
+
+    /* QHD 2560x1440 — payment cards */
+    @media (min-width: 1920px) {
+      .payment-method-card { min-height: 160px; padding: 2rem 1.25rem; }
+      .payment-icon { font-size: 3.5rem; }
+      .payment-name { font-size: 1.05rem; }
+    }
+
     @media (max-width: 768px) {
       .payment-method-card {
         min-height: 120px;
@@ -1172,332 +1136,280 @@ export class SaleFormComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // Customer
-  customerMode: 'select' | 'new' = 'select';
-  customerSearch = '';
-  filteredCustomers: Customer[] = [];
-  selectedCustomerInfo: Customer | null = null;
-  newCustomer = { fullName: '', documentNumber: '', phone: '', email: '' };
-  savingCustomer = false;
-  customerCreated = false;
+  // Cliente
+  modoCliente: 'select' | 'new' = 'select';
+  busquedaCliente = '';
+  clientesFiltrados: Cliente[] = [];
+  infoClienteSeleccionado: Cliente | null = null;
+  nuevoCliente = { nombreCompleto: '', numeroDocumento: '', telefono: '', correo: '' };
+  guardandoCliente = false;
+  clienteCreado = false;
 
-  // DNI lookup
-  dniQuery = '';
-  dniLoading = false;
-  dniError = '';
-  dniFound = false;
+  // Consulta DNI
+  consultaDni = '';
+  cargandoDni = false;
+  errorDni = '';
+  dniEncontrado = false;
 
-  sale: CreateSale = {
-    customerId: 0,
-    paymentMethod: 'Efectivo',
-    details: []
+  venta: CrearVenta = {
+    clienteId: 0,
+    metodoPago: 'Efectivo',
+    detalles: []
   };
 
-  saleItems: any[] = [{
-    productId: 0,
-    quantity: 1,
-    unitPrice: 0,
+  itemsVenta: any[] = [{
+    productoId: 0,
+    cantidad: 1,
+    precioUnitario: 0,
     subtotal: 0
   }];
 
-  customers: Customer[] = [];
-  products: Product[] = [];
-  totalAmount = 0;
-  errorMessage = '';
-  saving = false;
+  clientes: Cliente[] = [];
+  productos: Producto[] = [];
+  montoTotal = 0;
+  mensajeError = '';
+  guardando = false;
 
-  // Payment method variables
-  selectedPaymentMethod = 'Efectivo';
-  showYapeModal = false;
-  showCardModal = false;
-  showTransferModal = false;
+  // Método de pago
+  metodoPagoSeleccionado = 'Efectivo';
+  mostrarModalYape = false;
+  mostrarModalTarjeta = false;
+  mostrarModalTransferencia = false;
   
-  // Card payment data
-  cardData = {
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardholderName: ''
-  };
-  
-  // Yape/Transfer confirmation
-  paymentConfirmed = false;
-  processingPayment = false;
-  operationNumber = '';
+  datosTarjeta = { numero: '', fechaExpiracion: '', cvv: '', nombreTitular: '' };
+  pagoConfirmado = false;
+  procesandoPago = false;
+  numeroOperacion = '';
 
   ngOnInit(): void {
-    this.loadCustomers();
-    this.loadProducts();
+    this.cargarClientes();
+    this.cargarProductos();
   }
 
-  loadCustomers(): void {
-    this.customerService.getCustomers().subscribe({
-      next: (data) => {
-        this.customers = data;
-        this.filteredCustomers = data;
+  cargarClientes(): void {
+    this.customerService.obtenerClientes().subscribe({
+      next: (datos) => {
+        this.clientes = datos;
+        this.clientesFiltrados = datos;
       },
-      error: (error) => console.error('Error loading customers:', error)
+      error: (err: any) => console.error('Error cargando clientes:', err)
     });
   }
 
-  setCustomerMode(mode: 'select' | 'new'): void {
-    this.customerMode = mode;
-    this.dniError = '';
-    this.dniFound = false;
-    this.customerCreated = false;
-    if (mode === 'select') {
-      this.newCustomer = { fullName: '', documentNumber: '', phone: '', email: '' };
-      this.dniQuery = '';
+  setModoCliente(modo: 'select' | 'new'): void {
+    this.modoCliente = modo;
+    this.errorDni = '';
+    this.dniEncontrado = false;
+    this.clienteCreado = false;
+    if (modo === 'select') {
+      this.nuevoCliente = { nombreCompleto: '', numeroDocumento: '', telefono: '', correo: '' };
+      this.consultaDni = '';
     }
   }
 
-  filterCustomers(): void {
-    const q = this.customerSearch.toLowerCase();
-    this.filteredCustomers = this.customers.filter(c =>
-      c.fullName.toLowerCase().includes(q) ||
-      c.documentNumber.toLowerCase().includes(q)
+  filtrarClientes(): void {
+    const q = this.busquedaCliente.toLowerCase();
+    this.clientesFiltrados = this.clientes.filter(c =>
+      c.nombreCompleto.toLowerCase().includes(q) ||
+      c.numeroDocumento.toLowerCase().includes(q)
     );
   }
 
-  selectExistingCustomer(c: Customer): void {
-    this.sale.customerId = c.id;
-    this.selectedCustomerInfo = c;
+  seleccionarCliente(c: Cliente): void {
+    this.venta.clienteId = c.id;
+    this.infoClienteSeleccionado = c;
   }
 
-  clearCustomer(): void {
-    this.sale.customerId = 0;
-    this.selectedCustomerInfo = null;
-    this.customerSearch = '';
-    this.filteredCustomers = [...this.customers];
+  limpiarCliente(): void {
+    this.venta.clienteId = 0;
+    this.infoClienteSeleccionado = null;
+    this.busquedaCliente = '';
+    this.clientesFiltrados = [...this.clientes];
   }
 
   consultarDni(): void {
-    if (this.dniQuery.length !== 8) return;
-    this.dniLoading = true;
-    this.dniError = '';
-    this.dniFound = false;
+    if (this.consultaDni.length !== 8) return;
+    this.cargandoDni = true;
+    this.errorDni = '';
+    this.dniEncontrado = false;
     // Read token from the correct key used by AuthService ('currentUser')
     const currentUser = localStorage.getItem('currentUser');
     const token = currentUser ? (JSON.parse(currentUser)?.token || '') : '';
     this.http.get<any>(
-      `${environment.apiUrl}/dni/${this.dniQuery}`,
+      `${environment.apiUrl}/dni/${this.consultaDni}`,
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
-      next: (data) => {
-        this.dniLoading = false;
-        this.dniFound = true;
+      next: (data: any) => {
+        this.cargandoDni = false;
+        this.dniEncontrado = true;
         const nombre = data.nombres || data.name || '';
         const ap = data.apellidoPaterno || data.apellido_paterno || '';
         const am = data.apellidoMaterno || data.apellido_materno || '';
-        this.newCustomer.fullName = `${nombre} ${ap} ${am}`.trim();
-        this.newCustomer.documentNumber = data.dni || data.numero || this.dniQuery;
+        this.nuevoCliente.nombreCompleto = `${nombre} ${ap} ${am}`.trim();
+        this.nuevoCliente.numeroDocumento = data.dni || data.numero || this.consultaDni;
       },
-      error: (err) => {
-        this.dniLoading = false;
-        this.dniError = err.error?.message || 'DNI no encontrado. Ingresa los datos manualmente.';
-        this.newCustomer.documentNumber = this.dniQuery;
+      error: (err: any) => {
+        this.cargandoDni = false;
+        this.errorDni = err.error?.message || 'DNI no encontrado. Ingresa los datos manualmente.';
+        this.nuevoCliente.numeroDocumento = this.consultaDni;
       }
     });
   }
 
   crearYSeleccionarCliente(): void {
-    if (!this.newCustomer.fullName || !this.newCustomer.documentNumber || !this.newCustomer.phone) return;
-    this.savingCustomer = true;
-    this.customerService.createCustomer(this.newCustomer).subscribe({
-      next: (created: Customer) => {
-        this.customers.push(created);
-        this.filteredCustomers = [...this.customers];
-        this.sale.customerId = created.id;
-        this.savingCustomer = false;
-        this.customerCreated = true;
-        this.customerMode = 'select';
-        this.customerSearch = created.fullName;
-        this.filterCustomers();
-        setTimeout(() => { this.customerCreated = false; }, 3000);
+    if (!this.nuevoCliente.nombreCompleto || !this.nuevoCliente.numeroDocumento || !this.nuevoCliente.telefono) return;
+    this.guardandoCliente = true;
+    this.customerService.crearCliente(this.nuevoCliente).subscribe({
+      next: (creado: Cliente) => {
+        this.clientes.push(creado);
+        this.clientesFiltrados = [...this.clientes];
+        this.venta.clienteId = creado.id;
+        this.guardandoCliente = false;
+        this.clienteCreado = true;
+        this.modoCliente = 'select';
+        this.busquedaCliente = creado.nombreCompleto;
+        this.filtrarClientes();
+        setTimeout(() => { this.clienteCreado = false; }, 3000);
       },
-      error: (err) => {
-        this.savingCustomer = false;
+      error: (err: any) => {
+        this.guardandoCliente = false;
         alert(err.error?.message || 'Error al crear el cliente. El DNI puede ya estar registrado.');
       }
     });
   }
 
-  loadProducts(): void {
-    this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data.filter(p => p.stock > 0);
+  cargarProductos(): void {
+    this.productService.obtenerProductos().subscribe({
+      next: (datos) => {
+        this.productos = datos.filter(p => p.stock > 0);
       },
-      error: (error) => console.error('Error loading products:', error)
+      error: (err: any) => console.error('Error cargando productos:', err)
     });
   }
 
-  onProductChange(index: number): void {
-    const item = this.saleItems[index];
-    const product = this.products.find(p => p.id === item.productId);
+  onCambioProducto(index: number): void {
+    const item = this.itemsVenta[index];
+    const producto = this.productos.find(p => p.id === item.productoId);
     
-    if (product) {
-      item.unitPrice = product.price;
-      item.subtotal = item.quantity * item.unitPrice;
-      this.calculateTotal();
+    if (producto) {
+      item.precioUnitario = producto.precio;
+      item.subtotal = item.cantidad * item.precioUnitario;
+      this.calcularTotal();
     }
   }
 
-  calculateTotal(): void {
-    this.totalAmount = this.saleItems.reduce((sum, item) => {
-      return sum + (item.quantity * item.unitPrice);
+  calcularTotal(): void {
+    this.montoTotal = this.itemsVenta.reduce((sum: number, item: any) => {
+      return sum + (item.cantidad * item.precioUnitario);
     }, 0);
 
-    this.saleItems.forEach(item => {
-      item.subtotal = item.quantity * item.unitPrice;
+    this.itemsVenta.forEach((item: any) => {
+      item.subtotal = item.cantidad * item.precioUnitario;
     });
   }
 
-  addItem(): void {
-    this.saleItems.push({
-      productId: 0,
-      quantity: 1,
-      unitPrice: 0,
-      subtotal: 0
-    });
+  agregarItem(): void {
+    this.itemsVenta.push({ productoId: 0, cantidad: 1, precioUnitario: 0, subtotal: 0 });
   }
 
-  removeItem(index: number): void {
-    this.saleItems.splice(index, 1);
-    this.calculateTotal();
+  quitarItem(index: number): void {
+    this.itemsVenta.splice(index, 1);
+    this.calcularTotal();
   }
 
-  canSubmit(): boolean {
-    return this.sale.customerId > 0 &&
-      this.saleItems.length > 0 &&
-      this.saleItems.every(item => item.productId > 0 && item.quantity > 0) &&
-      this.totalAmount > 0;
+  puedeEnviar(): boolean {
+    return this.venta.clienteId > 0 &&
+      this.itemsVenta.length > 0 &&
+      this.itemsVenta.every((item: any) => item.productoId > 0 && item.cantidad > 0) &&
+      this.montoTotal > 0;
   }
 
-  isValid(): boolean {
-    return this.sale.customerId > 0 && 
-           this.saleItems.length > 0 && 
-           this.saleItems.every(item => item.productId > 0 && item.quantity > 0);
+  seleccionarMetodoPago(metodo: string): void {
+    this.metodoPagoSeleccionado = metodo;
+    this.venta.metodoPago = metodo;
+    this.pagoConfirmado = false;
+    if (metodo === 'Yape') this.mostrarModalYape = true;
+    else if (metodo === 'Tarjeta') this.mostrarModalTarjeta = true;
+    else if (metodo === 'Transferencia') this.mostrarModalTransferencia = true;
   }
 
-  // Payment method selection
-  selectPaymentMethod(method: string): void {
-    this.selectedPaymentMethod = method;
-    this.sale.paymentMethod = method;
-    this.paymentConfirmed = false;
-    
-    if (method === 'Yape') {
-      this.showYapeModal = true;
-    } else if (method === 'Tarjeta') {
-      this.showCardModal = true;
-    } else if (method === 'Transferencia') {
-      this.showTransferModal = true;
-    }
-  }
-
-  // Yape payment confirmation
-  confirmYapePayment(): void {
-    this.processingPayment = true;
-    
+  confirmarPagoYape(): void {
+    this.procesandoPago = true;
     setTimeout(() => {
-      const transactionId = `YAPE-${Date.now()}`;
-      this.sale.transactionId = transactionId;
-      this.paymentConfirmed = true;
-      this.processingPayment = false;
-      this.showYapeModal = false;
-      
+      this.venta.idTransaccion = `YAPE-${Date.now()}`;
+      this.pagoConfirmado = true;
+      this.procesandoPago = false;
+      this.mostrarModalYape = false;
       alert('✅ Pago Yape confirmado exitosamente');
     }, 1500);
   }
 
-  // Card payment processing
-  processCardPayment(): void {
-    if (!this.cardData.cardNumber || !this.cardData.expiryDate || 
-        !this.cardData.cvv || !this.cardData.cardholderName) {
+  procesarPagoTarjeta(): void {
+    if (!this.datosTarjeta.numero || !this.datosTarjeta.fechaExpiracion || !this.datosTarjeta.cvv || !this.datosTarjeta.nombreTitular) {
       alert('Por favor complete todos los campos de la tarjeta');
       return;
     }
-    
-    this.processingPayment = true;
-    
-    // Simulate payment processing
+    this.procesandoPago = true;
     setTimeout(() => {
-      const transactionId = `TRX-CARD-${Date.now()}`;
-      this.sale.transactionId = transactionId;
-      this.paymentConfirmed = true;
-      this.processingPayment = false;
-      this.showCardModal = false;
-      
+      this.venta.idTransaccion = `TRX-CARD-${Date.now()}`;
+      this.pagoConfirmado = true;
+      this.procesandoPago = false;
+      this.mostrarModalTarjeta = false;
       alert('✅ Pago con tarjeta procesado exitosamente');
-      
-      // Clear card data
-      this.cardData = {
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-        cardholderName: ''
-      };
+      this.datosTarjeta = { numero: '', fechaExpiracion: '', cvv: '', nombreTitular: '' };
     }, 2000);
   }
 
-  // Transfer payment confirmation
-  confirmTransferPayment(): void {
-    if (!this.operationNumber) {
+  confirmarTransferencia(): void {
+    if (!this.numeroOperacion) {
       alert('Por favor ingrese el número de operación');
       return;
     }
-    
-    this.processingPayment = true;
-    
+    this.procesandoPago = true;
     setTimeout(() => {
-      const transactionId = `TRANS-${this.operationNumber}-${Date.now()}`;
-      this.sale.transactionId = transactionId;
-      this.paymentConfirmed = true;
-      this.processingPayment = false;
-      this.showTransferModal = false;
-      
+      this.venta.idTransaccion = `TRANS-${this.numeroOperacion}-${Date.now()}`;
+      this.pagoConfirmado = true;
+      this.procesandoPago = false;
+      this.mostrarModalTransferencia = false;
       alert('✅ Transferencia confirmada exitosamente');
-      this.operationNumber = '';
+      this.numeroOperacion = '';
     }, 1500);
   }
 
-  // Close modals
-  closePaymentModal(): void {
-    this.showYapeModal = false;
-    this.showCardModal = false;
-    this.showTransferModal = false;
-    this.processingPayment = false;
+  cerrarModalPago(): void {
+    this.mostrarModalYape = false;
+    this.mostrarModalTarjeta = false;
+    this.mostrarModalTransferencia = false;
+    this.procesandoPago = false;
   }
 
   onSubmit(): void {
     // Validate payment for digital methods
-    if ((this.selectedPaymentMethod === 'Yape' || 
-         this.selectedPaymentMethod === 'Tarjeta' || 
-         this.selectedPaymentMethod === 'Transferencia') && 
-        !this.paymentConfirmed) {
+    if ((this.metodoPagoSeleccionado === 'Yape' || this.metodoPagoSeleccionado === 'Tarjeta' || this.metodoPagoSeleccionado === 'Transferencia') && !this.pagoConfirmado) {
       alert('Por favor complete el proceso de pago antes de continuar');
       return;
     }
 
-    this.errorMessage = '';
-    this.saving = true;
+    this.mensajeError = '';
+    this.guardando = true;
 
-    this.sale.details = this.saleItems.map(item => ({
-      productId: item.productId,
-      quantity: item.quantity
+    this.venta.detalles = this.itemsVenta.map((item: any) => ({
+      productoId: item.productoId,
+      cantidad: item.cantidad
     }));
 
-    this.saleService.createSale(this.sale).subscribe({
+    this.saleService.crearVenta(this.venta).subscribe({
       next: () => {
         this.router.navigate(['/sales']);
       },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Error al crear la venta. Por favor intente nuevamente.';
-        this.saving = false;
+      error: (err: any) => {
+        this.mensajeError = err.error?.message || 'Error al crear la venta. Por favor intente nuevamente.';
+        this.guardando = false;
       }
     });
   }
 
-  cancel(): void {
+  cancelar(): void {
     this.router.navigate(['/sales']);
   }
 }

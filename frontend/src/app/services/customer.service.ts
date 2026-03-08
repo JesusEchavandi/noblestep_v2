@@ -2,9 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Customer, CreateCustomer } from '../models/customer.model';
+import { Cliente, CrearCliente } from '../models/customer.model';
 import { environment } from '../../environments/environment';
-import { PagedResult } from './product.service';
+import { ResultadoPaginado } from './product.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,29 +14,29 @@ export class CustomerService {
   private http = inject(HttpClient);
 
   /** Devuelve todos los clientes (pageSize=200 para compatibilidad con componentes existentes) */
-  getCustomers(): Observable<Customer[]> {
-    return this.http.get<PagedResult<Customer>>(`${this.API_URL}?page=1&pageSize=200`)
-      .pipe(map(res => res.data));
+  obtenerClientes(): Observable<Cliente[]> {
+    return this.http.get<ResultadoPaginado<Cliente>>(`${this.API_URL}?page=1&pageSize=200`)
+      .pipe(map(res => res.datos));
   }
 
   /** Versión paginada */
-  getCustomersPaged(page = 1, pageSize = 50): Observable<PagedResult<Customer>> {
-    return this.http.get<PagedResult<Customer>>(`${this.API_URL}?page=${page}&pageSize=${pageSize}`);
+  obtenerClientesPaginados(pagina = 1, tamanoPagina = 50): Observable<ResultadoPaginado<Cliente>> {
+    return this.http.get<ResultadoPaginado<Cliente>>(`${this.API_URL}?page=${pagina}&pageSize=${tamanoPagina}`);
   }
 
-  getCustomer(id: number): Observable<Customer> {
-    return this.http.get<Customer>(`${this.API_URL}/${id}`);
+  obtenerCliente(id: number): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.API_URL}/${id}`);
   }
 
-  createCustomer(customer: CreateCustomer): Observable<Customer> {
-    return this.http.post<Customer>(this.API_URL, customer);
+  crearCliente(cliente: CrearCliente): Observable<Cliente> {
+    return this.http.post<Cliente>(this.API_URL, cliente);
   }
 
-  updateCustomer(id: number, customer: CreateCustomer): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/${id}`, customer);
+  actualizarCliente(id: number, cliente: CrearCliente): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${id}`, cliente);
   }
 
-  deleteCustomer(id: number): Observable<void> {
+  eliminarCliente(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 }

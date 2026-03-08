@@ -1,0 +1,29 @@
+[Unit]
+Description=NobleStep .NET API
+After=network.target mysql.service
+
+[Service]
+WorkingDirectory=/var/www/noblestep-api
+ExecStart=/usr/bin/dotnet /var/www/noblestep-api/NobleStep.Api.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=noblestep-api
+User=juan
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5000
+
+# ══════════════════════════════════════════════════════
+# SECRETOS — Editar con valores reales en el servidor
+# Nunca commitear este archivo con valores reales
+# ══════════════════════════════════════════════════════
+Environment=NOBLESTEP_DB_CONNECTION=Server=localhost;Database=noblestep_db;User=noblestep;Password=CAMBIAR;
+Environment=NOBLESTEP_JWT_SECRET=CAMBIAR-GENERAR-CON-openssl-rand-base64-48
+Environment=NOBLESTEP_SMTP_PASSWORD=CAMBIAR
+Environment=NOBLESTEP_API_TOKEN=CAMBIAR
+Environment=NOBLESTEP_FRONTEND_URL=https://tudominio.com
+Environment=NOBLESTEP_CORS_ORIGINS=https://tudominio.com,https://admin.tudominio.com
+
+[Install]
+WantedBy=multi-user.target

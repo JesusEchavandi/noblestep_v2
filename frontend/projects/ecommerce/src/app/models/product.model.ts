@@ -1,37 +1,37 @@
-export interface ProductSize {
-  variantId: number;
-  size: string;
+export interface TallaProducto {
+  varianteId: number;
+  talla: string;
   stock: number;
-  available: boolean;
+  disponible: boolean;
 }
 
-export interface Product {
+export interface Producto {
   id: number;
-  code: string;
-  name: string;
-  description: string;
-  size?: string;       // legacy — talla única si no hay variantes
-  price: number;
-  salePrice: number;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  talla?: string;       // legacy — talla única si no hay variantes
+  precio: number;
+  precioVenta: number;
   stock: number;       // stock total sumado de variantes activas
-  brand?: string;
-  categoryId: number;
-  categoryName: string;
-  imageUrl?: string;
-  createdAt?: string | Date;
-  sizes: ProductSize[]; // variantes de talla con stock individual
+  marca?: string;
+  categoriaId: number;
+  nombreCategoria: string;
+  urlImagen?: string;
+  creadoEn?: string | Date;
+  tallas: TallaProducto[]; // variantes de talla con stock individual
 }
 
-export interface Category {
+export interface Categoria {
   id: number;
-  name: string;
-  description: string;
-  productCount: number;
+  nombre: string;
+  descripcion: string;
+  cantidadProductos: number;
 }
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
-  variantId?: number;  // ID de la variante (talla) seleccionada
-  selectedSize?: string; // talla legible para mostrar en UI
+export interface ItemCarrito {
+  producto: Producto;
+  cantidad: number;
+  varianteId?: number;  // ID de la variante (talla) seleccionada
+  tallaSeleccionada?: string; // talla legible para mostrar en UI
 }

@@ -12,11 +12,11 @@
       <div>
         <h2 class="section-title">Productos</h2>
       </div>
-      <a routerLink="/catalog" class="section-link">More products →</a>
+      <a routerLink="/catalog" class="section-link">Más productos →</a>
     </div>
 
     <!-- Loading -->
-    <div *ngIf="loading" class="products-grid">
+    <div *ngIf="cargando" class="products-grid">
       <div *ngFor="let i of [1,2,3,4]" class="product-card skeleton-card">
         <div class="card-image skeleton-img"></div>
         <div class="card-body">
@@ -27,13 +27,13 @@
     </div>
 
     <!-- Empty -->
-    <div *ngIf="!loading && featuredProducts.length === 0" class="empty-state">
+    <div *ngIf="!cargando && productosDestacados.length === 0" class="empty-state">
       <p>No hay productos disponibles en este momento.</p>
       <a routerLink="/catalog" class="btn-cart mt-md">Ver catálogo →</a>
     </div>
 
     <!-- Grid de productos -->
-    <div *ngIf="!loading && featuredProducts.length > 0" class="products-grid">
+    <div *ngIf="!cargando && productosDestacados.length > 0" class="products-grid">
 
       <!-- Flechas de navegación móvil -->
       <button class="grid-nav prev" (click)="scrollGrid(-1)" aria-label="Anterior">
@@ -43,18 +43,18 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
 
-      <div *ngFor="let product of featuredProducts" class="product-card" [routerLink]="['/product', product.id]">
+      <div *ngFor="let producto of productosDestacados" class="product-card" [routerLink]="['/product', producto.id]">
 
         <!-- Image area -->
         <div class="card-image">
           <!-- Badge -->
-          <span *ngIf="isNew(product)" class="card-badge new">New</span>
-          <span *ngIf="!isNew(product) && isLowStock(product)" class="card-badge promo">Últimas</span>
-          <span *ngIf="!isNew(product) && !isLowStock(product) && product.stock > 10" class="card-badge fav">Favorito</span>
+          <span *ngIf="esNuevo(producto)" class="card-badge new">Nuevo</span>
+          <span *ngIf="!esNuevo(producto) && esBajoStock(producto)" class="card-badge promo">Últimas</span>
+          <span *ngIf="!esNuevo(producto) && !esBajoStock(producto) && producto.stock > 10" class="card-badge fav">Favorito</span>
 
           <!-- Product image referencial por nombre -->
           <div class="img-wrapper">
-            <img [src]="getProductImage(product)" [alt]="product.name" class="prod-img" loading="lazy"
+            <img [src]="obtenerImagenProducto(producto)" [alt]="producto.nombre" class="prod-img" loading="lazy"
               (error)="$any($event.target).src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'" />
           </div>
 
@@ -68,17 +68,17 @@
 
         <!-- Card body -->
         <div class="card-body">
-          <p class="card-desc">{{ product.description || product.categoryName }}</p>
-          <h3 class="card-name">{{ product.name }}</h3>
+          <p class="card-desc">{{ producto.descripcion || producto.nombreCategoria }}</p>
+          <h3 class="card-name">{{ producto.nombre }}</h3>
           <div class="card-footer">
-            <span class="card-price">S/ {{ product.salePrice | number:'1.2-2' }}</span>
+            <span class="card-price">S/ {{ producto.precioVenta | number:'1.2-2' }}</span>
             <button
               class="btn-cart"
-              (click)="addToCart(product); $event.stopPropagation()"
-              [disabled]="product.stock === 0"
-              [title]="product.stock === 0 ? 'Sin stock' : 'Agregar al carrito'">
+              (click)="agregarAlCarrito(producto); $event.stopPropagation()"
+              [disabled]="producto.stock === 0"
+              [title]="producto.stock === 0 ? 'Sin stock' : 'Agregar al carrito'">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              {{ product.stock === 0 ? 'Agotado' : 'Cart' }}
+              {{ producto.stock === 0 ? 'Agotado' : 'Agregar' }}
             </button>
           </div>
         </div>
@@ -92,46 +92,30 @@
 <!-- Category Grid -->
 <app-category-grid></app-category-grid>
 
-<!-- Features Section -->
-<section class="features-section">
+<!-- Mapa de ubicación -->
+<section class="map-section">
   <div class="container">
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        </div>
-        <div>
-          <h3>Envío Rápido</h3>
-          <p>Entrega en 24-48 horas a Lima</p>
-        </div>
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Nuestra Ubicación</h2>
+        <p class="section-desc">Visítanos en nuestra tienda física</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon yape-icon">
-          <img src="/logo_yape.png" alt="Yape" style="height: 28px; border-radius: 6px;">
-        </div>
-        <div>
-          <h3>Paga con Yape</h3>
-          <p>Rápido, fácil y 100% seguro</p>
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        </div>
-        <div>
-          <h3>Soporte 24/7</h3>
-          <p>Atención personalizada siempre</p>
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div>
-          <h3>Calidad Garantizada</h3>
-          <p>Devolución gratis en 30 días</p>
-        </div>
-      </div>
+      <a href="https://www.google.com/maps?q=-12.0081971,-77.0052479" target="_blank" rel="noopener noreferrer" class="section-link">
+        Ver en Google Maps →
+      </a>
+    </div>
+    <div class="map-wrapper">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1950.5!2d-77.0052479!3d-12.0081971!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDAwJzI5LjUiUyA3N8KwMDAnMTguOSJX!5e0!3m2!1ses!2spe!4v1700000000000"
+        width="100%"
+        height="450"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación NobleStep">
+      </iframe>
     </div>
   </div>
 </section>
+

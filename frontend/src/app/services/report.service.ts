@@ -3,130 +3,130 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// Sales Reports
-export interface SalesReport {
-  startDate: string;
-  endDate: string;
-  items: SalesReportItem[];
-  totalSales: number;
-  totalTransactions: number;
-  averageTicket: number;
+// Reportes de Ventas
+export interface ReporteVentas {
+  fechaInicio: string;
+  fechaFin: string;
+  items: ItemReporteVentas[];
+  totalVentas: number;
+  totalTransacciones: number;
+  ticketPromedio: number;
 }
 
-export interface SalesReportItem {
-  saleId: number;
-  saleDate: string;
-  customerName: string;
-  customerDocument: string;
+export interface ItemReporteVentas {
+  ventaId: number;
+  fechaVenta: string;
+  nombreCliente: string;
+  documentoCliente: string;
   total: number;
-  itemsCount: number;
-  status: string;
-  userName: string;
+  cantidadItems: number;
+  estado: string;
+  nombreUsuario: string;
 }
 
-export interface SalesByProduct {
-  productId: number;
-  productName: string;
-  brand: string;
-  categoryName: string;
-  totalQuantitySold: number;
-  totalRevenue: number;
-  averagePrice: number;
+export interface VentasPorProducto {
+  productoId: number;
+  nombreProducto: string;
+  marca: string;
+  nombreCategoria: string;
+  cantidadTotalVendida: number;
+  ingresosTotales: number;
+  precioPromedio: number;
 }
 
-export interface SalesByCustomer {
-  customerId: number;
-  customerName: string;
-  documentNumber: string;
-  totalPurchases: number;
-  totalSpent: number;
-  averageTicket: number;
-  lastPurchaseDate: string;
+export interface VentasPorCliente {
+  clienteId: number;
+  nombreCliente: string;
+  numeroDocumento: string;
+  totalCompras: number;
+  totalGastado: number;
+  ticketPromedio: number;
+  ultimaFechaCompra: string;
 }
 
-// Purchase Reports
-export interface PurchasesReport {
-  startDate: string;
-  endDate: string;
-  items: PurchasesReportItem[];
-  totalPurchases: number;
-  totalTransactions: number;
+// Reportes de Compras
+export interface ReporteCompras {
+  fechaInicio: string;
+  fechaFin: string;
+  items: ItemReporteCompras[];
+  totalCompras: number;
+  totalTransacciones: number;
 }
 
-export interface PurchasesReportItem {
-  purchaseId: number;
-  purchaseDate: string;
-  supplierName: string;
-  supplierDocument: string;
+export interface ItemReporteCompras {
+  compraId: number;
+  fechaCompra: string;
+  nombreProveedor: string;
+  documentoProveedor: string;
   total: number;
-  itemsCount: number;
-  status: string;
+  cantidadItems: number;
+  estado: string;
 }
 
-export interface PurchasesBySupplier {
-  supplierId: number;
-  supplierName: string;
-  documentNumber: string;
-  totalPurchases: number;
-  totalSpent: number;
-  lastPurchaseDate: string;
+export interface ComprasPorProveedor {
+  proveedorId: number;
+  nombreProveedor: string;
+  numeroDocumento: string;
+  totalCompras: number;
+  totalGastado: number;
+  ultimaFechaCompra: string;
 }
 
-// Inventory Reports
-export interface InventoryReport {
-  productId: number;
-  productName: string;
-  brand: string;
-  size: string;
-  categoryName: string;
-  currentStock: number;
-  unitPrice: number;
-  totalValue: number;
-  totalSold: number;
-  rotationRate: number;
+// Reportes de Inventario
+export interface ReporteInventario {
+  productoId: number;
+  nombreProducto: string;
+  marca: string;
+  talla: string;
+  nombreCategoria: string;
+  stockActual: number;
+  precioUnitario: number;
+  valorTotal: number;
+  totalVendido: number;
+  tasaRotacion: number;
 }
 
-export interface InventoryValuation {
-  totalValue: number;
-  totalUnits: number;
-  totalProducts: number;
-  byCategory: CategoryValuation[];
+export interface ValuacionInventario {
+  valorTotal: number;
+  totalUnidades: number;
+  totalProductos: number;
+  porCategoria: ValuacionCategoria[];
 }
 
-export interface CategoryValuation {
-  category: string;
-  totalValue: number;
-  totalUnits: number;
-  products: number;
+export interface ValuacionCategoria {
+  categoria: string;
+  valorTotal: number;
+  totalUnidades: number;
+  productos: number;
 }
 
-// Profit/Loss Report
-export interface ProfitLossReport {
-  startDate: string;
-  endDate: string;
-  totalSales: number;
-  totalPurchases: number;
-  grossProfit: number;
-  profitMargin: number;
-  productsSold: number;
-  productsPurchased: number;
+// Reporte de Ganancia/Pérdida
+export interface ReporteGananciaPerdida {
+  fechaInicio: string;
+  fechaFin: string;
+  totalVentas: number;
+  totalCompras: number;
+  gananciaBruta: number;
+  margenGanancia: number;
+  productosVendidos: number;
+  productosComprados: number;
 }
 
-// Top Products Report
-export interface TopProductsReport {
-  startDate: string;
-  endDate: string;
-  topByRevenue: TopProduct[];
-  topByQuantity: TopProduct[];
+// Reporte de Productos Top
+export interface ReporteProductosTop {
+  fechaInicio: string;
+  fechaFin: string;
+  topPorIngresos: ProductoTop[];
+  topPorCantidad: ProductoTop[];
 }
 
-export interface TopProduct {
-  productId: number;
-  productName: string;
-  brand: string;
-  categoryName: string;
-  quantitySold: number;
-  revenue: number;
+export interface ProductoTop {
+  productoId: number;
+  nombreProducto: string;
+  marca: string;
+  nombreCategoria: string;
+  cantidadVendida: number;
+  ingresos: number;
 }
 
 @Injectable({
@@ -136,86 +136,84 @@ export class ReportService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/reports`;
 
-  // Sales Reports
-  getSalesReport(startDate?: string, endDate?: string): Observable<SalesReport> {
+  // Reportes de Ventas
+  obtenerReporteVentas(fechaInicio?: string, fechaFin?: string): Observable<ReporteVentas> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    return this.http.get<SalesReport>(`${this.apiUrl}/sales`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    return this.http.get<ReporteVentas>(`${this.apiUrl}/sales`, { params });
   }
 
-  getSalesByProduct(startDate?: string, endDate?: string, categoryId?: number): Observable<SalesByProduct[]> {
+  obtenerVentasPorProducto(fechaInicio?: string, fechaFin?: string, categoriaId?: number): Observable<VentasPorProducto[]> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    // Solo agregar categoryId si tiene un valor numérico válido
-    if (categoryId !== null && categoryId !== undefined && !isNaN(categoryId)) {
-      params = params.set('categoryId', categoryId.toString());
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    if (categoriaId !== null && categoriaId !== undefined && !isNaN(categoriaId)) {
+      params = params.set('categoryId', categoriaId.toString());
     }
-    return this.http.get<SalesByProduct[]>(`${this.apiUrl}/sales-by-product`, { params });
+    return this.http.get<VentasPorProducto[]>(`${this.apiUrl}/sales-by-product`, { params });
   }
 
-  getSalesByCustomer(startDate?: string, endDate?: string): Observable<SalesByCustomer[]> {
+  obtenerVentasPorCliente(fechaInicio?: string, fechaFin?: string): Observable<VentasPorCliente[]> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    return this.http.get<SalesByCustomer[]>(`${this.apiUrl}/sales-by-customer`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    return this.http.get<VentasPorCliente[]>(`${this.apiUrl}/sales-by-customer`, { params });
   }
 
-  // Purchase Reports
-  getPurchasesReport(startDate?: string, endDate?: string): Observable<PurchasesReport> {
+  // Reportes de Compras
+  obtenerReporteCompras(fechaInicio?: string, fechaFin?: string): Observable<ReporteCompras> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    return this.http.get<PurchasesReport>(`${this.apiUrl}/purchases`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    return this.http.get<ReporteCompras>(`${this.apiUrl}/purchases`, { params });
   }
 
-  getPurchasesBySupplier(startDate?: string, endDate?: string): Observable<PurchasesBySupplier[]> {
+  obtenerComprasPorProveedor(fechaInicio?: string, fechaFin?: string): Observable<ComprasPorProveedor[]> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    return this.http.get<PurchasesBySupplier[]>(`${this.apiUrl}/purchases-by-supplier`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    return this.http.get<ComprasPorProveedor[]>(`${this.apiUrl}/purchases-by-supplier`, { params });
   }
 
-  // Inventory Reports
-  getInventoryReport(categoryId?: number): Observable<InventoryReport[]> {
+  // Reportes de Inventario
+  obtenerReporteInventario(categoriaId?: number): Observable<ReporteInventario[]> {
     let params = new HttpParams();
-    // Solo agregar categoryId si tiene un valor numérico válido
-    if (categoryId !== null && categoryId !== undefined && !isNaN(categoryId)) {
-      params = params.set('categoryId', categoryId.toString());
+    if (categoriaId !== null && categoriaId !== undefined && !isNaN(categoriaId)) {
+      params = params.set('categoryId', categoriaId.toString());
     }
-    return this.http.get<InventoryReport[]>(`${this.apiUrl}/inventory`, { params });
+    return this.http.get<ReporteInventario[]>(`${this.apiUrl}/inventory`, { params });
   }
 
-  getInventoryValuation(): Observable<InventoryValuation> {
-    return this.http.get<InventoryValuation>(`${this.apiUrl}/inventory-valuation`);
+  obtenerValuacionInventario(): Observable<ValuacionInventario> {
+    return this.http.get<ValuacionInventario>(`${this.apiUrl}/inventory-valuation`);
   }
 
-  // Profit/Loss Report
-  getProfitLossReport(startDate?: string, endDate?: string): Observable<ProfitLossReport> {
+  // Reporte de Ganancia/Pérdida
+  obtenerReporteGananciaPerdida(fechaInicio?: string, fechaFin?: string): Observable<ReporteGananciaPerdida> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    return this.http.get<ProfitLossReport>(`${this.apiUrl}/profit-loss`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    return this.http.get<ReporteGananciaPerdida>(`${this.apiUrl}/profit-loss`, { params });
   }
 
-  // Top Products Report
-  getTopProductsReport(startDate?: string, endDate?: string, limit: number = 10): Observable<TopProductsReport> {
+  // Reporte de Productos Top
+  obtenerReporteProductosTop(fechaInicio?: string, fechaFin?: string, limite: number = 10): Observable<ReporteProductosTop> {
     let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
-    params = params.set('limit', limit.toString());
-    return this.http.get<TopProductsReport>(`${this.apiUrl}/top-products`, { params });
+    if (fechaInicio) params = params.set('startDate', fechaInicio);
+    if (fechaFin) params = params.set('endDate', fechaFin);
+    params = params.set('limit', limite.toString());
+    return this.http.get<ReporteProductosTop>(`${this.apiUrl}/top-products`, { params });
   }
 
-  // Export to CSV
-  exportToCSV(data: any[], filename: string): void {
-    if (data.length === 0) return;
+  // Exportar a CSV
+  exportarACSV(datos: any[], nombreArchivo: string): void {
+    if (datos.length === 0) return;
 
-    const headers = Object.keys(data[0]);
+    const headers = Object.keys(datos[0]);
     const csv = [
       headers.join(','),
-      ...data.map(row => headers.map(header => {
+      ...datos.map(row => headers.map(header => {
         const value = row[header];
         return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
       }).join(','))
@@ -225,7 +223,7 @@ export class ReportService {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.csv`);
+    link.setAttribute('download', `${nombreArchivo}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

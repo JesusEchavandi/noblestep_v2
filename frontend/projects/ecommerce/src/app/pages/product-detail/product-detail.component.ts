@@ -6,7 +6,7 @@ import { ShopService } from '../../services/shop.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { MetaService } from '../../services/meta.service';
-import { Product } from '../../models/product.model';
+import { Producto } from '../../models/product.model';
 
 @Component({
   selector: 'app-product-detail',
@@ -16,19 +16,19 @@ import { Product } from '../../models/product.model';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  product: Product | null = null;
-  loading = true;
+  producto: Producto | null = null;
+  cargando = true;
   error = false;
-  quantity = 1;
-  selectedSize: string | null = null;
-  selectedVariantId: number | null = null;
-  relatedProducts: Product[] = [];
+  cantidad = 1;
+  tallaSeleccionada: string | null = null;
+  varianteSeleccionadaId: number | null = null;
+  productosRelacionados: Producto[] = [];
 
   // Galería
-  galleryImages: string[] = [];
-  activeImageIndex = 0;
-  lightboxOpen = false;
-  zoomActive = false;
+  imagenesGaleria: string[] = [];
+  indiceImagenActiva = 0;
+  lightboxAbierto = false;
+  zoomActivo = false;
 
   private readonly WSP_NUMBER = '51999999999'; // ← Reemplaza con tu número real
 
@@ -43,72 +43,72 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(params => {
       const id = +params['id'];
-      this.activeImageIndex = 0;
-      this.lightboxOpen = false;
-      this.quantity = 1;
-      this.selectedSize = null;
-      this.loadProduct(id);
+      this.indiceImagenActiva = 0;
+      this.lightboxAbierto = false;
+      this.cantidad = 1;
+      this.tallaSeleccionada = null;
+      this.cargarProducto(id);
     });
   }
 
-  loadProduct(id: number) {
-    this.loading = true;
+  cargarProducto(id: number) {
+    this.cargando = true;
     this.error = false;
 
-    this.shopService.getProduct(id).subscribe({
-      next: (product) => {
-        this.product = product;
-        this.loading = false;
+    this.shopService.obtenerProducto(id).subscribe({
+      next: (producto) => {
+        this.producto = producto;
+        this.cargando = false;
         // Si el producto tiene variantes del backend, usarlas
         // Si no (legacy), parsear el campo size como talla única
-        const hasVariants = product.sizes && product.sizes.length > 0;
-        if (!hasVariants && product.size) {
+        const tieneVariantes = producto.tallas && producto.tallas.length > 0;
+        if (!tieneVariantes && producto.talla) {
           // Compatibilidad legacy: convertir campo size a variante ficticia
-          product.sizes = [{ variantId: 0, size: product.size, stock: product.stock, available: product.stock > 0 }];
+          producto.tallas = [{ varianteId: 0, talla: producto.talla, stock: producto.stock, disponible: producto.stock > 0 }];
         }
         // Auto-seleccionar si solo hay una talla disponible
-        const available = (product.sizes || []).filter(s => s.available);
-        if (available.length === 1) {
-          this.selectedSize = available[0].size;
-          this.selectedVariantId = available[0].variantId || null;
+        const disponibles = (producto.tallas || []).filter(s => s.disponible);
+        if (disponibles.length === 1) {
+          this.tallaSeleccionada = disponibles[0].talla;
+          this.varianteSeleccionadaId = disponibles[0].varianteId || null;
         }
-        this.galleryImages = this.buildGallery(product);
+        this.imagenesGaleria = this.construirGaleria(producto);
 
-        this.metaService.setProductMeta({
-          name: product.name,
-          description: product.description || product.categoryName,
-          salePrice: product.salePrice,
-          imageUrl: product.imageUrl
+        this.metaService.establecerMetaProducto({
+          nombre: producto.nombre,
+          descripcion: producto.descripcion || producto.nombreCategoria,
+          precioVenta: producto.precioVenta,
+          urlImagen: producto.urlImagen
         });
 
         // Cargar productos relacionados
-        this.shopService.getProducts(product.categoryId).subscribe({
+        this.shopService.obtenerProductos(producto.categoriaId).subscribe({
           next: (res: any) => {
             const items = res.items || res;
-            this.relatedProducts = items.filter((p: Product) => p.id !== product.id).slice(0, 4);
+            this.productosRelacionados = items.filter((p: Producto) => p.id !== producto.id).slice(0, 4);
           },
           error: () => {}
         });
       },
       error: () => {
-        this.loading = false;
+        this.cargando = false;
         this.error = true;
       }
     });
   }
 
   // Construye galería de 4 ángulos con imagen real del producto
-  buildGallery(product: Product): string[] {
-    const base = product.imageUrl || this.getProductImage(product);
+  construirGaleria(producto: Producto): string[] {
+    const base = producto.urlImagen || this.obtenerImagenProducto(producto);
     // Si tiene imagen real del admin usarla como principal
     // Generar variaciones con parámetros Unsplash para simular ángulos
-    const name = (product.name || '').toLowerCase();
-    const imgs = this.getGalleryByName(name, product.id);
-    if (product.imageUrl) imgs[0] = product.imageUrl;
+    const nombre = (producto.nombre || '').toLowerCase();
+    const imgs = this.obtenerGaleriaPorNombre(nombre, producto.id);
+    if (producto.urlImagen) imgs[0] = producto.urlImagen;
     return imgs;
   }
 
-  getGalleryByName(name: string, id: number): string[] {
+  obtenerGaleriaPorNombre(nombre: string, id: number): string[] {
     const sneakerImgs = [
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&q=80',
       'https://images.unsplash.com/photo-1556906781-9a412961d61f?w=700&q=80',
@@ -139,18 +139,18 @@ export class ProductDetailComponent implements OnInit {
       'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=700&q=80',
       'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700&q=80'
     ];
-    if (name.includes('boot') || name.includes('bota')) return bootImgs;
-    if (name.includes('sandal') || name.includes('sandalia')) return sandalImgs;
-    if (name.includes('formal') || name.includes('oxford') || name.includes('vestir')) return formalImgs;
-    if (name.includes('sport') || name.includes('gym') || name.includes('running')) return sportImgs;
-    if (name.includes('sneaker') || name.includes('zapatilla') || name.includes('casual')) return sneakerImgs;
+    if (nombre.includes('boot') || nombre.includes('bota')) return bootImgs;
+    if (nombre.includes('sandal') || nombre.includes('sandalia')) return sandalImgs;
+    if (nombre.includes('formal') || nombre.includes('oxford') || nombre.includes('vestir')) return formalImgs;
+    if (nombre.includes('sport') || nombre.includes('gym') || nombre.includes('running')) return sportImgs;
+    if (nombre.includes('sneaker') || nombre.includes('zapatilla') || nombre.includes('casual')) return sneakerImgs;
     const allSets = [sneakerImgs, formalImgs, bootImgs, sandalImgs, sportImgs];
     return allSets[id % allSets.length];
   }
 
-  getProductImage(product: Product): string {
-    if (product.imageUrl) return product.imageUrl;
-    const name = (product.name || '').toLowerCase();
+  obtenerImagenProducto(producto: Producto): string {
+    if (producto.urlImagen) return producto.urlImagen;
+    const nombre = (producto.nombre || '').toLowerCase();
     const map: { [key: string]: string } = {
       'sneaker': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
       'zapatilla': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
@@ -163,7 +163,7 @@ export class ProductDetailComponent implements OnInit {
       'casual': 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80',
     };
     for (const key of Object.keys(map)) {
-      if (name.includes(key)) return map[key];
+      if (nombre.includes(key)) return map[key];
     }
     const fallbacks = [
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
@@ -171,86 +171,86 @@ export class ProductDetailComponent implements OnInit {
       'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=600&q=80',
       'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80',
     ];
-    return fallbacks[product.id % fallbacks.length];
+    return fallbacks[producto.id % fallbacks.length];
   }
 
-  setActiveImage(i: number) { this.activeImageIndex = i; }
+  setActiveImage(i: number) { this.indiceImagenActiva = i; }
 
   nextImage() {
-    this.activeImageIndex = (this.activeImageIndex + 1) % this.galleryImages.length;
+    this.indiceImagenActiva = (this.indiceImagenActiva + 1) % this.imagenesGaleria.length;
   }
 
   prevImage() {
-    this.activeImageIndex = (this.activeImageIndex - 1 + this.galleryImages.length) % this.galleryImages.length;
+    this.indiceImagenActiva = (this.indiceImagenActiva - 1 + this.imagenesGaleria.length) % this.imagenesGaleria.length;
   }
 
-  openLightbox() { this.lightboxOpen = true; }
-  closeLightbox() { this.lightboxOpen = false; }
+  openLightbox() { this.lightboxAbierto = true; }
+  closeLightbox() { this.lightboxAbierto = false; }
 
   onZoomMove(e: MouseEvent) { /* zoom futuro */ }
 
-  getDiscountPercent(): number {
-    if (!this.product || !this.product.salePrice || this.product.salePrice >= this.product.price) return 0;
-    return Math.round((1 - this.product.salePrice / this.product.price) * 100);
+  obtenerPorcentajeDescuento(): number {
+    if (!this.producto || !this.producto.precioVenta || this.producto.precioVenta >= this.producto.precio) return 0;
+    return Math.round((1 - this.producto.precioVenta / this.producto.precio) * 100);
   }
 
-  selectSize(size: string, variantId: number) {
-    this.selectedSize = size;
-    this.selectedVariantId = variantId || null;
+  seleccionarTalla(talla: string, varianteId: number) {
+    this.tallaSeleccionada = talla;
+    this.varianteSeleccionadaId = varianteId || null;
   }
 
-  getSelectedVariant() {
-    if (!this.product || !this.selectedSize) return null;
-    return (this.product.sizes || []).find(s => s.size === this.selectedSize) ?? null;
+  obtenerVarianteSeleccionada() {
+    if (!this.producto || !this.tallaSeleccionada) return null;
+    return (this.producto.tallas || []).find(s => s.talla === this.tallaSeleccionada) ?? null;
   }
 
-  getStockForSelected(): number {
-    const variant = this.getSelectedVariant();
-    return variant ? variant.stock : (this.product?.stock ?? 0);
+  obtenerStockSeleccionado(): number {
+    const variante = this.obtenerVarianteSeleccionada();
+    return variante ? variante.stock : (this.producto?.stock ?? 0);
   }
 
-  increaseQuantity() {
-    const maxStock = this.getStockForSelected();
-    if (this.quantity < maxStock) {
-      this.quantity++;
+  aumentarCantidad() {
+    const maxStock = this.obtenerStockSeleccionado();
+    if (this.cantidad < maxStock) {
+      this.cantidad++;
     } else {
       this.notificationService.warning(`Stock máximo disponible: ${maxStock}`);
     }
   }
 
-  decreaseQuantity() {
-    if (this.quantity > 1) this.quantity--;
+  disminuirCantidad() {
+    if (this.cantidad > 1) this.cantidad--;
   }
 
-  addToCart() {
-    if (!this.product) return;
-    const hasVariants = this.product.sizes && this.product.sizes.filter(s => s.available).length > 0;
-    if (hasVariants && !this.selectedSize) {
+  agregarAlCarrito() {
+    if (!this.producto) return;
+    const tieneVariantes = this.producto.tallas && this.producto.tallas.filter(s => s.disponible).length > 0;
+    if (tieneVariantes && !this.tallaSeleccionada) {
       this.notificationService.warning('Selecciona una talla para continuar');
       return;
     }
-    const variant = this.getSelectedVariant();
-    const result = this.cartService.addToCart(
-      this.product,
-      this.quantity,
-      variant && variant.variantId ? variant : undefined
+    const variante = this.obtenerVarianteSeleccionada();
+    const resultado = this.cartService.agregarAlCarrito(
+      this.producto,
+      this.cantidad,
+      variante && variante.varianteId ? variante : undefined
     );
-    if (result.success) {
-      const label = this.selectedSize ? ` — Talla ${this.selectedSize}` : '';
-      this.notificationService.success(`✓ ${this.quantity}x ${this.product.name}${label} agregado al carrito`);
-      this.quantity = 1;
+    if (resultado.success) {
+      const label = this.tallaSeleccionada ? ` — Talla ${this.tallaSeleccionada}` : '';
+      this.notificationService.success(`✓ ${this.cantidad}x ${this.producto.nombre}${label} agregado al carrito`);
+      this.cantidad = 1;
     } else {
-      this.notificationService.error(result.message);
+      this.notificationService.error(resultado.message);
     }
   }
 
   consultarPorWsp() {
-    if (!this.product) return;
-    const msg = `¡Hola! Estoy interesado en:\n\n👟 *${this.product.name}*\n💰 Precio: S/ ${(this.product.salePrice || this.product.price).toFixed(2)}${this.selectedSize ? `\n📏 Talla: ${this.selectedSize}` : ''}\n\n¿Tienen disponibilidad y cómo coordino el envío?`;
+    if (!this.producto) return;
+    const msg = `¡Hola! Estoy interesado en:\n\n👟 *${this.producto.nombre}*\n💰 Precio: S/ ${(this.producto.precioVenta || this.producto.precio).toFixed(2)}${this.tallaSeleccionada ? `\n📏 Talla: ${this.tallaSeleccionada}` : ''}\n\n¿Tienen disponibilidad y cómo coordino el envío?`;
     window.open(`https://wa.me/${this.WSP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  isSizeSelected(size: string): boolean {
-    return this.selectedSize === size;
+  esTallaSeleccionada(talla: string): boolean {
+    return this.tallaSeleccionada === talla;
   }
 }

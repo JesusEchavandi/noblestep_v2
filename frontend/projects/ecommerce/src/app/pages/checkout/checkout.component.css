@@ -530,6 +530,34 @@
 .security-row i { font-size: 0.85rem; }
 
 /* ── RESPONSIVE ── */
+
+/* Laptop 1366px */
+@media (max-width: 1399px) {
+  .checkout-hero-inner { max-width: 100%; }
+  .checkout-body { max-width: 100%; padding: 1.5rem 1.5rem; gap: 2rem; }
+  .form-card { padding: 1.25rem; }
+  .checkout-hero { padding: 0.75rem 1.5rem; }
+  .hero-brand { font-size: 1.15rem; }
+  .step { font-size: 0.72rem; }
+  .form-card h2 { font-size: 1rem; }
+  .field label { font-size: 0.78rem; }
+  .field input, .field select { padding: 0.65rem 0.85rem; font-size: 0.88rem; }
+}
+
+/* QHD 2560x1440 */
+@media (min-width: 1920px) {
+  .checkout-hero-inner { max-width: 1440px; }
+  .checkout-body { max-width: 1440px; padding: 2.5rem 3rem; gap: 3.5rem; }
+  .form-card { padding: 2rem; }
+  .hero-brand { font-size: 1.5rem; }
+  .step { font-size: 0.88rem; }
+  .form-card h2 { font-size: 1.35rem; }
+  .field label { font-size: 0.92rem; }
+  .field input, .field select { padding: 0.85rem 1.1rem; font-size: 1rem; }
+  .btn-pay { font-size: 1.05rem; padding: 1rem; }
+  .payment-pill { font-size: 0.88rem; padding: 0.85rem 1.25rem; }
+}
+
 @media (max-width: 960px) {
   .checkout-body {
     grid-template-columns: 1fr;

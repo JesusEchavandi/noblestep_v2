@@ -1,8 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, Category } from '../models/product.model';
+import { Producto, Categoria } from '../models/product.model';
 import { environment } from '../../environments/environment';
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -12,30 +22,38 @@ export class ShopService {
 
   constructor(private http: HttpClient) { }
 
-  getProducts(categoryId?: number, search?: string, minPrice?: number, maxPrice?: number): Observable<Product[]> {
+  obtenerProductos(categoriaId?: number, busqueda?: string, precioMin?: number, precioMax?: number, page: number = 1, pageSize: number = 20): Observable<PaginatedResponse<Producto>> {
     let params = new HttpParams();
     
-    if (categoryId) params = params.set('categoryId', categoryId.toString());
-    if (search) params = params.set('search', search);
-    if (minPrice) params = params.set('minPrice', minPrice.toString());
-    if (maxPrice) params = params.set('maxPrice', maxPrice.toString());
+    if (categoriaId) params = params.set('categoryId', categoriaId.toString());
+    if (busqueda) params = params.set('search', busqueda);
+    if (precioMin) params = params.set('minPrice', precioMin.toString());
+    if (precioMax) params = params.set('maxPrice', precioMax.toString());
+    params = params.set('page', page.toString());
+    params = params.set('pageSize', pageSize.toString());
     
-    return this.http.get<Product[]>(`${this.apiUrl}/products`, { params });
+    return this.http.get<PaginatedResponse<Producto>>(`${this.apiUrl}/products`, { params });
   }
 
-  getProduct(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
+  obtenerProducto(id: number): Observable<Producto> {
+    return this.http.get<Producto>(`${this.apiUrl}/products/${id}`);
   }
 
-  getFeaturedProducts(limit: number = 8): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products/featured?limit=${limit}`);
+  obtenerProductosDestacados(limite: number = 8): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.apiUrl}/products/featured?limit=${limite}`);
   }
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
+  obtenerCategorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${this.apiUrl}/categories`);
   }
 
-  submitContact(contact: { name: string; email: string; phone: string; message: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/contact`, contact);
+  enviarContacto(contacto: { name: string; email: string; phone: string; message: string }): Observable<any> {
+    const payload = {
+      nombre: contacto.name,
+      correo: contacto.email,
+      telefono: contacto.phone,
+      mensaje: contacto.message
+    };
+    return this.http.post(`${this.apiUrl}/contact`, payload);
   }
 }

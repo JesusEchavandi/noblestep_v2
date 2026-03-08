@@ -3,18 +3,18 @@ import { AppComponent } from './app/app.component';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app/app.routes';
-import { authInterceptor } from './app/auth/auth.interceptor';
+import { interceptorAutenticacion } from './app/auth/auth.interceptor';
 import { LOCALE_ID, DEFAULT_CURRENCY_CODE } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEsPe from '@angular/common/locales/es-PE';
 
-// Register Spanish (Peru) locale data
+// Registrar datos del idioma español (Perú)
 registerLocaleData(localeEsPe);
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([interceptorAutenticacion])),
     { provide: LOCALE_ID, useValue: 'es-PE' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'PEN' }
   ]

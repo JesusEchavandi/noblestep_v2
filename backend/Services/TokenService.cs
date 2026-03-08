@@ -9,6 +9,9 @@ using NobleStep.Api.Models;
 
 namespace NobleStep.Api.Services;
 
+/// <summary>
+/// Servicio para generación y gestión de tokens JWT.
+/// </summary>
 public class TokenService
 {
     private readonly JwtSettings _jwtSettings;
@@ -18,14 +21,17 @@ public class TokenService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(User user)
+    /// <summary>
+    /// Genera un token JWT para un usuario del sistema administrativo.
+    /// </summary>
+    public string GenerarToken(Usuario usuario)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new Claim(ClaimTypes.Name, usuario.NombreUsuario),
+            new Claim(ClaimTypes.Email, usuario.Correo),
+            new Claim(ClaimTypes.Role, usuario.Rol),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -44,17 +50,17 @@ public class TokenService
     }
 
     /// <summary>
-    /// Genera token JWT para clientes del ecommerce.
+    /// Genera un token JWT para clientes del ecommerce.
     /// Usa la misma clave y configuración que los tokens de admin (JwtSettings),
     /// garantizando que el middleware de autenticación los valide correctamente.
     /// </summary>
-    public string GenerateEcommerceToken(EcommerceCustomer customer)
+    public string GenerarTokenEcommerce(ClienteEcommerce cliente)
     {
         var claims = new[]
         {
-            new Claim("customerId", customer.Id.ToString()),
-            new Claim(ClaimTypes.Email, customer.Email),
-            new Claim(ClaimTypes.Name, customer.FullName),
+            new Claim("customerId", cliente.Id.ToString()),
+            new Claim(ClaimTypes.Email, cliente.Correo),
+            new Claim(ClaimTypes.Name, cliente.NombreCompleto),
             new Claim("type", "ecommerce"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
@@ -73,7 +79,10 @@ public class TokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public DateTime GetTokenExpiration()
+    /// <summary>
+    /// Obtiene la fecha de expiración del token según la configuración.
+    /// </summary>
+    public DateTime ObtenerExpiracionToken()
     {
         return DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
     }
@@ -81,11 +90,11 @@ public class TokenService
     /// <summary>
     /// Genera un refresh token seguro (token plano para el cliente + hash SHA256 para la BD).
     /// </summary>
-    public (string token, string hash, DateTime expires) GenerateEcommerceRefreshToken()
+    public (string token, string hash, DateTime expiracion) GenerarRefreshTokenEcommerce()
     {
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
-        var expires = DateTime.UtcNow.AddDays(30);
-        return (token, hash, expires);
+        var expiracion = DateTime.UtcNow.AddDays(30);
+        return (token, hash, expiracion);
     }
 }

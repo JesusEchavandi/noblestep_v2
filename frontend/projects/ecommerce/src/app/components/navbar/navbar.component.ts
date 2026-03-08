@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
-import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerce-auth.service';
+import { EcommerceAuthService, ClienteEcommerce } from '../../services/ecommerce-auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,13 +11,13 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <nav class="navbar">
-      <!-- Top bar -->
+      <!-- Barra superior -->
       <div class="navbar-inner">
         <div class="nav-left">
           <ul class="nav-links">
-            <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Inicio</a></li>
-            <li><a routerLink="/catalog" routerLinkActive="active" (click)="closeMenu()">Catálogo</a></li>
-            <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contacto</a></li>
+            <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="cerrarMenu()">Inicio</a></li>
+            <li><a routerLink="/catalog" routerLinkActive="active" (click)="cerrarMenu()">Catálogo</a></li>
+            <li><a routerLink="/contact" routerLinkActive="active" (click)="cerrarMenu()">Contacto</a></li>
           </ul>
         </div>
 
@@ -27,54 +27,54 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
         </a>
 
         <div class="nav-right">
-          <!-- Search bar -->
-          <div class="search-bar" [class.open]="searchOpen">
-            <button class="search-toggle" (click)="toggleSearch()" aria-label="Buscar">
+          <!-- Barra de búsqueda -->
+          <div class="search-bar" [class.open]="busquedaAbierta">
+            <button class="search-toggle" (click)="alternarBusqueda()" aria-label="Buscar">
               <i class="fi fi-rr-search"></i>
             </button>
-            <input *ngIf="searchOpen" #searchInput type="text" [(ngModel)]="searchQuery" placeholder="Buscar productos..." (keyup.enter)="doSearch()" (keyup.escape)="closeSearch()" class="search-input" />
+            <input *ngIf="busquedaAbierta" #searchInput type="text" [(ngModel)]="consultaBusqueda" placeholder="Buscar productos..." (keyup.enter)="buscar()" (keyup.escape)="cerrarBusqueda()" class="search-input" />
           </div>
 
-          <!-- Cart -->
-          <a routerLink="/cart" class="cart-btn" (click)="closeMenu()">
+          <!-- Carrito -->
+          <a routerLink="/cart" class="cart-btn" (click)="cerrarMenu()">
             <i class="fi fi-rr-shopping-bag"></i>
-            <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+            <span class="cart-count" *ngIf="cantidadItemsCarrito > 0">{{ cantidadItemsCarrito }}</span>
           </a>
 
-          <!-- Account -->
-          <a *ngIf="!isAuthenticated" routerLink="/login" class="icon-btn" (click)="closeMenu()" title="Iniciar Sesión">
+          <!-- Cuenta -->
+          <a *ngIf="!estaAutenticado" routerLink="/login" class="icon-btn" (click)="cerrarMenu()" title="Iniciar Sesión">
             <i class="fi fi-rr-user"></i>
           </a>
-          <a *ngIf="isAuthenticated" routerLink="/account" class="icon-btn user-logged" (click)="closeMenu()" title="{{ currentCustomer?.fullName }}">
+          <a *ngIf="estaAutenticado" routerLink="/account" class="icon-btn user-logged" (click)="cerrarMenu()" title="{{ clienteActual?.nombreCompleto }}">
             <i class="fi fi-rr-circle-user"></i>
           </a>
 
-          <!-- Mobile toggle -->
-          <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen" aria-label="Menú">
+          <!-- Toggle móvil -->
+          <button class="menu-toggle" (click)="alternarMenu()" [class.active]="menuAbierto" aria-label="Menú">
             <i class="fi fi-rr-menu-burger"></i>
           </button>
         </div>
       </div>
 
-      <!-- Mobile Menu -->
-      <div class="mobile-menu" [class.open]="menuOpen">
+      <!-- Menú móvil -->
+      <div class="mobile-menu" [class.open]="menuAbierto">
         <ul class="mobile-links">
-          <li><a routerLink="/" (click)="closeMenu()">Inicio</a></li>
-          <li><a routerLink="/catalog" (click)="closeMenu()">Catálogo</a></li>
-          <li><a routerLink="/contact" (click)="closeMenu()">Contacto</a></li>
-          <li *ngIf="!isAuthenticated"><a routerLink="/login" (click)="closeMenu()">Iniciar Sesión</a></li>
-          <li *ngIf="isAuthenticated"><a routerLink="/account" (click)="closeMenu()">Mi Cuenta</a></li>
+          <li><a routerLink="/" (click)="cerrarMenu()">Inicio</a></li>
+          <li><a routerLink="/catalog" (click)="cerrarMenu()">Catálogo</a></li>
+          <li><a routerLink="/contact" (click)="cerrarMenu()">Contacto</a></li>
+          <li *ngIf="!estaAutenticado"><a routerLink="/login" (click)="cerrarMenu()">Iniciar Sesión</a></li>
+          <li *ngIf="estaAutenticado"><a routerLink="/account" (click)="cerrarMenu()">Mi Cuenta</a></li>
         </ul>
         <div class="mobile-search">
-          <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar productos..." (keyup.enter)="doSearch()" />
+          <input type="text" [(ngModel)]="consultaBusqueda" placeholder="Buscar productos..." (keyup.enter)="buscar()" />
         </div>
       </div>
     </nav>
   `,
   styles: [`
     .navbar {
-      background: var(--color-white);
-      border-bottom: 1px solid var(--color-gray-100);
+      background: var(--color-dark);
+      border-bottom: 3px solid var(--color-primary);
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -87,7 +87,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      height: 64px;
+      height: 70px;
     }
 
     /* LEFT — nav links */
@@ -105,7 +105,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     }
 
     .nav-links a {
-      color: var(--color-dark);
+      color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
       font-weight: 500;
       font-size: var(--font-size-sm);
@@ -117,7 +117,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
 
     .nav-links a:hover,
     .nav-links a.active {
-      color: var(--color-primary);
+      color: var(--color-white);
       border-bottom-color: var(--color-primary);
     }
 
@@ -143,7 +143,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     .logo-text {
       font-size: 1.6rem;
       font-weight: 800;
-      color: var(--color-dark);
+      color: var(--color-white);
       letter-spacing: -1px;
       font-style: italic;
     }
@@ -160,7 +160,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-dark);
+      color: rgba(255, 255, 255, 0.85);
       transition: var(--transition-base);
       padding: 0.25rem;
       border-radius: var(--radius-sm);
@@ -168,11 +168,11 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     }
 
     .icon-btn:hover {
-      color: var(--color-primary);
+      color: var(--color-white);
     }
 
     .icon-btn.user-logged {
-      color: var(--color-primary);
+      color: var(--color-cream);
     }
 
     /* Search */
@@ -186,7 +186,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-dark);
+      color: rgba(255, 255, 255, 0.85);
       background: transparent;
       border: none;
       cursor: pointer;
@@ -195,15 +195,15 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     }
 
     .search-toggle:hover {
-      color: var(--color-primary);
+      color: var(--color-white);
     }
 
     .search-input {
       border: none;
-      border-bottom: 1.5px solid var(--color-dark);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.6);
       outline: none;
       font-size: var(--font-size-sm);
-      color: var(--color-dark);
+      color: var(--color-white);
       background: transparent;
       width: min(180px, 40vw);
       padding: 0.2rem 0;
@@ -212,7 +212,7 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     }
 
     .search-input::placeholder {
-      color: var(--color-gray-400);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     @keyframes slideIn {
@@ -225,14 +225,14 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
       position: relative;
       display: flex;
       align-items: center;
-      color: var(--color-dark);
+      color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
       transition: var(--transition-base);
       padding: 0.25rem;
     }
 
     .cart-btn:hover {
-      color: var(--color-primary);
+      color: var(--color-white);
     }
 
     .cart-count {
@@ -261,13 +261,14 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
       border: none;
       cursor: pointer;
       padding: 4px;
+      color: var(--color-white);
     }
 
     .menu-toggle span {
       display: block;
       width: 22px;
       height: 2px;
-      background: var(--color-dark);
+      background: var(--color-white);
       transition: var(--transition-base);
       border-radius: 2px;
     }
@@ -279,8 +280,8 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     /* Mobile Menu */
     .mobile-menu {
       display: none;
-      background: var(--color-white);
-      border-top: 1px solid var(--color-gray-100);
+      background: var(--color-dark);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
       padding: var(--spacing-lg) var(--spacing-xl);
     }
 
@@ -297,27 +298,49 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
     .mobile-links li a {
       display: block;
       padding: var(--spacing-sm) 0;
-      color: var(--color-dark);
+      color: rgba(255, 255, 255, 0.85);
       font-weight: 500;
       font-size: var(--font-size-base);
       text-decoration: none;
-      border-bottom: 1px solid var(--color-gray-100);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .mobile-links li a:hover { color: var(--color-primary); }
+    .mobile-links li a:hover { color: var(--color-white); }
 
     .mobile-search input {
       width: 100%;
-      border: 1px solid var(--color-gray-200);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: var(--radius-full);
       padding: 0.6rem 1rem;
       font-size: var(--font-size-sm);
       outline: none;
       font-family: inherit;
-      color: var(--color-dark);
+      color: var(--color-white);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     /* Responsive */
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .navbar-inner { max-width: 100%; padding: 0 1.25rem; }
+      .logo-text { font-size: 1.4rem; }
+      .search-input { width: 180px; font-size: 0.8rem; }
+      .nav-left a { font-size: 0.82rem; }
+      .nav-right .icon-btn { font-size: 0.95rem; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .navbar-inner { max-width: 1440px; }
+      .logo-text { font-size: 1.75rem; }
+      .search-input { width: 300px; font-size: 0.95rem; }
+      .nav-left a { font-size: var(--font-size-base); }
+      .nav-left { gap: var(--spacing-xl); }
+      .nav-right .icon-btn { font-size: 1.15rem; }
+      .cart-count { font-size: 0.65rem; width: 18px; height: 18px; }
+    }
+
     @media (max-width: 992px) {
       .nav-left { display: none; }
       .menu-toggle { display: flex; }
@@ -346,12 +369,12 @@ import { EcommerceAuthService, EcommerceCustomer } from '../../services/ecommerc
   `]
 })
 export class NavbarComponent implements OnInit {
-  cartItemCount = 0;
-  currentCustomer: EcommerceCustomer | null = null;
-  isAuthenticated = false;
-  menuOpen = false;
-  searchOpen = false;
-  searchQuery = '';
+  cantidadItemsCarrito = 0;
+  clienteActual: ClienteEcommerce | null = null;
+  estaAutenticado = false;
+  menuAbierto = false;
+  busquedaAbierta = false;
+  consultaBusqueda = '';
 
   @ViewChild('searchInput') searchInputRef?: ElementRef;
 
@@ -362,37 +385,37 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cartService.cart$.subscribe(() => {
-      this.cartItemCount = this.cartService.getItemCount();
+    this.cartService.carrito$.subscribe(() => {
+      this.cantidadItemsCarrito = this.cartService.obtenerCantidadItems();
     });
-    this.authService.currentCustomer$.subscribe(customer => {
-      this.currentCustomer = customer;
-      this.isAuthenticated = !!customer;
+    this.authService.clienteActual$.subscribe(cliente => {
+      this.clienteActual = cliente;
+      this.estaAutenticado = !!cliente;
     });
   }
 
-  toggleMenu() { this.menuOpen = !this.menuOpen; }
-  closeMenu() { this.menuOpen = false; }
+  alternarMenu() { this.menuAbierto = !this.menuAbierto; }
+  cerrarMenu() { this.menuAbierto = false; }
 
-  toggleSearch() {
-    this.searchOpen = !this.searchOpen;
-    if (this.searchOpen) {
+  alternarBusqueda() {
+    this.busquedaAbierta = !this.busquedaAbierta;
+    if (this.busquedaAbierta) {
       setTimeout(() => this.searchInputRef?.nativeElement?.focus(), 50);
     }
   }
 
-  closeSearch() {
-    this.searchOpen = false;
-    this.searchQuery = '';
+  cerrarBusqueda() {
+    this.busquedaAbierta = false;
+    this.consultaBusqueda = '';
   }
 
-  doSearch() {
-    if (this.searchQuery.trim()) {
-      this.router.navigate(['/catalog'], { queryParams: { q: this.searchQuery.trim() } });
-      this.closeSearch();
-      this.closeMenu();
+  buscar() {
+    if (this.consultaBusqueda.trim()) {
+      this.router.navigate(['/catalog'], { queryParams: { q: this.consultaBusqueda.trim() } });
+      this.cerrarBusqueda();
+      this.cerrarMenu();
     }
   }
 
-  logout() { this.authService.logout(); }
+  cerrarSesion() { this.authService.cerrarSesion(); }
 }

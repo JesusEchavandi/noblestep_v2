@@ -1,21 +1,21 @@
-export interface User {
+export interface Usuario {
   id: number;
-  username: string;
-  fullName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
+  nombreUsuario: string;
+  nombreCompleto: string;
+  correo: string;
+  rol: string;
+  activo: boolean;
 }
 
-export interface LoginRequest {
-  username: string;
-  password: string;
+export interface SolicitudInicioSesion {
+  nombreUsuario: string;
+  contrasena: string;
 }
 
-export interface LoginResponse {
+export interface RespuestaInicioSesion {
   token: string;
-  username: string;
-  fullName: string;
-  role: string;
-  expiresAt: Date;
+  nombreUsuario: string;
+  nombreCompleto: string;
+  rol: string;
+  expiraEn: Date;
 }

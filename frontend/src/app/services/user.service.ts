@@ -3,31 +3,31 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface User {
+export interface Usuario {
   id: number;
-  username: string;
-  fullName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
+  nombreUsuario: string;
+  nombreCompleto: string;
+  correo: string;
+  rol: string;
+  activo: boolean;
+  creadoEn: string;
 }
 
-export interface CreateUser {
-  username: string;
-  fullName: string;
-  email: string;
-  password: string;
-  role: string;
+export interface CrearUsuario {
+  nombreUsuario: string;
+  nombreCompleto: string;
+  correo: string;
+  contrasena: string;
+  rol: string;
 }
 
-export interface UpdateUser {
-  username: string;
-  fullName: string;
-  email: string;
-  password?: string;
-  role: string;
-  isActive: boolean;
+export interface ActualizarUsuario {
+  nombreUsuario: string;
+  nombreCompleto: string;
+  correo: string;
+  contrasena?: string;
+  rol: string;
+  activo: boolean;
 }
 
 @Injectable({
@@ -37,31 +37,31 @@ export class UserService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/users`;
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+  obtenerUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(this.apiUrl);
   }
 
-  getUser(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
+  obtenerUsuario(id: number): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(user: CreateUser): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+  crearUsuario(usuario: CrearUsuario): Observable<Usuario> {
+    return this.http.post<Usuario>(this.apiUrl, usuario);
   }
 
-  updateUser(id: number, user: UpdateUser): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, user);
+  actualizarUsuario(id: number, usuario: ActualizarUsuario): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, usuario);
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  eliminarUsuario(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 
-  activateUser(id: number): Observable<void> {
+  activarUsuario(id: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${id}/activate`, {});
   }
 
-  deactivateUser(id: number): Observable<void> {
+  desactivarUsuario(id: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${id}/deactivate`, {});
   }
 }

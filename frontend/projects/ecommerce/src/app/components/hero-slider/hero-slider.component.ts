@@ -290,6 +290,31 @@ interface Slide {
     }
 
     /* Responsive */
+
+    /* Laptop 1366px */
+    @media (max-width: 1399px) {
+      .hero-slider { height: 500px; }
+      .title { font-size: clamp(1.8rem, 4vw, 2.5rem); }
+      .slide-content { max-width: 100%; padding: 0 1.5rem 80px; }
+      .description { font-size: var(--font-size-sm); }
+      .cta-button { padding: 0.7rem 1.5rem; font-size: var(--font-size-sm); }
+      .badge-label { font-size: 0.68rem; }
+      .nav-btn { width: 38px; height: 38px; }
+    }
+
+    /* QHD 2560x1440 */
+    @media (min-width: 1920px) {
+      .hero-slider { height: 680px; }
+      .title { font-size: clamp(2.5rem, 4vw, 3.5rem); }
+      .description { font-size: var(--font-size-lg); max-width: 600px; }
+      .cta-button { padding: 1rem 2.5rem; font-size: var(--font-size-base); }
+      .info-card { padding: 2rem; }
+      .badge-label { font-size: 0.82rem; padding: 0.4rem 1rem; }
+      .nav-btn { width: 52px; height: 52px; }
+      .dot { width: 10px; height: 10px; }
+      .dot.active { width: 36px; }
+    }
+
     @media (max-width: 768px) {
       .hero-slider { height: 420px; }
       .slide-content { padding-bottom: 60px; flex-direction: column; align-items: flex-start; }

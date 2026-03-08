@@ -10,85 +10,85 @@ export class MetaService {
     private title: Title
   ) {}
 
-  updateTitle(title: string) {
-    this.title.setTitle(`${title} | NobleStep Shop`);
+  actualizarTitulo(titulo: string) {
+    this.title.setTitle(`${titulo} | NobleStep Shop`);
   }
 
-  updateMetaTags(config: {
-    title?: string;
-    description?: string;
-    image?: string;
+  actualizarMetaEtiquetas(config: {
+    titulo?: string;
+    descripcion?: string;
+    imagen?: string;
     url?: string;
-    type?: string;
+    tipo?: string;
   }) {
-    if (config.title) {
-      this.title.setTitle(`${config.title} | NobleStep Shop`);
-      this.meta.updateTag({ name: 'title', content: config.title });
-      this.meta.updateTag({ property: 'og:title', content: config.title });
-      this.meta.updateTag({ name: 'twitter:title', content: config.title });
+    if (config.titulo) {
+      this.title.setTitle(`${config.titulo} | NobleStep Shop`);
+      this.meta.updateTag({ name: 'title', content: config.titulo });
+      this.meta.updateTag({ property: 'og:title', content: config.titulo });
+      this.meta.updateTag({ name: 'twitter:title', content: config.titulo });
     }
 
-    if (config.description) {
-      this.meta.updateTag({ name: 'description', content: config.description });
-      this.meta.updateTag({ property: 'og:description', content: config.description });
-      this.meta.updateTag({ name: 'twitter:description', content: config.description });
+    if (config.descripcion) {
+      this.meta.updateTag({ name: 'description', content: config.descripcion });
+      this.meta.updateTag({ property: 'og:description', content: config.descripcion });
+      this.meta.updateTag({ name: 'twitter:description', content: config.descripcion });
     }
 
-    if (config.image) {
-      this.meta.updateTag({ property: 'og:image', content: config.image });
-      this.meta.updateTag({ name: 'twitter:image', content: config.image });
+    if (config.imagen) {
+      this.meta.updateTag({ property: 'og:image', content: config.imagen });
+      this.meta.updateTag({ name: 'twitter:image', content: config.imagen });
     }
 
     if (config.url) {
       this.meta.updateTag({ property: 'og:url', content: config.url });
     }
 
-    if (config.type) {
-      this.meta.updateTag({ property: 'og:type', content: config.type });
+    if (config.tipo) {
+      this.meta.updateTag({ property: 'og:type', content: config.tipo });
     }
 
     // Twitter Card tags
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
   }
 
-  setProductMeta(product: { name: string; description: string; salePrice: number; imageUrl?: string }) {
-    this.updateMetaTags({
-      title: product.name,
-      description: `${product.description} - S/ ${product.salePrice.toFixed(2)}`,
-      image: product.imageUrl || '/logo.svg',
-      type: 'product'
+  establecerMetaProducto(producto: { nombre: string; descripcion: string; precioVenta: number; urlImagen?: string }) {
+    this.actualizarMetaEtiquetas({
+      titulo: producto.nombre,
+      descripcion: `${producto.descripcion} - S/ ${producto.precioVenta.toFixed(2)}`,
+      imagen: producto.urlImagen || '/logo.svg',
+      tipo: 'product'
     });
 
     // Schema.org structured data for product
-    this.addProductSchema(product);
+    this.agregarEsquemaProducto(producto);
   }
 
-  setCategoryMeta(categoryName: string, description: string) {
-    this.updateMetaTags({
-      title: `${categoryName} - Catálogo`,
-      description: description || `Explora nuestra colección de ${categoryName}`,
-      type: 'website'
+  establecerMetaCategoria(nombreCategoria: string, descripcion: string) {
+    this.actualizarMetaEtiquetas({
+      titulo: `${nombreCategoria} - Catálogo`,
+      descripcion: descripcion || `Explora nuestra colección de ${nombreCategoria}`,
+      tipo: 'website'
     });
   }
 
-  setDefaultMeta() {
-    this.updateMetaTags({
-      title: 'NobleStep Shop',
-      description: 'Calzado de calidad para toda ocasión. Encuentra los mejores zapatos, zapatillas y más en NobleStep.',
-      type: 'website'
+  establecerMetaPorDefecto() {
+    this.actualizarMetaEtiquetas({
+      titulo: 'NobleStep Shop',
+      descripcion: 'Calzado de calidad para toda ocasión. Encuentra los mejores zapatos, zapatillas y más en NobleStep.',
+      tipo: 'website'
     });
   }
 
-  private addProductSchema(product: any) {
+  private agregarEsquemaProducto(producto: any) {
     const schema = {
       '@context': 'https://schema.org/',
       '@type': 'Product',
-      'name': product.name,
-      'description': product.description,
-      'image': product.imageUrl || '/logo.svg',
+      'name': producto.nombre,
+      'description': producto.descripcion,
+      'image': producto.urlImagen || '/logo.svg',
       'offers': {
         '@type': 'Offer',
-        'price': product.salePrice,
+        'price': producto.precioVenta,
         'priceCurrency': 'PEN',
         'availability': 'https://schema.org/InStock'
       }

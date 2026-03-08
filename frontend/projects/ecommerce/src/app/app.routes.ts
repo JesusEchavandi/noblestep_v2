@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { ecommerceAuthGuard } from './guards/ecommerce-auth.guard';
+import { guardiaAutenticacionEcommerce } from './guards/ecommerce-auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -28,6 +28,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/contact/contact.component').then(m => m.ContactComponent)
   },
   { 
+    path: 'privacy', 
+    loadComponent: () => import('./pages/privacy/privacy.component').then(m => m.PrivacyComponent)
+  },
+  { 
+    path: 'terms', 
+    loadComponent: () => import('./pages/terms/terms.component').then(m => m.TermsComponent)
+  },
+  { 
+    path: 'claims-book', 
+    loadComponent: () => import('./pages/claims-book/claims-book.component').then(m => m.ClaimsBookComponent)
+  },
+  { 
     path: 'login', 
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
@@ -38,7 +50,7 @@ export const routes: Routes = [
   { 
     path: 'account', 
     loadComponent: () => import('./pages/account/account.component').then(m => m.AccountComponent),
-    canActivate: [ecommerceAuthGuard]
+    canActivate: [guardiaAutenticacionEcommerce]
   },
   { path: '**', redirectTo: 'home' }
 ];

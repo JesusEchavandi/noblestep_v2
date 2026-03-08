@@ -1,5 +1,5 @@
 # ========================================
-# .gitignore para NobleStep Project
+# .gitignore — NobleStep Project
 # ========================================
 
 # ===== .NET Backend =====
@@ -11,6 +11,11 @@ backend/*.user
 backend/*.suo
 backend/*.cache
 backend/.vscode/
+backend/logs/
+backend/Migrations/
+backend/NobleStep.Api.Tests/bin/
+backend/NobleStep.Api.Tests/obj/
+backend/FOTOS_BACKEND/
 
 # ===== Angular Frontend =====
 frontend/node_modules/
@@ -21,7 +26,6 @@ frontend/package-lock.json
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
-frontend/.DS_Store
 
 # ===== Archivos sensibles =====
 appsettings.Development.json
@@ -38,8 +42,6 @@ temp/
 *.bak
 *.swp
 *~
-CORRIENDO_06_02_2026/
-ESPAÑOL/
 
 # ===== Logs =====
 *.log
@@ -63,6 +65,6 @@ desktop.ini
 *~.nib
 *.iml
 
-# ===== Bases de datos =====
+# ===== Bases de datos locales =====
 *.sqlite
 *.db

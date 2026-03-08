@@ -202,7 +202,8 @@ builder.Services.AddResponseCaching();
 // Register Services
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddScoped<AuditService>();
+builder.Services.AddSingleton<IServicioCorreo, ServicioCorreo>();
 
 // Configure CORS
 builder.Services.AddCors(options =>

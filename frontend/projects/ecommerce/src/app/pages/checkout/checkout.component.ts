@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CartService, CartItem } from '../../services/cart.service';
+import { CartService, ItemCarrito } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
-import { OrderService, CreateOrderData } from '../../services/order.service';
+import { OrderService, DatosCrearPedido } from '../../services/order.service';
 import { EcommerceAuthService } from '../../services/ecommerce-auth.service';
-import { Product } from '../../models/product.model';
+import { Producto } from '../../models/product.model';
 
 @Component({
   selector: 'app-checkout',
@@ -16,51 +16,51 @@ import { Product } from '../../models/product.model';
   styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
-  cartItems: CartItem[] = [];
+  itemsCarrito: ItemCarrito[] = [];
   
   // Datos del cliente
-  customerData = {
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    district: '',
-    reference: ''
+  datosCliente = {
+    nombreCompleto: '',
+    correo: '',
+    telefono: '',
+    direccion: '',
+    ciudad: '',
+    distrito: '',
+    referencia: ''
   };
   
   // Método de pago seleccionado
-  paymentMethod: 'yape' | 'card' | 'transfer' = 'yape';
+  metodoPago: 'yape' | 'card' | 'transfer' = 'yape';
   
   // Datos de pago
-  paymentData = {
+  datosPago = {
     // Para Yape
-    yapePhone: '',
+    telefonoYape: '',
     
     // Para tarjeta
-    cardNumber: '',
-    cardName: '',
-    cardExpiry: '',
-    cardCvv: '',
+    numeroTarjeta: '',
+    nombreTarjeta: '',
+    vencimientoTarjeta: '',
+    cvvTarjeta: '',
     
     // Para transferencia
-    transferBank: '',
-    transferAccount: ''
+    bancoTransferencia: '',
+    cuentaTransferencia: ''
   };
   
   // Comprobante de pago
-  paymentProofFile: File | null = null;
-  paymentProofPreview: string | null = null;
+  archivoComprobante: File | null = null;
+  vistaComprobante: string | null = null;
   
-  processing = false;
-  termsAccepted = false;
-  invoiceType: 'Boleta' | 'Factura' = 'Boleta';
+  procesando = false;
+  terminosAceptados = false;
+  tipoComprobante: 'Boleta' | 'Factura' = 'Boleta';
   
   // Datos de factura
-  invoiceData = {
-    companyName: '',
-    companyRUC: '',
-    companyAddress: ''
+  datosFactura = {
+    razonSocial: '',
+    ruc: '',
+    direccionEmpresa: ''
   };
 
   constructor(
@@ -72,51 +72,51 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cartService.cart$.subscribe(items => {
-      this.cartItems = items;
+    this.cartService.carrito$.subscribe(items => {
+      this.itemsCarrito = items;
       
       // Si el carrito está vacío, redirigir
-      if (this.cartItems.length === 0) {
+      if (this.itemsCarrito.length === 0) {
         this.notificationService.warning('Tu carrito está vacío');
         this.router.navigate(['/catalog']);
       }
     });
 
     // Pre-rellenar datos si el usuario está autenticado
-    const customer = this.authService.getCurrentCustomer();
-    if (customer) {
-      this.customerData.fullName = customer.fullName;
-      this.customerData.email = customer.email;
-      this.customerData.phone = customer.phone || '';
-      this.customerData.address = customer.address || '';
-      this.customerData.city = customer.city || '';
-      this.customerData.district = customer.district || '';
+    const cliente = this.authService.obtenerClienteActual();
+    if (cliente) {
+      this.datosCliente.nombreCompleto = cliente.nombreCompleto;
+      this.datosCliente.correo = cliente.correo;
+      this.datosCliente.telefono = cliente.telefono || '';
+      this.datosCliente.direccion = cliente.direccion || '';
+      this.datosCliente.ciudad = cliente.ciudad || '';
+      this.datosCliente.distrito = cliente.distrito || '';
     }
   }
 
-  getSubtotal(): number {
-    return this.cartItems.reduce((total, item) => 
-      total + (item.product.salePrice * item.quantity), 0
+  obtenerSubtotal(): number {
+    return this.itemsCarrito.reduce((total, item) => 
+      total + (item.producto.precioVenta * item.cantidad), 0
     );
   }
 
-  getShipping(): number {
-    return this.getSubtotal() >= 100 ? 0 : 10;
+  obtenerEnvio(): number {
+    return this.obtenerSubtotal() >= 100 ? 0 : 10;
   }
 
-  getTotal(): number {
-    return this.getSubtotal() + this.getShipping();
+  obtenerTotal(): number {
+    return this.obtenerSubtotal() + this.obtenerEnvio();
   }
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 
-  selectPaymentMethod(method: 'yape' | 'card' | 'transfer') {
-    this.paymentMethod = method;
+  seleccionarMetodoPago(metodo: 'yape' | 'card' | 'transfer') {
+    this.metodoPago = metodo;
   }
 
-  onPaymentProofSelected(event: any) {
+  alSeleccionarComprobante(event: any) {
     const file = event.target.files[0];
     if (file) {
       // Validar tipo de archivo
@@ -131,108 +131,108 @@ export class CheckoutComponent implements OnInit {
         return;
       }
 
-      this.paymentProofFile = file;
+      this.archivoComprobante = file;
 
       // Generar preview
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.paymentProofPreview = e.target.result;
+        this.vistaComprobante = e.target.result;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  removePaymentProof() {
-    this.paymentProofFile = null;
-    this.paymentProofPreview = null;
+  quitarComprobante() {
+    this.archivoComprobante = null;
+    this.vistaComprobante = null;
   }
 
-  /** Regex RFC 5322 simplificada para validar email */
-  private isValidEmail(email: string): boolean {
+  /** Regex RFC 5322 simplificada para validar correo electrónico */
+  private esCorreoValido(correo: string): boolean {
     const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
+    return emailRegex.test(correo);
   }
 
   /** Algoritmo de Luhn para validación de número de tarjeta */
-  private luhnCheck(cardNumber: string): boolean {
-    const digits = cardNumber.replace(/\D/g, '');
-    if (digits.length < 13 || digits.length > 19) return false;
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = digits.length - 1; i >= 0; i--) {
-      let digit = parseInt(digits[i], 10);
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
+  private verificarLuhn(numeroTarjeta: string): boolean {
+    const digitos = numeroTarjeta.replace(/\D/g, '');
+    if (digitos.length < 13 || digitos.length > 19) return false;
+    let suma = 0;
+    let debeDoble = false;
+    for (let i = digitos.length - 1; i >= 0; i--) {
+      let digito = parseInt(digitos[i], 10);
+      if (debeDoble) {
+        digito *= 2;
+        if (digito > 9) digito -= 9;
       }
-      sum += digit;
-      shouldDouble = !shouldDouble;
+      suma += digito;
+      debeDoble = !debeDoble;
     }
-    return sum % 10 === 0;
+    return suma % 10 === 0;
   }
 
   /** Valida RUC peruano: 11 dígitos, empieza con 10 o 20 */
-  private isValidRUC(ruc: string): boolean {
+  private esRucValido(ruc: string): boolean {
     return /^(10|20)\d{9}$/.test(ruc);
   }
 
-  isFormValid(): boolean {
+  esFormularioValido(): boolean {
     // Validar datos del cliente
-    const customerValid = !!(
-      this.customerData.fullName.trim() &&
-      this.customerData.email.trim() &&
-      this.customerData.phone.trim() &&
-      this.customerData.address.trim() &&
-      this.customerData.city.trim() &&
-      this.customerData.district.trim()
+    const clienteValido = !!(
+      this.datosCliente.nombreCompleto.trim() &&
+      this.datosCliente.correo.trim() &&
+      this.datosCliente.telefono.trim() &&
+      this.datosCliente.direccion.trim() &&
+      this.datosCliente.ciudad.trim() &&
+      this.datosCliente.distrito.trim()
     );
-    if (!customerValid) return false;
+    if (!clienteValido) return false;
 
-    // Validar email con regex
-    if (!this.isValidEmail(this.customerData.email)) return false;
+    // Validar correo con regex
+    if (!this.esCorreoValido(this.datosCliente.correo)) return false;
 
     // Validar datos de factura si aplica
-    if (this.invoiceType === 'Factura') {
-      if (!this.invoiceData.companyName.trim()) return false;
-      if (!this.isValidRUC(this.invoiceData.companyRUC)) return false;
+    if (this.tipoComprobante === 'Factura') {
+      if (!this.datosFactura.razonSocial.trim()) return false;
+      if (!this.esRucValido(this.datosFactura.ruc)) return false;
     }
 
     // Validar según método de pago
-    if (this.paymentMethod === 'yape') {
-      return !!this.paymentData.yapePhone && this.paymentData.yapePhone.length === 9;
-    } else if (this.paymentMethod === 'card') {
-      const cardOk = !!(
-        this.paymentData.cardNumber &&
-        this.paymentData.cardName &&
-        this.paymentData.cardExpiry &&
-        this.paymentData.cardCvv
+    if (this.metodoPago === 'yape') {
+      return !!this.datosPago.telefonoYape && this.datosPago.telefonoYape.length === 9;
+    } else if (this.metodoPago === 'card') {
+      const tarjetaOk = !!(
+        this.datosPago.numeroTarjeta &&
+        this.datosPago.nombreTarjeta &&
+        this.datosPago.vencimientoTarjeta &&
+        this.datosPago.cvvTarjeta
       );
-      if (!cardOk) return false;
+      if (!tarjetaOk) return false;
       // Validar número de tarjeta con algoritmo Luhn
-      if (!this.luhnCheck(this.paymentData.cardNumber)) return false;
+      if (!this.verificarLuhn(this.datosPago.numeroTarjeta)) return false;
       return true;
-    } else if (this.paymentMethod === 'transfer') {
+    } else if (this.metodoPago === 'transfer') {
       return !!(
-        this.paymentData.transferBank &&
-        this.paymentData.transferAccount
+        this.datosPago.bancoTransferencia &&
+        this.datosPago.cuentaTransferencia
       );
     }
 
     return false;
   }
 
-  async processPayment() {
-    if (!this.termsAccepted) {
+  async procesarPago() {
+    if (!this.terminosAceptados) {
       this.notificationService.warning('Debes aceptar los términos y condiciones');
       return;
     }
 
-    if (!this.isFormValid()) {
-      if (this.customerData.email && !this.isValidEmail(this.customerData.email)) {
+    if (!this.esFormularioValido()) {
+      if (this.datosCliente.correo && !this.esCorreoValido(this.datosCliente.correo)) {
         this.notificationService.warning('Por favor ingresa un email válido');
-      } else if (this.invoiceType === 'Factura' && this.invoiceData.companyRUC && !this.isValidRUC(this.invoiceData.companyRUC)) {
+      } else if (this.tipoComprobante === 'Factura' && this.datosFactura.ruc && !this.esRucValido(this.datosFactura.ruc)) {
         this.notificationService.warning('El RUC debe tener 11 dígitos y empezar con 10 o 20');
-      } else if (this.paymentMethod === 'card' && this.paymentData.cardNumber && !this.luhnCheck(this.paymentData.cardNumber)) {
+      } else if (this.metodoPago === 'card' && this.datosPago.numeroTarjeta && !this.verificarLuhn(this.datosPago.numeroTarjeta)) {
         this.notificationService.warning('El número de tarjeta no es válido');
       } else {
         this.notificationService.warning('Por favor, completa todos los campos requeridos');
@@ -241,68 +241,67 @@ export class CheckoutComponent implements OnInit {
     }
 
     // Validar comprobante para métodos que lo requieren
-    if (this.paymentMethod === 'yape' && !this.paymentProofFile) {
+    if (this.metodoPago === 'yape' && !this.archivoComprobante) {
       this.notificationService.warning('Por favor, adjunta el comprobante de pago de Yape');
       return;
     }
 
-    this.processing = true;
+    this.procesando = true;
 
     // Convertir comprobante a Base64 si existe
-    let paymentProofBase64: string | undefined = undefined;
-    if (this.paymentProofFile) {
+    let comprobanteBase64: string | undefined = undefined;
+    if (this.archivoComprobante) {
       try {
-        paymentProofBase64 = await this.fileToBase64(this.paymentProofFile);
+        comprobanteBase64 = await this.archivoABase64(this.archivoComprobante);
       } catch (error) {
-        this.processing = false;
+        this.procesando = false;
         this.notificationService.error('Error al procesar el comprobante de pago');
         return;
       }
     }
 
     // Preparar datos del pedido
-    const orderData: CreateOrderData = {
-      customerFullName: this.customerData.fullName,
-      customerEmail: this.customerData.email,
-      customerPhone: this.customerData.phone,
-      customerAddress: this.customerData.address,
-      customerCity: this.customerData.city,
-      customerDistrict: this.customerData.district,
-      customerReference: this.customerData.reference,
-      paymentMethod: this.paymentMethod,
-      paymentProofBase64: paymentProofBase64,
-      invoiceType: this.invoiceType,
-      companyName: this.invoiceType === 'Factura' ? this.invoiceData.companyName : undefined,
-      companyRUC: this.invoiceType === 'Factura' ? this.invoiceData.companyRUC : undefined,
-      companyAddress: this.invoiceType === 'Factura' ? this.invoiceData.companyAddress : undefined,
-      items: this.cartItems.map(item => ({
-        productId: item.product.id,
-        variantId: item.variantId,       // talla seleccionada — backend descuenta stock correcto
-        quantity: item.quantity,
-        
+    const datosPedido: DatosCrearPedido = {
+      nombreCompletoCliente: this.datosCliente.nombreCompleto,
+      correoCliente: this.datosCliente.correo,
+      telefonoCliente: this.datosCliente.telefono,
+      direccionCliente: this.datosCliente.direccion,
+      ciudadCliente: this.datosCliente.ciudad,
+      distritoCliente: this.datosCliente.distrito,
+      referenciaCliente: this.datosCliente.referencia,
+      metodoPago: this.metodoPago,
+      comprobantePagoBase64: comprobanteBase64,
+      tipoComprobante: this.tipoComprobante,
+      nombreEmpresa: this.tipoComprobante === 'Factura' ? this.datosFactura.razonSocial : undefined,
+      rucEmpresa: this.tipoComprobante === 'Factura' ? this.datosFactura.ruc : undefined,
+      direccionEmpresa: this.tipoComprobante === 'Factura' ? this.datosFactura.direccionEmpresa : undefined,
+      items: this.itemsCarrito.map(item => ({
+        productoId: item.producto.id,
+        varianteId: item.varianteId,       // talla seleccionada — backend descuenta stock correcto
+        cantidad: item.cantidad,
       }))
     };
 
     // Enviar pedido al backend
-    this.orderService.createOrder(orderData).subscribe({
-      next: (order) => {
-        this.processing = false;
+    this.orderService.crearPedido(datosPedido).subscribe({
+      next: (pedido) => {
+        this.procesando = false;
         this.notificationService.success(
-          `¡Pedido #${order.orderNumber} realizado con éxito! Recibirás un email de confirmación.`
+          `¡Pedido #${pedido.numeroPedido} realizado con éxito! Recibirás un email de confirmación.`
         );
         
         // Limpiar carrito
-        this.cartService.clearCart();
+        this.cartService.vaciarCarrito();
         
         // Redirigir según si está autenticado
-        if (this.authService.isAuthenticated()) {
+        if (this.authService.estaAutenticado()) {
           this.router.navigate(['/account'], { queryParams: { tab: 'orders' } });
         } else {
           this.router.navigate(['/'], { queryParams: { order: 'success' } });
         }
       },
       error: (error) => {
-        this.processing = false;
+        this.procesando = false;
         this.notificationService.error(
           error.error?.message || 'Error al procesar el pedido. Por favor intenta nuevamente.'
         );
@@ -310,7 +309,7 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  private fileToBase64(file: File): Promise<string> {
+  private archivoABase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -322,46 +321,46 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  getProductImage(product: Product): string {
-    if (product.imageUrl) return product.imageUrl;
-    const name = product.name?.toLowerCase() || '';
-    if (name.includes('sneaker') || name.includes('zapatill') || name.includes('running')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80';
-    if (name.includes('formal') || name.includes('oxford') || name.includes('cuero')) return 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400&q=80';
-    if (name.includes('bota') || name.includes('boot')) return 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80';
-    if (name.includes('sandal') || name.includes('verano')) return 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80';
-    if (name.includes('sport') || name.includes('gym')) return 'https://images.unsplash.com/photo-1579338908476-3a3a1d71a706?w=400&q=80';
-    if (name.includes('casual') || name.includes('loafer')) return 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80';
+  obtenerImagenProducto(producto: Producto): string {
+    if (producto.urlImagen) return producto.urlImagen;
+    const nombre = producto.nombre?.toLowerCase() || '';
+    if (nombre.includes('sneaker') || nombre.includes('zapatill') || nombre.includes('running')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80';
+    if (nombre.includes('formal') || nombre.includes('oxford') || nombre.includes('cuero')) return 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400&q=80';
+    if (nombre.includes('bota') || nombre.includes('boot')) return 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80';
+    if (nombre.includes('sandal') || nombre.includes('verano')) return 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80';
+    if (nombre.includes('sport') || nombre.includes('gym')) return 'https://images.unsplash.com/photo-1579338908476-3a3a1d71a706?w=400&q=80';
+    if (nombre.includes('casual') || nombre.includes('loafer')) return 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80';
     const imgs = ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80','https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80','https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80'];
-    return imgs[product.id % imgs.length];
+    return imgs[producto.id % imgs.length];
   }
 
   cotizarEnvioWsp(): void {
-    const phone = '51999999999';
-    const district = this.customerData.district || 'mi distrito';
-    const msg = `¡Hola! Quisiera cotizar el costo de envío a *${district}* para mi pedido de NobleStep. 📦`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    const telefono = '51999999999';
+    const distrito = this.datosCliente.distrito || 'mi distrito';
+    const msg = `¡Hola! Quisiera cotizar el costo de envío a *${distrito}* para mi pedido de NobleStep. 📦`;
+    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
   cotizarPedidoCompleto(): void {
-    const phone = '51999999999';
+    const telefono = '51999999999';
     let msg = '¡Hola! Quiero realizar el siguiente pedido en NobleStep:\n\n';
-    this.cartItems.forEach((item, i) => {
-      const size = item.selectedSize ? ` (Talla ${item.selectedSize})` : '';
-      msg += `${i + 1}. *${item.product.name}*${size} x${item.quantity} — S/ ${(item.product.salePrice * item.quantity).toFixed(2)}\n`;
+    this.itemsCarrito.forEach((item, i) => {
+      const talla = item.tallaSeleccionada ? ` (Talla ${item.tallaSeleccionada})` : '';
+      msg += `${i + 1}. *${item.producto.nombre}*${talla} x${item.cantidad} — S/ ${(item.producto.precioVenta * item.cantidad).toFixed(2)}\n`;
     });
-    msg += `\n💰 *Subtotal: S/ ${this.getSubtotal().toFixed(2)}*`;
-    if (this.customerData.district) msg += `\n📍 Distrito: ${this.customerData.district}`;
-    if (this.customerData.fullName) msg += `\n👤 Nombre: ${this.customerData.fullName}`;
-    if (this.customerData.phone) msg += `\n📱 Celular: ${this.customerData.phone}`;
+    msg += `\n💰 *Subtotal: S/ ${this.obtenerSubtotal().toFixed(2)}*`;
+    if (this.datosCliente.distrito) msg += `\n📍 Distrito: ${this.datosCliente.distrito}`;
+    if (this.datosCliente.nombreCompleto) msg += `\n👤 Nombre: ${this.datosCliente.nombreCompleto}`;
+    if (this.datosCliente.telefono) msg += `\n📱 Celular: ${this.datosCliente.telefono}`;
     msg += '\n\n¿Me pueden ayudar a coordinar el envío y confirmar el pedido?';
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
-  consultStock() {
+  consultarStock() {
     this.cotizarPedidoCompleto();
   }
 
-  generateStockConsultMessage(): string {
+  generarMensajeConsultaStock(): string {
     return '';
   }
 }

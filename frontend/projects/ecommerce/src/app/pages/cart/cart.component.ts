@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
-import { CartItem, Product } from '../../models/product.model';
+import { ItemCarrito, Producto } from '../../models/product.model';
+
 @Component({
   selector: 'app-cart',
   standalone: true,
@@ -11,82 +12,82 @@ import { CartItem, Product } from '../../models/product.model';
   styleUrls: ['./cart.component.css']
 })
 export class CartComponent implements OnInit {
-  cartItems: CartItem[] = [];
-  
+  itemsCarrito: ItemCarrito[] = [];
+
   constructor(
     private cartService: CartService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.loadCart();
-    this.cartService.cart$.subscribe(() => {
-      this.loadCart();
+    this.cargarCarrito();
+    this.cartService.carrito$.subscribe(() => {
+      this.cargarCarrito();
     });
   }
 
-  loadCart() {
-    this.cartItems = this.cartService.getCartItems();
+  cargarCarrito() {
+    this.itemsCarrito = this.cartService.obtenerItemsCarrito();
   }
 
-  updateQuantity(productId: number, quantity: number, variantId?: number) {
-    if (quantity > 0) {
+  actualizarCantidad(productoId: number, cantidad: number, varianteId?: number) {
+    if (cantidad > 0) {
       // Validar que no supere el stock disponible de la variante
-      const item = this.cartItems.find(i => i.product.id === productId && i.variantId === variantId);
+      const item = this.itemsCarrito.find(i => i.producto.id === productoId && i.varianteId === varianteId);
       if (item) {
-        const variant = item.variantId
-          ? item.product.sizes?.find(s => s.variantId === item.variantId)
+        const variante = item.varianteId
+          ? item.producto.tallas?.find(s => s.varianteId === item.varianteId)
           : null;
-        const maxStock = variant ? variant.stock : item.product.stock;
-        if (quantity > maxStock) {
-          quantity = maxStock;
+        const maxStock = variante ? variante.stock : item.producto.stock;
+        if (cantidad > maxStock) {
+          cantidad = maxStock;
         }
       }
-      this.cartService.updateQuantity(productId, quantity, variantId);
+      this.cartService.actualizarCantidad(productoId, cantidad, varianteId);
     }
   }
 
-  removeItem(productId: number, variantId?: number) {
+  quitarItem(productoId: number, varianteId?: number) {
     if (confirm('¿Estás seguro de eliminar este producto del carrito?')) {
-      this.cartService.removeFromCart(productId, variantId);
+      this.cartService.quitarDelCarrito(productoId, varianteId);
     }
   }
 
-  clearCart() {
+  vaciarCarrito() {
     if (confirm('¿Estás seguro de vaciar todo el carrito?')) {
-      this.cartService.clearCart();
+      this.cartService.vaciarCarrito();
     }
   }
 
-  getSubtotal(): number {
-    return this.cartService.getTotal();
+  obtenerSubtotal(): number {
+    return this.cartService.obtenerTotal();
   }
 
-  getTotal(): number {
-    return this.getSubtotal();
+  obtenerTotal(): number {
+    return this.obtenerSubtotal();
   }
 
-  formatPrice(price: number): string {
-    return `S/ ${price.toFixed(2)}`;
+  formatearPrecio(precio: number): string {
+    return `S/ ${precio.toFixed(2)}`;
   }
 
-  getProductImage(product: Product): string {
-    if (product.imageUrl && product.imageUrl.startsWith('http')) {
-      return product.imageUrl;
+  obtenerImagenProducto(producto: Producto): string {
+    if (producto.urlImagen && producto.urlImagen.startsWith('http')) {
+      return producto.urlImagen;
     }
-    const name = (product.name || '').toLowerCase();
-    const cat  = (product.categoryName || '').toLowerCase();
-    if (name.includes('sneaker') || name.includes('zapatilla') || name.includes('running'))
+    const nombre = (producto.nombre || '').toLowerCase();
+    const cat  = (producto.nombreCategoria || '').toLowerCase();
+    if (nombre.includes('sneaker') || nombre.includes('zapatilla') || nombre.includes('running'))
       return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&fit=crop';
-    if (name.includes('formal') || name.includes('oxford') || name.includes('clásic'))
+    if (nombre.includes('formal') || nombre.includes('oxford') || nombre.includes('clásic'))
       return 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400&q=80&fit=crop';
-    if (name.includes('bota') || name.includes('boot'))
+    if (nombre.includes('bota') || nombre.includes('boot'))
       return 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80&fit=crop';
-    if (name.includes('sandalia') || name.includes('sandal'))
+    if (nombre.includes('sandalia') || nombre.includes('sandal'))
       return 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80&fit=crop';
-    if (name.includes('casual') || name.includes('loafer'))
+    if (nombre.includes('casual') || nombre.includes('loafer'))
       return 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80&fit=crop';
-    if (name.includes('sport') || name.includes('gym'))
+    if (nombre.includes('sport') || nombre.includes('gym'))
       return 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80&fit=crop';
     if (cat.includes('sneaker') || cat.includes('sport'))
       return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&fit=crop';
@@ -100,32 +101,32 @@ export class CartComponent implements OnInit {
       'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80&fit=crop',
       'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&q=80&fit=crop',
     ];
-    return fallbacks[product.id % fallbacks.length];
+    return fallbacks[producto.id % fallbacks.length];
   }
 
-  checkout() {
+  irAlCheckout() {
     // Redirigir a la página de checkout para completar el pago
     this.router.navigate(['/checkout']);
   }
 
-  consultStock() {
+  consultarStock() {
     // Generar mensaje de WhatsApp para consulta de stock
-    const message = this.generateStockConsultMessage();
-    const phone = '51999999999'; // Número de WhatsApp de la tienda (cambiar por el real)
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    const mensaje = this.generarMensajeConsultaStock();
+    const telefono = '51999999999'; // Número de WhatsApp de la tienda (cambiar por el real)
+    const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   }
 
-  generateStockConsultMessage(): string {
-    let message = '¡Hola! Me gustaría consultar la disponibilidad de los siguientes productos:\n\n';
+  generarMensajeConsultaStock(): string {
+    let mensaje = '¡Hola! Me gustaría consultar la disponibilidad de los siguientes productos:\n\n';
 
-    this.cartItems.forEach((item, index) => {
-      const size = item.selectedSize ? ` — Talla ${item.selectedSize}` : '';
-      message += `${index + 1}. ${item.product.name}${size}\n`;
-      message += `   Cantidad deseada: ${item.quantity}\n\n`;
+    this.itemsCarrito.forEach((item, index) => {
+      const talla = item.tallaSeleccionada ? ` — Talla ${item.tallaSeleccionada}` : '';
+      mensaje += `${index + 1}. ${item.producto.nombre}${talla}\n`;
+      mensaje += `   Cantidad deseada: ${item.cantidad}\n\n`;
     });
 
-    message += '¿Están disponibles para entrega inmediata?';
-    return message;
+    mensaje += '¿Están disponibles para entrega inmediata?';
+    return mensaje;
   }
 }
