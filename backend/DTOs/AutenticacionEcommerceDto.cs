@@ -65,6 +65,13 @@ public class OlvidoContrasenaDto
     public string Correo { get; set; } = string.Empty;
 }
 
+public class OlvidoContrasenaRespuestaDto
+{
+    public string Message { get; set; } = string.Empty;
+    public string TokenRecuperacion { get; set; } = string.Empty;
+    public int ExpiraEnMinutos { get; set; }
+}
+
 public class RestablecerContrasenaDto
 {
     public string Token { get; set; } = string.Empty;

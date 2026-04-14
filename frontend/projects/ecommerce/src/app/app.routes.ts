@@ -44,10 +44,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
   { 
-    path: 'reset-password', 
-    loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
-  },
-  { 
     path: 'account', 
     loadComponent: () => import('./pages/account/account.component').then(m => m.AccountComponent),
     canActivate: [guardiaAutenticacionEcommerce]

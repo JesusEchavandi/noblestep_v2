@@ -345,21 +345,30 @@ public class AutenticacionEcommerceController : ControllerBase
 
             if (cliente == null)
             {
-                return Ok(new { message = "Si el email existe, recibirás un correo con instrucciones" });
+                return BadRequest(new { message = "No existe una cuenta con ese correo" });
+            }
+
+            var minutosExpiracion = _configuration.GetValue<int?>("App:PasswordResetTokenMinutes") ?? 5;
+            if (minutosExpiracion < 1)
+            {
+                minutosExpiracion = 5;
             }
 
             var tokenRestablecimiento = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tokenRestablecimiento)));
             cliente.TokenRecuperacion = tokenHash;
-            cliente.ExpiracionRecuperacion = DateTime.UtcNow.AddHours(1);
+            cliente.ExpiracionRecuperacion = DateTime.UtcNow.AddMinutes(minutosExpiracion);
             cliente.FechaActualizacion = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            await _servicioCorreo.EnviarCorreoRestablecimientoAsync(cliente.Correo, tokenRestablecimiento, cliente.NombreCompleto);
-
             _logger.LogInformation("Token de recuperación generado para: {Correo}", cliente.Correo);
-            return Ok(new { message = "Si el email existe, recibirás un correo con instrucciones" });
+            return Ok(new OlvidoContrasenaRespuestaDto
+            {
+                Message = "Token de recuperación generado exitosamente",
+                TokenRecuperacion = tokenRestablecimiento,
+                ExpiraEnMinutos = minutosExpiracion
+            });
         }
         catch (Exception ex)
         {

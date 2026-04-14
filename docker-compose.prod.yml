@@ -1,0 +1,55 @@
+services:
+  # ── MySQL Database ──────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: noblestep-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/noblestep_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - noblestep-net
+
+  # ── Backend API (.NET 8) ────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile
+    container_name: noblestep-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      NOBLESTEP_DB_CONNECTION: "Server=db;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};"
+      NOBLESTEP_JWT_SECRET: ${JWT_SECRET_KEY}
+      NOBLESTEP_CORS_ORIGINS: ${CORS_ORIGINS}
+      PORT: "5000"
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - api_logs:/var/log/noblestep
+    networks:
+      - noblestep-net
+
+volumes:
+  db_data:
+    driver: local
+  api_logs:
+    driver: local
+
+networks:
+  noblestep-net:
+    driver: bridge

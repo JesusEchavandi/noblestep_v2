@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { EcommerceAuthService } from '../../services/ecommerce-auth.service';
+import { EcommerceAuthService, RespuestaTokenRecuperacion } from '../../services/ecommerce-auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { finalize } from 'rxjs';
 
@@ -72,7 +72,7 @@ import { finalize } from 'rxjs';
                 <i class="fi fi-rr-lock"></i> Contraseña
               </label>
               <input type="password" id="password" [(ngModel)]="datosFormulario.contrasena" name="password" placeholder="••••••••" required autocomplete="current-password" maxlength="128" />
-              <a *ngIf="esInicioSesion" class="forgot-link" (click)="mostrarRecuperacion = true">¿Olvidaste tu contraseña?</a>
+              <a *ngIf="esInicioSesion" class="forgot-link" (click)="abrirRecuperacion()">¿Olvidaste tu contraseña?</a>
             </div>
 
             <div class="field-group" *ngIf="!esInicioSesion">
@@ -108,21 +108,37 @@ import { finalize } from 'rxjs';
       </div>
 
       <!-- Modal recuperar contraseña -->
-      <div class="modal-backdrop" *ngIf="mostrarRecuperacion" (click)="mostrarRecuperacion = false">
+      <div class="modal-backdrop" *ngIf="mostrarRecuperacion" (click)="cerrarRecuperacion()">
         <div class="modal-box" (click)="$event.stopPropagation()">
           <div class="modal-head">
             <h2>Recuperar contraseña</h2>
-            <button (click)="mostrarRecuperacion = false"><i class="fi fi-rr-cross"></i></button>
+            <button (click)="cerrarRecuperacion()"><i class="fi fi-rr-cross"></i></button>
           </div>
-          <p>Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
-          <div class="field-group">
+          <p *ngIf="pasoRecuperacion === 1">Ingresa tu correo para generar un token temporal de recuperación.</p>
+          <p *ngIf="pasoRecuperacion === 2">Crea tu nueva contraseña. Este token expira en {{ minutosExpiracionToken }} minutos.</p>
+
+          <div *ngIf="pasoRecuperacion === 1" class="field-group">
             <label><i class="fi fi-rr-envelope"></i> Correo electrónico</label>
             <input type="email" [(ngModel)]="correoRecuperacion" placeholder="tu@email.com" />
           </div>
+
+          <div *ngIf="pasoRecuperacion === 2" class="field-group">
+            <label><i class="fi fi-rr-lock"></i> Nueva contraseña</label>
+            <input type="password" [(ngModel)]="nuevaContrasenaRecuperacion" placeholder="••••••••" maxlength="128" />
+          </div>
+
+          <div *ngIf="pasoRecuperacion === 2" class="field-group">
+            <label><i class="fi fi-rr-lock"></i> Confirmar nueva contraseña</label>
+            <input type="password" [(ngModel)]="confirmarContrasenaRecuperacion" placeholder="••••••••" maxlength="128" />
+          </div>
+
           <div class="modal-actions">
-            <button class="btn-cancel" (click)="mostrarRecuperacion = false">Cancelar</button>
-            <button class="btn-submit" (click)="enviarCorreoRecuperacion()" [disabled]="cargando">
-              {{ cargando ? 'Enviando...' : 'Enviar enlace' }}
+            <button class="btn-cancel" (click)="cerrarRecuperacion()">Cancelar</button>
+            <button *ngIf="pasoRecuperacion === 1" class="btn-submit" (click)="generarTokenRecuperacion()" [disabled]="cargando">
+              {{ cargando ? 'Generando...' : 'Generar token' }}
+            </button>
+            <button *ngIf="pasoRecuperacion === 2" class="btn-submit" (click)="confirmarRecuperacionConToken()" [disabled]="cargando">
+              {{ cargando ? 'Restableciendo...' : 'Cambiar contraseña' }}
             </button>
           </div>
         </div>
@@ -401,7 +417,12 @@ export class LoginComponent implements OnInit {
   esInicioSesion = true;
   cargando = false;
   mostrarRecuperacion = false;
+  pasoRecuperacion: 1 | 2 = 1;
   correoRecuperacion = '';
+  tokenRecuperacion = '';
+  nuevaContrasenaRecuperacion = '';
+  confirmarContrasenaRecuperacion = '';
+  minutosExpiracionToken = 0;
   confirmarContrasena = '';
   urlRetorno = '/';
 
@@ -435,6 +456,25 @@ export class LoginComponent implements OnInit {
   alternarModo() {
     this.esInicioSesion = !this.esInicioSesion;
     this.confirmarContrasena = '';
+  }
+
+  abrirRecuperacion() {
+    this.mostrarRecuperacion = true;
+    this.pasoRecuperacion = 1;
+    this.tokenRecuperacion = '';
+    this.nuevaContrasenaRecuperacion = '';
+    this.confirmarContrasenaRecuperacion = '';
+    this.minutosExpiracionToken = 0;
+  }
+
+  cerrarRecuperacion() {
+    this.mostrarRecuperacion = false;
+    this.pasoRecuperacion = 1;
+    this.tokenRecuperacion = '';
+    this.nuevaContrasenaRecuperacion = '';
+    this.confirmarContrasenaRecuperacion = '';
+    this.minutosExpiracionToken = 0;
+    this.correoRecuperacion = '';
   }
 
   alEnviar() {
@@ -526,23 +566,66 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  enviarCorreoRecuperacion() {
+  generarTokenRecuperacion() {
     if (!this.correoRecuperacion) {
       this.notificationService.warning('Por favor ingresa tu correo electrónico');
       return;
     }
 
     this.cargando = true;
-    this.authService.olvidoContrasena(this.correoRecuperacion).subscribe({
-      next: (respuesta: any) => {
+    this.authService.generarTokenRecuperacion(this.correoRecuperacion).subscribe({
+      next: (respuesta: RespuestaTokenRecuperacion) => {
         this.cargando = false;
-        this.mostrarRecuperacion = false;
-        this.notificationService.success('Revisa tu correo electrónico para restablecer tu contraseña');
-        this.correoRecuperacion = '';
+        this.tokenRecuperacion = respuesta.tokenRecuperacion;
+        this.minutosExpiracionToken = respuesta.expiraEnMinutos;
+        this.pasoRecuperacion = 2;
+        this.notificationService.success('Token generado. Ahora crea tu nueva contraseña.');
       },
       error: (error: any) => {
         this.cargando = false;
-        this.notificationService.error('Error al enviar el correo');
+        this.notificationService.error(error.error?.message || 'No se pudo generar el token de recuperación');
+      }
+    });
+  }
+
+  confirmarRecuperacionConToken() {
+    if (!this.tokenRecuperacion) {
+      this.notificationService.warning('No se encontró token de recuperación vigente');
+      this.pasoRecuperacion = 1;
+      return;
+    }
+
+    if (!this.nuevaContrasenaRecuperacion || !this.confirmarContrasenaRecuperacion) {
+      this.notificationService.warning('Por favor completa todos los campos');
+      return;
+    }
+
+    if (this.nuevaContrasenaRecuperacion.length < 6) {
+      this.notificationService.warning('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (this.nuevaContrasenaRecuperacion.length > 128) {
+      this.notificationService.warning('La contraseña no puede superar los 128 caracteres');
+      return;
+    }
+
+    if (this.nuevaContrasenaRecuperacion !== this.confirmarContrasenaRecuperacion) {
+      this.notificationService.warning('Las contraseñas no coinciden');
+      return;
+    }
+
+    this.cargando = true;
+    this.authService.restablecerContrasena(this.tokenRecuperacion, this.nuevaContrasenaRecuperacion).subscribe({
+      next: () => {
+        this.cargando = false;
+        this.notificationService.success('Contraseña actualizada correctamente. Ahora inicia sesión.');
+        this.cerrarRecuperacion();
+        this.datosFormulario.contrasena = '';
+      },
+      error: (error: any) => {
+        this.cargando = false;
+        this.notificationService.error(error.error?.message || 'No se pudo restablecer la contraseña');
       }
     });
   }

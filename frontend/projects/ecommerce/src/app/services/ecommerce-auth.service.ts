@@ -45,6 +45,12 @@ export interface DatosActualizarPerfil {
   distrito?: string;
 }
 
+export interface RespuestaTokenRecuperacion {
+  message: string;
+  tokenRecuperacion: string;
+  expiraEnMinutos: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -110,8 +116,8 @@ export class EcommerceAuthService {
     return localStorage.getItem(this.refreshTokenKey);
   }
 
-  olvidoContrasena(correo: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { correo });
+  generarTokenRecuperacion(correo: string): Observable<RespuestaTokenRecuperacion> {
+    return this.http.post<RespuestaTokenRecuperacion>(`${this.apiUrl}/forgot-password`, { correo });
   }
 
   restablecerContrasena(token: string, nuevaContrasena: string): Observable<any> {
