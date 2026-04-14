@@ -343,10 +343,10 @@ public class AutenticacionEcommerceController : ControllerBase
             var cliente = await _context.ClientesEcommerce
                 .FirstOrDefaultAsync(c => c.Correo.ToLower() == dto.Correo.ToLower());
 
-            var minutosExpiracion = _configuration.GetValue<int?>("App:PasswordResetTokenMinutes") ?? 5;
-            if (minutosExpiracion < 1)
+            var minutosExpiracion = _configuration.GetValue<int?>("App:PasswordResetTokenMinutes") ?? 15;
+            if (minutosExpiracion < 5)
             {
-                minutosExpiracion = 5;
+                minutosExpiracion = 15;
             }
 
             if (cliente != null)
@@ -413,12 +413,18 @@ public class AutenticacionEcommerceController : ControllerBase
 
             if (cliente == null)
             {
-                return BadRequest(new { message = "Token inválido o expirado" });
+                return BadRequest(new
+                {
+                    message = "Este enlace no es valido. Es posible que haya sido reemplazado por una nueva solicitud o que ya no corresponda al ultimo correo enviado."
+                });
             }
 
             if (cliente.ExpiracionRecuperacion == null || cliente.ExpiracionRecuperacion < DateTime.UtcNow)
             {
-                return BadRequest(new { message = "Token inválido o expirado" });
+                return BadRequest(new
+                {
+                    message = "El enlace de recuperacion ya vencio. Solicita uno nuevo para continuar."
+                });
             }
 
             cliente.HashContrasena = BCrypt.Net.BCrypt.HashPassword(dto.NuevaContrasena);

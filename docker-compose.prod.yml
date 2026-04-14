@@ -43,6 +43,7 @@ services:
       Email__SmtpUsername: ${Email__SmtpUsername}
       Email__SmtpPassword: ${Email__SmtpPassword}
       App__FrontendUrl: ${App__FrontendUrl}
+      App__PasswordResetTokenMinutes: ${App__PasswordResetTokenMinutes:-15}
       Resend__ApiKey: ${Resend__ApiKey}
       Resend__ApiUrl: ${Resend__ApiUrl:-https://api.resend.com/emails}
       PORT: "5000"
