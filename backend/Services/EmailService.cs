@@ -1,5 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Mail;
+using System.Text;
+using System.Text.Json;
 using NobleStep.Api.DTOs;
 
 namespace NobleStep.Api.Services;
@@ -14,6 +17,7 @@ public interface IServicioCorreo
 
 public class ServicioCorreo : IServicioCorreo
 {
+    private static readonly HttpClient _httpClient = new();
     private readonly IConfiguration _configuration;
     private readonly ILogger<ServicioCorreo> _logger;
 
@@ -368,6 +372,13 @@ public class ServicioCorreo : IServicioCorreo
     private async Task EnviarCorreoAsync(string fromEmail, string fromName, string correoDestino, string subject, string body, 
         string smtpHost, int smtpPort, string smtpUsername, string smtpPassword)
     {
+        var resendApiKey = _configuration["Resend:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(resendApiKey) && !EsPlaceholder(resendApiKey))
+        {
+            await EnviarConResendAsync(fromEmail, fromName, correoDestino, subject, body, resendApiKey);
+            return;
+        }
+
         using var message = new MailMessage();
         message.From = new MailAddress(fromEmail, fromName);
         message.To.Add(new MailAddress(correoDestino));
@@ -383,5 +394,50 @@ public class ServicioCorreo : IServicioCorreo
 
         await smtpClient.SendMailAsync(message);
         _logger.LogInformation("Email enviado exitosamente a {Email}", correoDestino);
+    }
+
+    private async Task EnviarConResendAsync(
+        string fromEmail,
+        string fromName,
+        string correoDestino,
+        string subject,
+        string htmlBody,
+        string resendApiKey)
+    {
+        var apiUrl = _configuration["Resend:ApiUrl"] ?? "https://api.resend.com/emails";
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", resendApiKey);
+
+        var payload = new
+        {
+            from = $"{fromName} <{fromEmail}>",
+            to = new[] { correoDestino },
+            subject,
+            html = htmlBody
+        };
+
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"Resend devolvió {(int)response.StatusCode}: {errorBody}");
+        }
+
+        _logger.LogInformation("Email enviado exitosamente a {Email} usando Resend API", correoDestino);
+    }
+
+    private static bool EsPlaceholder(string value)
+    {
+        var normalized = value.Trim().ToUpperInvariant();
+        return normalized.Contains("TU_") ||
+               normalized.Contains("PLACEHOLDER") ||
+               normalized.Contains("CHANGE_ME");
     }
 }
