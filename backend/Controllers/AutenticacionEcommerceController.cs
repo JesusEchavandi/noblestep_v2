@@ -360,12 +360,22 @@ public class AutenticacionEcommerceController : ControllerBase
 
                 await _context.SaveChangesAsync();
 
-                await _servicioCorreo.EnviarCorreoRestablecimientoAsync(
-                    cliente.Correo,
-                    tokenRestablecimiento,
-                    string.IsNullOrWhiteSpace(cliente.NombreCompleto) ? "cliente" : cliente.NombreCompleto);
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _servicioCorreo.EnviarCorreoRestablecimientoAsync(
+                            cliente.Correo,
+                            tokenRestablecimiento,
+                            string.IsNullOrWhiteSpace(cliente.NombreCompleto) ? "cliente" : cliente.NombreCompleto);
 
-                _logger.LogInformation("Correo de recuperación enviado a: {Correo}", cliente.Correo);
+                        _logger.LogInformation("Correo de recuperación enviado a: {Correo}", cliente.Correo);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "No se pudo enviar correo de recuperación a: {Correo}", cliente.Correo);
+                    }
+                });
             }
 
             return Ok(new OlvidoContrasenaRespuestaDto

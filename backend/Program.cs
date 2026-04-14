@@ -156,10 +156,10 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
     });
-    // Forgot password: 3 intentos cada 5 minutos por IP
+    // Forgot password: 10 intentos cada 5 minutos por IP
     options.AddFixedWindowLimiter("forgot-password", opt =>
     {
-        opt.PermitLimit = 3;
+        opt.PermitLimit = 10;
         opt.Window = TimeSpan.FromMinutes(5);
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
