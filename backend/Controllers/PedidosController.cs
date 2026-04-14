@@ -165,35 +165,38 @@ public class PedidosController : ControllerBase
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            // Enviar email de confirmación (no bloqueante)
-            try
-            {
-                var emailItems = pedido.DetallesPedido.Select(od => new RespuestaDetallePedidoDto
-                {
-                    Id = od.Id,
-                    ProductoId = od.ProductoId,
-                    NombreProducto = od.NombreProducto,
-                    CodigoProducto = od.CodigoProducto,
-                    TallaProducto = od.TallaProducto,
-                    Cantidad = od.Cantidad,
-                    PrecioUnitario = od.PrecioUnitario,
-                    Subtotal = od.Subtotal
-                }).ToList();
-
-                await _servicioCorreo.EnviarCorreoConfirmacionPedidoAsync(
-                    pedido.CorreoCliente,
-                    pedido.NumeroPedido,
-                    pedido.NombreCompletoCliente,
-                    pedido.Total,
-                    emailItems);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "No se pudo enviar email de confirmación para orden {NumeroPedido}", numeroPedido);
-            }
-
             // Preparar respuesta
             var response = MapearPedidoADto(pedido);
+
+            // Enviar email de confirmación en segundo plano para no retrasar la respuesta al cliente.
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var emailItems = pedido.DetallesPedido.Select(od => new RespuestaDetallePedidoDto
+                    {
+                        Id = od.Id,
+                        ProductoId = od.ProductoId,
+                        NombreProducto = od.NombreProducto,
+                        CodigoProducto = od.CodigoProducto,
+                        TallaProducto = od.TallaProducto,
+                        Cantidad = od.Cantidad,
+                        PrecioUnitario = od.PrecioUnitario,
+                        Subtotal = od.Subtotal
+                    }).ToList();
+
+                    await _servicioCorreo.EnviarCorreoConfirmacionPedidoAsync(
+                        pedido.CorreoCliente,
+                        pedido.NumeroPedido,
+                        pedido.NombreCompletoCliente,
+                        pedido.Total,
+                        emailItems);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "No se pudo enviar email de confirmación para orden {NumeroPedido}", numeroPedido);
+                }
+            });
 
             _logger.LogInformation("Orden creada: {NumeroPedido}", numeroPedido);
             return Ok(response);

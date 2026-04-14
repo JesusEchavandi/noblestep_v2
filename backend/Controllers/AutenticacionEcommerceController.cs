@@ -343,30 +343,34 @@ public class AutenticacionEcommerceController : ControllerBase
             var cliente = await _context.ClientesEcommerce
                 .FirstOrDefaultAsync(c => c.Correo.ToLower() == dto.Correo.ToLower());
 
-            if (cliente == null)
-            {
-                return BadRequest(new { message = "No existe una cuenta con ese correo" });
-            }
-
             var minutosExpiracion = _configuration.GetValue<int?>("App:PasswordResetTokenMinutes") ?? 5;
             if (minutosExpiracion < 1)
             {
                 minutosExpiracion = 5;
             }
 
-            var tokenRestablecimiento = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-            var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tokenRestablecimiento)));
-            cliente.TokenRecuperacion = tokenHash;
-            cliente.ExpiracionRecuperacion = DateTime.UtcNow.AddMinutes(minutosExpiracion);
-            cliente.FechaActualizacion = DateTime.UtcNow;
+            if (cliente != null)
+            {
+                var tokenRestablecimiento = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+                var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tokenRestablecimiento)));
 
-            await _context.SaveChangesAsync();
+                cliente.TokenRecuperacion = tokenHash;
+                cliente.ExpiracionRecuperacion = DateTime.UtcNow.AddMinutes(minutosExpiracion);
+                cliente.FechaActualizacion = DateTime.UtcNow;
 
-            _logger.LogInformation("Token de recuperación generado para: {Correo}", cliente.Correo);
+                await _context.SaveChangesAsync();
+
+                await _servicioCorreo.EnviarCorreoRestablecimientoAsync(
+                    cliente.Correo,
+                    tokenRestablecimiento,
+                    string.IsNullOrWhiteSpace(cliente.NombreCompleto) ? "cliente" : cliente.NombreCompleto);
+
+                _logger.LogInformation("Correo de recuperación enviado a: {Correo}", cliente.Correo);
+            }
+
             return Ok(new OlvidoContrasenaRespuestaDto
             {
-                Message = "Token de recuperación generado exitosamente",
-                TokenRecuperacion = tokenRestablecimiento,
+                Message = "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
                 ExpiraEnMinutos = minutosExpiracion
             });
         }

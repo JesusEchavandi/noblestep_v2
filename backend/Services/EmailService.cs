@@ -34,7 +34,9 @@ public class ServicioCorreo : IServicioCorreo
             var smtpUsername = _configuration["Email:SmtpUsername"] ?? fromEmail;
             var smtpPassword = _configuration["Email:SmtpPassword"] ?? "";
             
-            var resetLink = $"{_configuration["App:FrontendUrl"]}/reset-password?token={tokenRestablecimiento}";
+            var frontendUrl = _configuration["App:FrontendUrl"] ?? "https://noblestep.tech";
+            var tokenCodificado = Uri.EscapeDataString(tokenRestablecimiento);
+            var resetLink = $"{frontendUrl.TrimEnd('/')}/reset-password?token={tokenCodificado}";
 
             var subject = "Restablecer tu contraseña - NobleStep";
             var body = $@"

@@ -47,7 +47,6 @@ export interface DatosActualizarPerfil {
 
 export interface RespuestaTokenRecuperacion {
   message: string;
-  tokenRecuperacion: string;
   expiraEnMinutos: number;
 }
 

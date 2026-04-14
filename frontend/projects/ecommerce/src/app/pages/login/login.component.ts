@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { EcommerceAuthService, RespuestaTokenRecuperacion } from '../../services/ecommerce-auth.service';
+import { EcommerceAuthService } from '../../services/ecommerce-auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { finalize } from 'rxjs';
 
@@ -114,8 +114,8 @@ import { finalize } from 'rxjs';
             <h2>Recuperar contraseña</h2>
             <button (click)="cerrarRecuperacion()"><i class="fi fi-rr-cross"></i></button>
           </div>
-          <p *ngIf="pasoRecuperacion === 1">Ingresa tu correo para generar un token temporal de recuperación.</p>
-          <p *ngIf="pasoRecuperacion === 2">Crea tu nueva contraseña. Este token expira en {{ minutosExpiracionToken }} minutos.</p>
+          <p *ngIf="pasoRecuperacion === 1">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+          <p *ngIf="pasoRecuperacion === 2">Crea tu nueva contraseña para completar la recuperación.</p>
 
           <div *ngIf="pasoRecuperacion === 1" class="field-group">
             <label><i class="fi fi-rr-envelope"></i> Correo electrónico</label>
@@ -135,7 +135,7 @@ import { finalize } from 'rxjs';
           <div class="modal-actions">
             <button class="btn-cancel" (click)="cerrarRecuperacion()">Cancelar</button>
             <button *ngIf="pasoRecuperacion === 1" class="btn-submit" (click)="generarTokenRecuperacion()" [disabled]="cargando">
-              {{ cargando ? 'Generando...' : 'Generar token' }}
+              {{ cargando ? 'Enviando...' : 'Enviar enlace' }}
             </button>
             <button *ngIf="pasoRecuperacion === 2" class="btn-submit" (click)="confirmarRecuperacionConToken()" [disabled]="cargando">
               {{ cargando ? 'Restableciendo...' : 'Cambiar contraseña' }}
@@ -451,6 +451,15 @@ export class LoginComponent implements OnInit {
     const rawReturnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     // Solo permitir rutas relativas (deben empezar con '/')
     this.urlRetorno = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : '/';
+
+    const resetToken = this.route.snapshot.queryParams['token'] || this.route.snapshot.queryParams['resetToken'];
+    if (typeof resetToken === 'string' && resetToken.trim()) {
+      this.esInicioSesion = true;
+      this.mostrarRecuperacion = true;
+      this.pasoRecuperacion = 2;
+      this.tokenRecuperacion = resetToken.trim();
+      this.minutosExpiracionToken = 0;
+    }
   }
 
   alternarModo() {
@@ -574,16 +583,15 @@ export class LoginComponent implements OnInit {
 
     this.cargando = true;
     this.authService.generarTokenRecuperacion(this.correoRecuperacion).subscribe({
-      next: (respuesta: RespuestaTokenRecuperacion) => {
+      next: (respuesta) => {
         this.cargando = false;
-        this.tokenRecuperacion = respuesta.tokenRecuperacion;
         this.minutosExpiracionToken = respuesta.expiraEnMinutos;
-        this.pasoRecuperacion = 2;
-        this.notificationService.success('Token generado. Ahora crea tu nueva contraseña.');
+        this.notificationService.success(respuesta.message || 'Te enviamos un enlace de recuperación a tu correo.');
+        this.cerrarRecuperacion();
       },
       error: (error: any) => {
         this.cargando = false;
-        this.notificationService.error(error.error?.message || 'No se pudo generar el token de recuperación');
+        this.notificationService.error(error.error?.message || 'No se pudo enviar el enlace de recuperación');
       }
     });
   }
@@ -622,6 +630,9 @@ export class LoginComponent implements OnInit {
         this.notificationService.success('Contraseña actualizada correctamente. Ahora inicia sesión.');
         this.cerrarRecuperacion();
         this.datosFormulario.contrasena = '';
+        this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.urlRetorno }
+        });
       },
       error: (error: any) => {
         this.cargando = false;
