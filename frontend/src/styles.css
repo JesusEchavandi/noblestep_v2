@@ -55,6 +55,10 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   --spacing-3xl: 4rem;
+
+  /* Table Density */
+  --table-cell-padding-y: 0.72rem;
+  --table-cell-padding-x: 1rem;
   
   /* Border Radius */
   --radius-sm: 0.25rem;
@@ -537,7 +541,7 @@ textarea.form-control {
   text-transform: uppercase;
   font-size: var(--font-size-xs);
   letter-spacing: 0.05em;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
   border-bottom: 3px solid #000 !important;
   border-right: 2px solid #000;
 }
@@ -547,14 +551,21 @@ textarea.form-control {
 }
 
 .table tbody td {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
   vertical-align: middle;
+  line-height: 1.35;
   border-bottom: 2px solid #000 !important;
   border-right: 2px solid #000;
 }
 
 .table tbody td:last-child {
+  width: 1%;
+  white-space: nowrap;
   border-right: none;
+}
+
+.table thead th:last-child {
+  white-space: nowrap;
 }
 
 .table tbody tr:last-child td {
@@ -586,6 +597,10 @@ textarea.form-control {
 .table-responsive {
   border-radius: var(--radius-md);
   border: 1px solid rgba(42, 54, 59, 0.08);
+}
+
+.filters-section {
+  margin-bottom: var(--spacing-md) !important;
 }
 
 /* Tfoot - totales de tabla */
@@ -948,7 +963,7 @@ div.card-body{
 
   .table thead th,
   .table tbody td {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0.58rem 0.78rem;
     font-size: var(--font-size-xs);
   }
 
@@ -1012,7 +1027,7 @@ div.card-body{
 
   .table thead th,
   .table tbody td {
-    padding: var(--spacing-md) var(--spacing-xl);
+    padding: 0.8rem 1.1rem;
   }
 
   .card-body {
