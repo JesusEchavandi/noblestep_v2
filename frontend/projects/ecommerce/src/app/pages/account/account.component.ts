@@ -20,6 +20,14 @@ export class AccountComponent implements OnInit {
   cargando = false;
   editandoPerfil = false;
 
+  // Boleta de pedidos
+  mostrarModalBoleta = false;
+  cargandoBoleta = false;
+  boletaError = '';
+  contenidoBoleta = '';
+  boletaBlob: Blob | null = null;
+  pedidoBoleta: Pedido | null = null;
+
   formularioPerfil = {
     nombreCompleto: '',
     telefono: '',
@@ -172,6 +180,69 @@ export class AccountComponent implements OnInit {
 
   verDetallesPedido(pedido: Pedido) {
     console.log('Ver detalles:', pedido);
+  }
+
+  verBoletaPedido(pedido: Pedido) {
+    this.pedidoBoleta = pedido;
+    this.mostrarModalBoleta = true;
+    this.cargandoBoleta = true;
+    this.boletaError = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+
+    this.orderService.obtenerBoletaPedido(pedido.id).subscribe({
+      next: (blob) => {
+        this.boletaBlob = blob;
+        blob.text().then((txt) => {
+          this.contenidoBoleta = txt;
+          this.cargandoBoleta = false;
+        });
+      },
+      error: () => {
+        this.boletaError = 'No se pudo cargar la boleta del pedido.';
+        this.cargandoBoleta = false;
+      }
+    });
+  }
+
+  descargarBoletaPedido(pedido: Pedido) {
+    this.orderService.descargarBoletaPedido(pedido.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `boleta-pedido-${pedido.numeroPedido || pedido.id}.txt`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: () => {
+        this.notificationService.error('No se pudo descargar la boleta del pedido');
+      }
+    });
+  }
+
+  descargarBoletaActual() {
+    if (!this.boletaBlob || !this.pedidoBoleta) return;
+
+    const url = URL.createObjectURL(this.boletaBlob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `boleta-pedido-${this.pedidoBoleta.numeroPedido || this.pedidoBoleta.id}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  cerrarModalBoleta() {
+    this.mostrarModalBoleta = false;
+    this.cargandoBoleta = false;
+    this.boletaError = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+    this.pedidoBoleta = null;
   }
 
   rastrearPedido(numeroPedido: string) {

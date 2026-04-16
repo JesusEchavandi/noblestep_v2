@@ -87,4 +87,12 @@ export class OrderService {
   obtenerPedido(id: number): Observable<Pedido> {
     return this.http.get<Pedido>(`${this.apiUrl}/${id}`);
   }
+
+  obtenerBoletaPedido(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/receipt`, { responseType: 'blob' });
+  }
+
+  descargarBoletaPedido(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/receipt?download=true`, { responseType: 'blob' });
+  }
 }

@@ -316,6 +316,44 @@ public class PedidosController : ControllerBase
         }
     }
 
+    // GET: api/ecommerce/orders/{id}/receipt
+    [Authorize]
+    [HttpGet("{id}/receipt")]
+    public async Task<IActionResult> GetBoletaPedido(int id, [FromQuery] bool download = false)
+    {
+        try
+        {
+            var pedido = await _context.Pedidos
+                .Include(o => o.DetallesPedido)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (pedido == null)
+                return NotFound(new { message = "Orden no encontrada" });
+
+            var clienteIdClaim = User.FindFirst("customerId");
+            if (clienteIdClaim == null || !int.TryParse(clienteIdClaim.Value, out var clienteId))
+                return Unauthorized(new { message = "No autorizado" });
+
+            if (pedido.ClienteEcommerceId != clienteId)
+                return Forbid();
+
+            var filePath = BoletaHelper.GenerarBoletaPedido(pedido);
+            var fileName = Path.GetFileName(filePath);
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+            if (download)
+                return File(bytes, "text/plain; charset=utf-8", fileName);
+
+            Response.Headers.ContentDisposition = $"inline; filename=\"{fileName}\"";
+            return File(bytes, "text/plain; charset=utf-8");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error obteniendo boleta de pedido {PedidoId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
     private RespuestaPedidoDto MapearPedidoADto(Pedido pedido)
     {
         return new RespuestaPedidoDto
