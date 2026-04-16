@@ -243,7 +243,7 @@ export class CustomerListComponent implements OnInit {
         cliente.nombreCompleto.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
         cliente.numeroDocumento.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
         cliente.telefono.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase()) ||
-        cliente.correo.toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase());
+        (cliente.correo || '').toLowerCase().includes(this.filtros.textoBusqueda.toLowerCase());
 
       const coincideTipoDoc = !this.filtros.tipoDocumento || 
         this.obtenerTipoDocumento(cliente.numeroDocumento)?.toLowerCase() === this.filtros.tipoDocumento;
