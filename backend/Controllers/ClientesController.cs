@@ -83,21 +83,86 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ClienteDto>> CrearCliente([FromBody] CrearClienteDto crearDto)
     {
-        // Verificar si el número de documento ya existe
-        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == crearDto.NumeroDocumento))
-            return BadRequest(new { message = "El número de documento ya existe" });
+        var numeroDocumento = (crearDto.NumeroDocumento ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(numeroDocumento))
+            return BadRequest(new { message = "El número de documento es requerido" });
+
+        // Flujo idempotente por DNI para no bloquear la venta:
+        // - Si existe y está activo: devolver cliente existente.
+        // - Si existe y está inactivo: reactivar y devolver.
+        var existente = await _context.Clientes
+            .FirstOrDefaultAsync(c => c.NumeroDocumento == numeroDocumento);
+
+        if (existente != null)
+        {
+            if (!existente.Activo)
+            {
+                existente.Activo = true;
+                existente.FechaActualizacion = DateTime.UtcNow;
+
+                if (!string.IsNullOrWhiteSpace(crearDto.NombreCompleto))
+                    existente.NombreCompleto = crearDto.NombreCompleto;
+
+                if (!string.IsNullOrWhiteSpace(crearDto.Telefono))
+                    existente.Telefono = crearDto.Telefono;
+
+                if (!string.IsNullOrWhiteSpace(crearDto.Correo))
+                    existente.Correo = crearDto.Correo;
+
+                await _context.SaveChangesAsync();
+            }
+
+            var existenteDto = new ClienteDto
+            {
+                Id = existente.Id,
+                NombreCompleto = existente.NombreCompleto,
+                NumeroDocumento = existente.NumeroDocumento,
+                Telefono = existente.Telefono,
+                Correo = existente.Correo,
+                Activo = existente.Activo
+            };
+
+            return Ok(existenteDto);
+        }
 
         var cliente = new Cliente
         {
             NombreCompleto = crearDto.NombreCompleto,
-            NumeroDocumento = crearDto.NumeroDocumento,
+            NumeroDocumento = numeroDocumento,
             Telefono = crearDto.Telefono,
             Correo = crearDto.Correo,
             Activo = true
         };
 
         _context.Clientes.Add(cliente);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException dbEx) when (
+            dbEx.InnerException?.Message.Contains("Duplicate", StringComparison.OrdinalIgnoreCase) == true ||
+            dbEx.InnerException?.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) == true ||
+            dbEx.InnerException?.Message.Contains("uq_numero_documento", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // Fallback ante condición de carrera: devolver existente y continuar flujo.
+            var clienteExistente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.NumeroDocumento == numeroDocumento);
+
+            if (clienteExistente != null)
+            {
+                return Ok(new ClienteDto
+                {
+                    Id = clienteExistente.Id,
+                    NombreCompleto = clienteExistente.NombreCompleto,
+                    NumeroDocumento = clienteExistente.NumeroDocumento,
+                    Telefono = clienteExistente.Telefono,
+                    Correo = clienteExistente.Correo,
+                    Activo = clienteExistente.Activo
+                });
+            }
+
+            return BadRequest(new { message = "El número de documento ya existe" });
+        }
 
         var clienteDto = new ClienteDto
         {

@@ -1273,7 +1273,52 @@ export class SaleFormComponent implements OnInit {
       },
       error: (err: any) => {
         this.guardandoCliente = false;
-        alert(err.error?.message || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+
+        const backendMessage = (err?.error?.message || '').toString();
+        const esDuplicado = backendMessage.toLowerCase().includes('documento')
+          || backendMessage.toLowerCase().includes('dni')
+          || backendMessage.toLowerCase().includes('existe');
+
+        if (esDuplicado) {
+          const dni = (this.nuevoCliente.numeroDocumento || '').trim();
+          const encontrado = this.clientes.find(c => (c.numeroDocumento || '').trim() === dni);
+
+          if (encontrado) {
+            this.venta.clienteId = encontrado.id;
+            this.infoClienteSeleccionado = encontrado;
+            this.modoCliente = 'select';
+            this.busquedaCliente = encontrado.nombreCompleto;
+            this.filtrarClientes();
+            alert('El cliente ya existe y fue seleccionado para continuar la venta.');
+            return;
+          }
+
+          // Si no está en la lista local, recargar y reintentar selección por DNI.
+          this.customerService.obtenerClientes().subscribe({
+            next: (datos) => {
+              this.clientes = datos;
+              this.clientesFiltrados = [...datos];
+              const cliente = this.clientes.find(c => (c.numeroDocumento || '').trim() === dni);
+              if (cliente) {
+                this.venta.clienteId = cliente.id;
+                this.infoClienteSeleccionado = cliente;
+                this.modoCliente = 'select';
+                this.busquedaCliente = cliente.nombreCompleto;
+                this.filtrarClientes();
+                alert('El cliente ya existe y fue seleccionado para continuar la venta.');
+                return;
+              }
+
+              alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+            },
+            error: () => {
+              alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+            }
+          });
+          return;
+        }
+
+        alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
       }
     });
   }
