@@ -163,6 +163,12 @@ interface DetallePedido {
                   <button (click)="actualizarEstadoPago(pedido)" class="btn-payment" title="Confirmar Pago">
                     💳
                   </button>
+                  <button (click)="verBoleta(pedido)" class="btn-receipt" title="Ver Boleta">
+                    🧾
+                  </button>
+                  <button (click)="descargarBoleta(pedido)" class="btn-download" title="Descargar Boleta">
+                    ⬇️
+                  </button>
                 </div>
               </td>
             </tr>
@@ -273,6 +279,29 @@ interface DetallePedido {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de Boleta -->
+      <div *ngIf="mostrarModalBoleta" class="modal" (click)="cerrarModalBoleta()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Boleta Pedido #{{ pedidoBoleta?.numeroPedido }}</h2>
+            <button class="close-btn" (click)="cerrarModalBoleta()">&times;</button>
+          </div>
+
+          <div class="modal-body">
+            <div *ngIf="cargandoBoleta" class="loading">Cargando boleta...</div>
+            <div *ngIf="!cargandoBoleta && errorBoleta" class="error-box">{{ errorBoleta }}</div>
+            <div *ngIf="!cargandoBoleta && !errorBoleta" class="receipt-preview">
+              <pre>{{ contenidoBoleta }}</pre>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="cerrarModalBoleta()">Cerrar</button>
+            <button class="btn-primary" [disabled]="!boletaBlob" (click)="descargarBoletaActual()">Descargar</button>
           </div>
         </div>
       </div>
@@ -557,6 +586,14 @@ interface DetallePedido {
       background: #dbeafe;
     }
 
+    .btn-receipt:hover {
+      background: #fef3c7;
+    }
+
+    .btn-download:hover {
+      background: #d1fae5;
+    }
+
     /* Modal */
     .modal {
       position: fixed;
@@ -611,6 +648,62 @@ interface DetallePedido {
 
     .modal-body {
       padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      border-top: 1px solid rgba(42, 54, 59, 0.12);
+    }
+
+    .receipt-preview {
+      border: 1px solid rgba(42, 54, 59, 0.15);
+      border-radius: 8px;
+      background: #fafafa;
+      padding: 1rem;
+      max-height: 52vh;
+      overflow: auto;
+    }
+
+    .receipt-preview pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #111827;
+    }
+
+    .error-box {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--color-primary, #E84A5F);
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
     }
 
     .order-section {
@@ -754,6 +847,14 @@ export class EcommerceOrdersComponent implements OnInit {
   filtroEstado = '';
   filtroEstadoPago = '';
 
+  // Boleta
+  mostrarModalBoleta = false;
+  cargandoBoleta = false;
+  errorBoleta = '';
+  contenidoBoleta = '';
+  boletaBlob: Blob | null = null;
+  pedidoBoleta: Pedido | null = null;
+
   // Paginación
   paginaActual = 1;
   tamanoPagina = 10;
@@ -862,6 +963,69 @@ export class EcommerceOrdersComponent implements OnInit {
       'Reembolsado': 'Reembolsado'
     };
     return textos[estado] || estado;
+  }
+
+  verBoleta(pedido: Pedido): void {
+    this.pedidoBoleta = pedido;
+    this.mostrarModalBoleta = true;
+    this.cargandoBoleta = true;
+    this.errorBoleta = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+
+    this.http.get(`${this.apiUrl}/${pedido.id}/receipt`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.boletaBlob = blob;
+        blob.text().then((txt) => {
+          this.contenidoBoleta = txt;
+          this.cargandoBoleta = false;
+        });
+      },
+      error: () => {
+        this.errorBoleta = 'No se pudo cargar la boleta del pedido.';
+        this.cargandoBoleta = false;
+      }
+    });
+  }
+
+  descargarBoleta(pedido: Pedido): void {
+    this.http.get(`${this.apiUrl}/${pedido.id}/receipt?download=true`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `boleta-pedido-${pedido.numeroPedido || pedido.id}.txt`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: () => {
+        alert('No se pudo descargar la boleta del pedido.');
+      }
+    });
+  }
+
+  descargarBoletaActual(): void {
+    if (!this.boletaBlob || !this.pedidoBoleta) return;
+
+    const url = URL.createObjectURL(this.boletaBlob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `boleta-pedido-${this.pedidoBoleta.numeroPedido || this.pedidoBoleta.id}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  cerrarModalBoleta(): void {
+    this.mostrarModalBoleta = false;
+    this.cargandoBoleta = false;
+    this.errorBoleta = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+    this.pedidoBoleta = null;
   }
 
   actualizarPaginacion(): void {

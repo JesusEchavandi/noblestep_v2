@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 using NobleStep.Api.Services;
 
 namespace NobleStep.Api.Controllers;
@@ -243,6 +244,36 @@ public class AdminPedidosEcommerceController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error obteniendo pedido {PedidoId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    // GET: api/admin/ecommerce-orders/{id}/receipt
+    [HttpGet("{id}/receipt")]
+    public async Task<IActionResult> GetBoletaPedidoAdmin(int id, [FromQuery] bool download = false)
+    {
+        try
+        {
+            var pedido = await _context.Pedidos
+                .Include(o => o.DetallesPedido)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (pedido == null)
+                return NotFound(new { message = "Pedido no encontrado" });
+
+            var filePath = BoletaHelper.GenerarBoletaPedido(pedido);
+            var fileName = Path.GetFileName(filePath);
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+            if (download)
+                return File(bytes, "text/plain; charset=utf-8", fileName);
+
+            Response.Headers.ContentDisposition = $"inline; filename=\"{fileName}\"";
+            return File(bytes, "text/plain; charset=utf-8");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error obteniendo boleta de pedido admin {PedidoId}", id);
             return StatusCode(500, new { message = "Error interno del servidor" });
         }
     }
