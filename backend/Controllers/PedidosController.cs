@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 using NobleStep.Api.Models;
 using NobleStep.Api.Services;
 
@@ -167,6 +168,16 @@ public class PedidosController : ControllerBase
 
             // Preparar respuesta
             var response = MapearPedidoADto(pedido);
+
+            // Generar boleta simple en archivo .txt (si falla, no interrumpe el pedido)
+            try
+            {
+                BoletaHelper.GenerarBoletaPedido(pedido);
+            }
+            catch (Exception exBoleta)
+            {
+                _logger.LogWarning(exBoleta, "No se pudo generar boleta simple para orden {NumeroPedido}", numeroPedido);
+            }
 
             // Enviar email de confirmación en segundo plano para no retrasar la respuesta al cliente.
             _ = Task.Run(async () =>

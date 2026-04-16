@@ -220,6 +220,16 @@ public class VentasController : ControllerBase
                 }).ToList()
             };
 
+            // Generar boleta simple en archivo .txt (no bloquea la operación de venta)
+            try
+            {
+                BoletaHelper.GenerarBoletaVenta(venta);
+            }
+            catch
+            {
+                // Si falla la boleta, no se revierte la venta.
+            }
+
             return CreatedAtAction(nameof(GetVenta), new { id = venta.Id }, ventaDto);
         }
         catch (Exception)
