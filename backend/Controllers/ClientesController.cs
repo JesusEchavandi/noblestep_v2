@@ -83,21 +83,35 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ClienteDto>> CrearCliente([FromBody] CrearClienteDto crearDto)
     {
+        var numeroDocumento = (crearDto.NumeroDocumento ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(numeroDocumento))
+            return BadRequest(new { message = "El número de documento es requerido" });
+
         // Verificar si el número de documento ya existe
-        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == crearDto.NumeroDocumento))
+        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == numeroDocumento))
             return BadRequest(new { message = "El número de documento ya existe" });
 
         var cliente = new Cliente
         {
             NombreCompleto = crearDto.NombreCompleto,
-            NumeroDocumento = crearDto.NumeroDocumento,
+            NumeroDocumento = numeroDocumento,
             Telefono = crearDto.Telefono,
             Correo = crearDto.Correo,
             Activo = true
         };
 
         _context.Clientes.Add(cliente);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException dbEx) when (
+            dbEx.InnerException?.Message.Contains("Duplicate", StringComparison.OrdinalIgnoreCase) == true ||
+            dbEx.InnerException?.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) == true ||
+            dbEx.InnerException?.Message.Contains("uq_numero_documento", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return BadRequest(new { message = "El número de documento ya existe" });
+        }
 
         var clienteDto = new ClienteDto
         {
@@ -120,12 +134,16 @@ public class ClientesController : ControllerBase
         if (cliente == null)
             return NotFound();
 
+        var numeroDocumento = (actualizarDto.NumeroDocumento ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(numeroDocumento))
+            return BadRequest(new { message = "El número de documento es requerido" });
+
         // Verificar si el número de documento ya lo tiene otro cliente
-        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == actualizarDto.NumeroDocumento && c.Id != id))
+        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == numeroDocumento && c.Id != id))
             return BadRequest(new { message = "El número de documento ya existe" });
 
         cliente.NombreCompleto = actualizarDto.NombreCompleto;
-        cliente.NumeroDocumento = actualizarDto.NumeroDocumento;
+        cliente.NumeroDocumento = numeroDocumento;
         cliente.Telefono = actualizarDto.Telefono;
         cliente.Correo = actualizarDto.Correo;
 

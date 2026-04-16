@@ -1,0 +1,82 @@
+flowchart TB
+  classDef actor fill:#ffffff,stroke:#0f172a,stroke-width:2px
+  classDef proceso fill:#ecfeff,stroke:#0e7490,stroke-width:2px
+  classDef soporte fill:#fff7ed,stroke:#9a3412,stroke-width:2px
+  classDef data fill:#f0fdf4,stroke:#166534,stroke-width:2px
+
+  A1[Administrador]
+  A2[Vendedor]
+  A3[Cliente Ecommerce]
+  A4[Proveedor]
+
+  subgraph CORE[Cadena de valor NobleStep]
+    P1[Gestion comercial y catalogo]
+    P2[Abastecimiento y compras]
+    P3[Venta presencial]
+    P4[Venta ecommerce y pedidos]
+    P5[Entrega y seguimiento de pedido]
+    P6[Analitica y control de gestion]
+  end
+
+  subgraph SOPORTE[Procesos de soporte]
+    S1[Autenticacion y seguridad]
+    S2[Gestion de usuarios]
+    S3[Consulta DNI RUC]
+    S4[Notificaciones por correo]
+  end
+
+  D1[(MySQL
+usuarios clientes proveedores)]
+  D2[(MySQL
+productos variantes categorias)]
+  D3[(MySQL
+ventas compras pedidos)]
+
+  X1[Servicio DNI RUC]
+  X2[Servicio Correo]
+
+  A1 --> P1
+  A1 --> P2
+  A1 --> P3
+  A1 --> P4
+  A1 --> P5
+  A1 --> P6
+
+  A2 --> P1
+  A2 --> P2
+  A2 --> P3
+  A2 --> P6
+
+  A3 --> P4
+  A3 --> P5
+
+  A4 --> P2
+
+  P1 --> D2
+  P2 --> D2
+  P2 --> D3
+  P3 --> D3
+  P4 --> D3
+  P4 --> D2
+  P5 --> D3
+  P6 --> D1
+  P6 --> D2
+  P6 --> D3
+
+  S1 --> D1
+  S2 --> D1
+  S3 --> X1
+  S4 --> X2
+
+  P1 -.usa.-> S1
+  P2 -.usa.-> S1
+  P3 -.usa.-> S1
+  P4 -.usa.-> S1
+  P5 -.usa.-> S4
+  P4 -.usa.-> S4
+  P2 -.usa.-> S3
+
+  class A1,A2,A3,A4 actor
+  class P1,P2,P3,P4,P5,P6 proceso
+  class S1,S2,S3,S4 soporte
+  class D1,D2,D3 data

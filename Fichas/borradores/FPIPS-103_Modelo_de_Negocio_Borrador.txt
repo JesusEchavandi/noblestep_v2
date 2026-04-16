@@ -1,0 +1,129 @@
+FPIPS-103 - MODELO DE NEGOCIO (BORRADOR COMPLETO)
+Proyecto: Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+Version: 1.0
+Fecha: 14/04/2026
+
+1. HISTORIAL DEL DOCUMENTO
+- Version: 1.0
+- Fecha: 14/04/2026
+- Modificado por: Equipo NobleStep
+- Observacion: Borrador completo inicial para sustentacion academica.
+
+2. INTRODUCCION
+2.1 Proposito
+Definir el modelo de negocio del sistema NobleStep para describir como interactuan actores, procesos y entidades en la gestion comercial (ecommerce + administracion interna), garantizando trazabilidad entre necesidad de negocio y solucion implementada.
+
+2.2 Alcance
+Incluye procesos de:
+- Venta online de calzado al cliente final.
+- Gestion administrativa de productos, variantes, inventario, pedidos, compras, ventas y reportes.
+- Gestion de usuarios y roles.
+No incluye:
+- Integraciones contables externas (ERP de terceros).
+- Aplicacion movil nativa.
+
+3. RESTRICCIONES Y RIESGOS TECNOLOGICOS
+3.1 Restricciones
+- R01: El sistema debe operar sobre infraestructura VPS Linux con Docker Compose.
+- R02: Base de datos obligatoria MySQL.
+- R03: Presupuesto limitado para servicios externos de correo y monitoreo.
+- R04: Tiempo de proyecto acotado a cronograma academico.
+
+3.2 Riesgos tecnologicos
+- RT01: Caida o degradacion del proveedor de correo transaccional.
+- RT02: Error humano en despliegues de produccion.
+- RT03: Crecimiento de trafico sin ajuste de recursos.
+- RT04: Dependencia de calidad de red para operaciones de tienda y admin.
+
+Mitigacion resumida:
+- Backups programados y plan de rollback.
+- Variables de entorno versionadas por ambiente.
+- Logs de aplicacion y monitoreo de contenedores.
+- Politica de pruebas antes de despliegue.
+
+4. VISTAS DE CASOS DE USO DE NEGOCIO
+4.1 Lista de actores de negocio
+- A01 Cliente final: compra productos por ecommerce.
+- A02 Administrador: gestiona catalogo, inventario, pedidos, usuarios y reportes.
+- A03 Operador de ventas: da seguimiento a pedidos y estado de despacho.
+- A04 Gerencia: revisa indicadores y resultados comerciales.
+- A05 Proveedor: abastece productos al inventario.
+
+4.2 Lista de casos de uso de negocio (CUN)
+- CUN-01 Comprar calzado online.
+- CUN-02 Gestionar catalogo de productos y variantes.
+- CUN-03 Gestionar inventario y reposicion.
+- CUN-04 Procesar pedidos ecommerce.
+- CUN-05 Registrar ventas y emitir reportes.
+- CUN-06 Gestionar usuarios y permisos.
+- CUN-07 Recuperar acceso de cliente por correo.
+
+4.3 Especificaciones resumidas por CUN
+CUN-01 Comprar calzado online
+- Proposito: concretar venta digital de forma segura.
+- Flujo principal: explorar catalogo -> agregar al carrito -> confirmar pedido -> registrar orden.
+- Resultado: pedido generado con estado inicial y detalle.
+
+CUN-04 Procesar pedidos ecommerce
+- Proposito: asegurar atencion operativa del pedido.
+- Flujo principal: revisar pedido -> validar stock -> confirmar/preparar -> actualizar estado.
+- Resultado: trazabilidad completa del ciclo del pedido.
+
+CUN-07 Recuperar acceso de cliente por correo
+- Proposito: restablecer contrasena sin soporte manual.
+- Flujo principal: solicitar recuperacion -> enviar enlace por correo -> validar token -> cambiar contrasena.
+- Resultado: acceso restaurado con token expirado automaticamente.
+
+4.4 Diagrama de caso de uso de negocio (texto para diagrama)
+Actores:
+- Cliente final
+- Administrador
+- Operador
+- Gerencia
+- Proveedor
+Casos de uso:
+- Comprar calzado online
+- Gestionar catalogo
+- Gestionar inventario
+- Procesar pedidos
+- Registrar ventas/reportes
+- Gestionar usuarios
+- Recuperar acceso
+
+5. VISTA LOGICA DE NEGOCIO
+5.1 Lista de trabajadores de negocio
+- T01 Administrador del sistema
+- T02 Operador de pedidos
+- T03 Encargado de inventario
+- T04 Responsable comercial
+
+5.2 Lista de entidades de negocio
+- E01 Producto
+- E02 VarianteProducto
+- E03 Cliente
+- E04 Pedido
+- E05 DetallePedido
+- E06 Venta
+- E07 DetalleVenta
+- E08 Compra
+- E09 DetalleCompra
+- E10 Proveedor
+- E11 Usuario
+- E12 Categoria
+- E13 AuditLog
+
+5.3 Reglas de negocio clave
+- RN01: No se puede confirmar pedido si no hay stock suficiente.
+- RN02: Toda venta debe impactar stock de forma atomica.
+- RN03: Solo rol Administrador puede gestionar usuarios.
+- RN04: Token de recuperacion de contrasena tiene vigencia limitada.
+- RN05: Todo cambio critico debe dejar evidencia en auditoria.
+
+5.4 Diagrama de realizacion de negocio (texto)
+- Cliente inicia CUN-01 (Compra online).
+- Sistema valida stock (RN01) y crea Pedido + DetallePedido.
+- Operador ejecuta CUN-04 (Procesamiento).
+- Sistema actualiza estado y dispara notificacion.
+- Gerencia consulta CUN-05 (Reportes) para decision comercial.
+
+Fin del borrador FPIPS-103.

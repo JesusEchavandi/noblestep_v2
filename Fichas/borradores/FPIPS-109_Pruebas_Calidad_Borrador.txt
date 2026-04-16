@@ -1,0 +1,166 @@
+FPIPS-109 - IMPLEMENTACION Y PRUEBAS DE CALIDAD DE SOFTWARE (BORRADOR COMPLETO)
+Proyecto: Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+Version: 1.0
+Fecha: 14/04/2026
+
+1. HISTORIAL DEL DOCUMENTO
+- Version: 1.0
+- Fecha: 14/04/2026
+- Responsable: Equipo NobleStep
+- Observacion: Borrador inicial con trazabilidad y casos de prueba.
+
+2. INTRODUCCION
+Documento de validacion funcional y tecnica para asegurar que NobleStep cumple requerimientos de negocio y calidad.
+
+3. OBJETIVOS
+- Verificar cumplimiento de RF priorizados.
+- Mantener trazabilidad RF -> CU -> Caso de Prueba.
+- Evidenciar criterios de aceptacion.
+
+4. ALCANCES
+Incluye pruebas funcionales de ecommerce y admin.
+No incluye pruebas de carga avanzada ni pentesting externo.
+
+5. LISTA DE REQUERIMIENTOS FUNCIONALES
+- RF01: Autenticacion cliente.
+- RF02: Recuperacion de contrasena por correo.
+- RF03: Visualizacion de catalogo y variantes.
+- RF04: Confirmacion de pedido.
+- RF05: Gestion de productos y variantes.
+- RF06: Gestion de inventario.
+- RF07: Gestion de pedidos.
+- RF08: Gestion de usuarios y roles.
+- RF09: Reportes de ventas.
+
+6. LISTA DE CASOS DE USO
+- CU01 Iniciar sesion cliente
+- CU02 Recuperar contrasena
+- CU03 Explorar catalogo
+- CU04 Confirmar pedido
+- CU05 Gestionar productos
+- CU06 Actualizar stock
+- CU07 Gestionar pedidos
+- CU08 Administrar usuarios
+- CU09 Consultar reportes
+
+7. MATRIZ DE TRAZABILIDAD (RF -> CU -> CP)
+- RF01 -> CU01 -> CP01, CP02
+- RF02 -> CU02 -> CP03, CP04, CP05
+- RF03 -> CU03 -> CP06, CP07
+- RF04 -> CU04 -> CP08, CP09, CP10
+- RF05 -> CU05 -> CP11, CP12
+- RF06 -> CU06 -> CP13, CP14
+- RF07 -> CU07 -> CP15, CP16
+- RF08 -> CU08 -> CP17, CP18
+- RF09 -> CU09 -> CP19, CP20
+
+8. CASOS DE PRUEBA DETALLADOS
+CP01 - Login valido
+- Requisito: RF01
+- Precondicion: usuario activo existente.
+- Pasos: ingresar credenciales validas y enviar.
+- Resultado esperado: acceso exitoso y token valido.
+
+CP02 - Login invalido
+- Requisito: RF01
+- Precondicion: usuario existente.
+- Pasos: ingresar password incorrecta.
+- Resultado esperado: mensaje de credenciales invalidas.
+
+CP03 - Solicitar recuperacion
+- Requisito: RF02
+- Pasos: registrar correo valido en olvido de contrasena.
+- Resultado esperado: respuesta OK y correo enviado.
+
+CP04 - Reset con token valido
+- Requisito: RF02
+- Precondicion: token vigente.
+- Pasos: abrir enlace y registrar nueva contrasena.
+- Resultado esperado: contrasena actualizada.
+
+CP05 - Reset con token expirado
+- Requisito: RF02
+- Precondicion: token vencido.
+- Pasos: intentar cambio de contrasena.
+- Resultado esperado: mensaje token invalido o expirado.
+
+CP06 - Catalogo visible
+- Requisito: RF03
+- Pasos: abrir tienda y navegar catalogo.
+- Resultado esperado: listado correcto con variantes.
+
+CP07 - Filtro por categoria
+- Requisito: RF03
+- Pasos: aplicar filtro por categoria.
+- Resultado esperado: solo productos de categoria seleccionada.
+
+CP08 - Confirmar pedido con stock
+- Requisito: RF04
+- Precondicion: stock suficiente.
+- Pasos: agregar al carrito y confirmar.
+- Resultado esperado: pedido creado y stock reducido.
+
+CP09 - Confirmar pedido sin stock
+- Requisito: RF04
+- Precondicion: stock insuficiente.
+- Pasos: intentar confirmar.
+- Resultado esperado: rechazo y mensaje de stock insuficiente.
+
+CP10 - Integridad pedido-detalle
+- Requisito: RF04
+- Pasos: confirmar pedido multi-item.
+- Resultado esperado: cabecera y detalle consistentes.
+
+CP11 - Crear producto
+- Requisito: RF05
+- Actor: admin
+- Resultado esperado: producto registrado correctamente.
+
+CP12 - Editar variante
+- Requisito: RF05
+- Actor: admin
+- Resultado esperado: cambios persistidos en variante.
+
+CP13 - Ingreso por compra
+- Requisito: RF06
+- Resultado esperado: stock incrementado segun detalle compra.
+
+CP14 - Salida por venta
+- Requisito: RF06
+- Resultado esperado: stock decrementado sin quedar negativo.
+
+CP15 - Cambiar estado pedido
+- Requisito: RF07
+- Actor: admin/operador
+- Resultado esperado: estado actualizado con trazabilidad.
+
+CP16 - Consulta historico pedidos
+- Requisito: RF07
+- Resultado esperado: listado ordenado y filtrable.
+
+CP17 - Crear usuario (admin)
+- Requisito: RF08
+- Resultado esperado: usuario creado con rol asignado.
+
+CP18 - Restriccion por rol
+- Requisito: RF08
+- Resultado esperado: usuario no admin no accede a gestion de usuarios.
+
+CP19 - Reporte ventas por periodo
+- Requisito: RF09
+- Resultado esperado: totales consistentes con ventas registradas.
+
+CP20 - Reporte sin datos
+- Requisito: RF09
+- Resultado esperado: reporte vacio sin error de aplicacion.
+
+9. FORMATO DE EVIDENCIA RECOMENDADO
+Por cada CP registrar:
+- Fecha de ejecucion
+- Responsable
+- Resultado esperado
+- Resultado obtenido
+- Estado (Aprobado/Fallido)
+- Evidencia (captura/log)
+
+Fin del borrador FPIPS-109.

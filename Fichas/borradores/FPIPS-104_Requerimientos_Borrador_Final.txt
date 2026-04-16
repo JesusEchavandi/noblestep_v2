@@ -1,0 +1,91 @@
+FPIPS-104 - REQUERIMIENTOS DE USUARIO Y TECNICOS (BORRADOR FINAL)
+Proyecto: Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+Version: 1.0
+Fecha: 14/04/2026
+
+1. HISTORIAL DEL DOCUMENTO
+- Version: 1.0
+- Fecha: 14/04/2026
+- Responsable: Equipo NobleStep
+- Observacion: Consolidacion final de requerimientos.
+
+2. INFORMACION DEL PROYECTO
+2.1 Situacion actual
+La organizacion requiere centralizar ventas e inventario en una solucion web, ya que los procesos manuales generan errores, retrasos y poca trazabilidad.
+
+3. DEFINICION DE REQUERIMIENTOS
+3.1 Requerimientos de usuario
+3.1.1 Requerimientos funcionales
+- RF-001: El cliente debe poder registrarse e iniciar sesion.
+- RF-002: El cliente debe poder recuperar su contrasena por correo.
+- RF-003: El cliente debe visualizar catalogo con variantes y precios.
+- RF-004: El cliente debe poder agregar productos al carrito.
+- RF-005: El cliente debe poder confirmar pedido en linea.
+- RF-006: El admin debe gestionar productos y variantes.
+- RF-007: El admin debe gestionar inventario y compras.
+- RF-008: El admin/operador debe gestionar estados de pedidos.
+- RF-009: El admin debe gestionar usuarios y roles.
+- RF-010: El admin debe consultar reportes operativos/comerciales.
+
+3.1.2 Requerimientos de validacion
+- RV-001: Validar rechazo de pedido cuando stock es insuficiente.
+- RV-002: Validar expiracion de token de recuperacion de contrasena.
+- RV-003: Validar restriccion de accesos por rol.
+- RV-004: Validar consistencia de datos en pedido y detalle.
+
+3.1.3 Requerimientos de entrenamiento al usuario
+- RE-001: Capacitacion para administradores (catalogo, usuarios, reportes).
+- RE-002: Capacitacion para operadores (pedidos e inventario).
+- RE-003: Manual rapido para flujo ecommerce y recuperacion de cuenta.
+
+3.2 Requerimientos tecnicos
+3.2.1 Requerimientos de interfaz
+- RI-001: Interfaz responsiva para desktop y movil.
+- RI-002: Navegacion simple con acceso rapido a acciones principales.
+- RI-003: Mensajes claros de confirmacion y error.
+- RI-004: Consistencia visual entre modulo ecommerce y admin.
+
+3.2.2 Requerimientos de carga inicial y migracion de datos
+- RD-001: Carga inicial de categorias, productos y variantes.
+- RD-002: Carga de clientes base si aplica.
+- RD-003: Migracion controlada de datos de pruebas a produccion.
+
+3.2.3 Requerimientos de infraestructura
+- RIF-001: VPS Linux para entorno de produccion.
+- RIF-002: Despliegue mediante Docker Compose.
+- RIF-003: Reverse proxy Nginx.
+- RIF-004: Motor MySQL como base de datos principal.
+- RIF-005: Dominio y HTTPS activos.
+
+3.2.4 Requerimientos de seguridad
+- RS-001: Autenticacion basada en token JWT.
+- RS-002: Hash seguro de contrasenas.
+- RS-003: Autorizacion por roles y permisos.
+- RS-004: Registro de eventos de auditoria.
+- RS-005: Backup periodico de base de datos.
+
+3.2.5 Requerimientos de documentacion
+- RDC-001: Manual de usuario administrador.
+- RDC-002: Manual de usuario operador.
+- RDC-003: Diccionario de datos actualizado.
+- RDC-004: Documento de despliegue y recuperacion.
+
+3.2.6 Requerimientos de garantia, soporte y mantenimiento
+- RM-001: Garantia correctiva por periodo definido.
+- RM-002: Soporte tecnico remoto en horario laboral.
+- RM-003: Mantenimiento preventivo mensual.
+- RM-004: Actualizaciones de seguridad programadas.
+
+3.2.7 Requerimientos adicionales/especiales
+- RA-001: Integracion de notificaciones por correo para recuperacion de cuenta.
+- RA-002: Preparacion para escalar infraestructura sin redisenar el dominio funcional.
+- RA-003: Trazabilidad de pedidos extremo a extremo para auditoria interna.
+
+4. PRIORIZACION (NIVEL 1 A 5)
+- Nivel 5 (critico): RF-001, RF-002, RF-005, RF-006, RF-007, RS-001, RS-003
+- Nivel 4 (alto): RF-008, RF-009, RF-010, RV-001, RV-003, RIF-002
+- Nivel 3 (medio): RI-001, RI-003, RDC-001, RDC-003, RM-003
+- Nivel 2 (bajo): RA-002, RA-003
+- Nivel 1 (deseable): mejoras de experiencia no bloqueantes
+
+Fin del borrador FPIPS-104.

@@ -1,0 +1,65 @@
+flowchart LR
+  classDef actor fill:#ffffff,stroke:#111827,stroke-width:2px
+  classDef usecase fill:#eff6ff,stroke:#1d4ed8,stroke-width:2px
+
+  A1[Administrador]
+  A2[Vendedor]
+  A3[Cliente Ecommerce]
+  A4[Proveedor]
+  A5[Servicio DNI RUC]
+  A6[Servicio Correo]
+
+  U1[Autenticacion interna]
+  U2[Gestion usuarios internos]
+  U3[Gestion catalogo y variantes]
+  U4[Gestion clientes y proveedores]
+  U5[Registro de compras]
+  U6[Registro de ventas]
+  U7[Autenticacion y perfil ecommerce]
+  U8[Catalogo y checkout ecommerce]
+  U9[Gestion admin pedidos ecommerce]
+  U10[Dashboard y reportes]
+  U11[Consulta DNI RUC]
+  U12[Notificaciones por correo]
+
+  A1 --> U1
+  A2 --> U1
+
+  A1 --> U2
+
+  A1 --> U3
+  A2 --> U3
+
+  A1 --> U4
+  A2 --> U4
+  A4 --> U4
+
+  A1 --> U5
+  A2 --> U5
+  A4 --> U5
+
+  A1 --> U6
+  A2 --> U6
+
+  A3 --> U7
+  A6 --> U7
+
+  A3 --> U8
+  A6 --> U8
+
+  A1 --> U9
+  A6 --> U9
+
+  A1 --> U10
+  A2 --> U10
+
+  A1 --> U11
+  A2 --> U11
+  A5 --> U11
+
+  U7 --> U12
+  U8 --> U12
+  U9 --> U12
+
+  class A1,A2,A3,A4,A5,A6 actor
+  class U1,U2,U3,U4,U5,U6,U7,U8,U9,U10,U11,U12 usecase

@@ -1,0 +1,54 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -105 Modelo de Requerimiento
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+2
+3
+Índice
+HISTORIAL DEL DOCUMENTO ..................................................................................................... 3
+INTRODUCCIÓN ........................................................................................................................... 3
+Propósito ............................................................................................................................. 3
+Alcance ................................................................................................................................ 3
+VISTAS DE CASOS DE USO ........................................................................................................... 3
+Lista de Actores ................................................................................................................... 3
+Lista de caso de uso ............................................................................................................. 3
+Diagrama de caso de uso ..................................................................................................... 3
+Fecha de Actualización: 04/03/2025 Versión: 1.0
+Preparado por: Idat Página : 2 de 3
+HISTORIAL DEL DOCUMENTO
+Información del Documento
+Observaciones
+Modificado por…
+Fecha
+INTRODUCCIÓN
+Propósito
+Alcance
+VISTAS DE CASOS DE USO
+Lista de Actores
+Item
+Actor
+Descripción
+1
+2
+3
+Lista de caso de uso
+Riesgo
+Caso de uso
+Descripción
+Tipo
+1
+2
+3
+4
+5
+3.3 Diagrama de caso de uso 3.3 Diagrama de caso de uso
+3.3
+Diagrama de caso de uso
+3.3
+Diagrama de caso de uso
+Fecha de Actualización: 04/03/2025 Versión: 1.0
+Preparado por: Idat Página : 3 de 3

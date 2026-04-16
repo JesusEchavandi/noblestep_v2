@@ -1,0 +1,20 @@
+flowchart LR
+  classDef actor fill:#fff,stroke:#111827,stroke-width:2px
+  classDef app fill:#eef2ff,stroke:#3730a3,stroke-width:2px
+  classDef data fill:#ecfdf5,stroke:#065f46,stroke-width:2px
+
+  A1[Administrador]
+  N1[UsuariosController]
+  R1[Reglas de seguridad]
+  D1[usuarios]
+  D2[ventas compras]
+
+  A1 -->|CRUD activar desactivar| N1
+  N1 --> R1
+  R1 -->|evita auto eliminar y ultimo admin| N1
+  N1 --> D1
+  N1 -->|reasigna transacciones al admin ejecutor| D2
+
+  class A1 actor
+  class N1,R1 app
+  class D1,D2 data

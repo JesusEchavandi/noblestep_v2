@@ -1,0 +1,124 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -107 Normalización de la base de datos
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+2
+3
+Índice
+HISTORIAL DEL DOCUMENTO ..................................................................................................... 3
+INFORMACIÓN DEL DOCUMENTO ............................................................................................. 3
+Situación actual ................................................................................................................... 3
+NORMALIZACIÓN ........................................................................................................................ 3
+Primera forma normal (incluye eliminación de los grupos repetitivos) ............................. 3
+Segunda forma normal (Asegura que todas las columnas que no son llave sean
+completamente dependiente de la llave primaria .......................................................................... 3
+Tercera forma normal (Elimina cualquier dependencia transitiva) .................................... 4
+DIAGRAMA CONCEPTUAL ........................................................................................................... 4
+DIAGRAMA FISICO ...................................................................................................................... 4
+DICCIONARIO DE DATOS ............................................................................................................. 5
+Lista de Tablas ................................................................................................................................. 5
+Descripción de las Tablas................................................................................................................. 5 <Nombre de la tabla> ............................................................................................................... 5
+<Nombre de la tabla> .............................................................. ¡Error! Marcador no definido.
+<Nombre de la tabla> .............................................................. ¡Error! Marcador no definido. <Nombre de la tabla> .............................................................. ¡Error! Marcador no definido.
+HISTORIAL DEL DOCUMENTO
+Información del Documento
+Observaciones
+Modificado por…
+Fecha
+INFORMACIÓN DEL DOCUMENTO
+Situación actual
+NORMALIZACIÓN
+Primera forma normal (incluye eliminación de los grupos repetitivos)
+Segunda forma normal (Asegura que todas las columnas que no son llave sean completamente dependiente de la llave primaria
+Tercera forma normal (Elimina cualquier dependencia transitiva)
+DIAGRAMA CONCEPTUAL
+5. DIAGRAMA FISICO 5. DIAGRAMA FISICO
+5.
+DIAGRAMA FISICO
+5.
+DIAGRAMA FISICO
+DICCIONARIO DE DATOS
+Lista de Tablas
+ITEM
+NOMBRE DE LA TABLA
+DESCRIPCION
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+Descripción de las Tablas
+6.2.1 <NOMBRE DE LA TABLA>
+Ítem
+Abreviación de
+Campo
+Descripción del
+Campo
+Tipo del
+Campo
+Longitud del
+Campo
+Tipo de Llave
+1
+2
+3
+4
+5
+6.2.3 NOMBRE DE LA TABLA>
+Ítem
+Abreviación de
+Campo
+Descripción del
+Campo
+Tipo del
+Campo
+Longitud del
+Campo
+Tipo de Llave
+1
+2
+3
+4
+5
+6.2.4 NOMBRE DE LA TABLA>
+Ítem
+Abreviación de
+Campo
+Descripción del
+Campo
+Tipo del
+Campo
+Longitud del
+Campo
+Tipo de Llave
+1
+2
+3
+4
+5
+6.2.5 NOMBRE DE LA TABLA>
+Ítem
+Abreviación de
+Campo
+Descripción del
+Campo
+Tipo del
+Campo
+Longitud del
+Campo
+Tipo de Llave
+1
+2
+3
+4
+5

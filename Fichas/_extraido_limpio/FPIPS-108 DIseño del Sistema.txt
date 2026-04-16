@@ -1,0 +1,88 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -108 Diseño del Sistema de Información
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+2
+3
+Índice
+1. HISTORIAL DEL DOCUMENTO 3
+2. INTRODUCCIÓN 3
+3. OBJETIVOS 3
+4. ALCANCES 3
+5. DISEÑO (ECU) Y SU PROPÓSITO 3
+5.1 Lista de Tablas ..................................................................................................................... 3
+5.2 Lista de Tablas ..................................................................................................................... 4 5.3 Lista de Tablas ..................................................................................................................... 4 5.4 Lista de Tablas ..................................................................................................................... 5 5.5 Lista de Tablas ..................................................................................................................... 5
+5.6 Lista de Tablas ..................................................................................................................... 6
+1. HISTORIAL DEL DOCUMENTO
+Información del Documento
+Observaciones
+Modificado por…
+Fecha
+2. INTRODUCCIÓN
+3. OBJETIVOS
+4. ALCANCES
+5. DISEÑO (ECU) Y SU PROPÓSITO
+5.1 INTERFASE MÓVIL 01
+Cod. CU
+Nombre Caso de Uso
+RF
+Descripción
+5.1.1 DISEÑO INTERFASE MÓVIL
+LA PANTALLA MUESTRA:
+ID
+Herramienta Form
+5.2 Interfase 02 Móvil – La pantalla Muestra:
+ID
+Herramienta Form
+5.3 Interfase 03 Web –
+La pantalla Muestra:
+ID
+Herramienta Form
+6. MODELO DE PERSISTENCIA
+6.1 DIGRAMA ENTIDAD RELACION - FISICO
+<<En esta sección se debe detallarse el diagrama entidad-relación del modelo de datos implicado en el desarrollo del requerimiento o proyecto incluyendo: Nombre de Servidor, IP, PKs, FKs, tipo de datos, longitud, relaciones entre entidades, etc.>>.
+DIGRAMA ER DIGRAMA ER
+DIGRAMA ER
+DIGRAMA ER
+6.2 RELACIÓN ACTIVITY FRAGEMENST
+<<Se detalla ejemplo>>
+MAPA
+Activity:
+MainActivity (com.Pacasmayo.MainActivity)
+Fragment:
+PageMapFragment (com.bitperfect.fragment.PageMapFragment)
+Recurso visual:
+res/layout/fragment_map (sin busqueda)
+BUSQUEDA POR UBIGEO
+Activity:
+SearchActivity
+Fragment:
+No aplica
+res/layout/activity_search
+NOTIFICACION (Lista)
+Activity:
+NotificacionActivity
+Fragment:
+No aplica
+Recurso Visual:
+res/layout/activity_registro
+AGREGAR NOTIFICACION
+Activity: AddNotificacionActivity
+Fragment: No aplica
+Recurso Visual: res/layout/activity_add_notificacion
+DETALLE AGENTE
+Activity:
+DetalleAgenteActivity
+Fragment:
+No aplica
+Recurso Visual:
+res/layout/activity_detalle_agente
+6.3 DIGRAMA DE CLASES
+6.4 DIGRAMA DE DESPLIEGUE
+6.5 DIGRAMA DE ESTADOS
+6.6 DIGRAMA DE SECUENCIA
+6.7 DIGRAMA DE COMPONENTES

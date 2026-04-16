@@ -1,0 +1,157 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -104 Requerimientos
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+Juan Jesus Cordova Echavandi
+2
+Luis Alberto Taipe Encarnacion
+3
+Bruno Jeanpieer Taype Fajardo
+ÍNDICE
+HISTORIAL DEL DOCUMENTO
+INFORMACIÓN DEL PROYECTO
+SITUACIÓN ACTUAL
+RELACIÓN CON OTROS SISTEMAS
+DEFINICIÓN DE REQUERIMIENTOS
+REQUERIMIENTO DE USUARIO
+REQUERIMIENTOS FUNCIONALES
+<RF-0001 REQUERIMIENTO FUNCIONAL UNO (NIVEL 1..5)>
+<RF-0002 REQUERIMIENTO FUNCIONAL DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE VALIDACIÓN
+<RV-0001 REQUERIMIENTO DE VALIDACIÓN UNO (NIVEL 1..5)>
+<RV-0002 REQUERIMIENTO DE VALIDACIÓN DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE ENTRENAMIENTO AL USUARIO
+<RC-0001 REQUERIMIENTO DE ENTRENAMIENTO UNO (NIVEL 1..5)>
+<RC-0002 REQUERIMIENTO DE ENTRENAMIENTO DOS (NIVEL 1..5)>
+REQUERIMIENTO TECNICO
+REQUERIMIENTOS DE INTERFAZ
+<RX-0001 REQUERIMIENTO DE INTERFAZ UNO (NIVEL 1..5)>
+<RX-0002 REQUERIMIENTO DE INTERFAZ DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE CARGA INICIAL DE DATOS Y/O MIGRACIÓN DE DATOS
+<RD-0001 REQUERIMIENTO DE DATOS UNO (NIVEL 1..5)>
+<RD-0002 REQUERIMIENTO DE DATOS DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE INFRAESTRUCTURA
+<RI-0001 REQUERIMIENTO DE INFRAESTRUCTURA UNO (NIVEL 1..5)>
+<RI-0002 REQUERIMIENTO DE INFRAESTRUCTURA DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE SEGURIDAD
+<RF-0001 REQUERIMIENTO DE SEGURIDAD UNO (NIVEL 1..5)>
+<RF-0002 REQUERIMIENTO DE SEGURIDAD DOS (NIVEL 1..5)>
+REQUERIMIENTOS DE DOCUMENTACIÓN
+<MCVS-CY-ABCD 1>
+<MCVS-XY-ABCD 2>
+REQUERIMIENTOS DE GARANTÍA, SOPORTE Y MANTENIMIENTO
+<RM-0001 REQUERIMIENTO DE MANTENIMIENTO UNO (NIVEL 1..5)>
+<RM-0002 REQUERIMIENTO DE MANTENIMIENTO DOS (NIVEL 1..5)>
+REQUERIMIENTOS ADICIONALES Y/O ESPECIALES DEL PRODUCTO
+<RA-0001 REQUERIMIENTO ADICIONAL UNO (NIVEL 1..5)>
+<RA-0002 REQUERIMIENTO ADICIONAL DOS (NIVEL 1..5)>
+HISTORIAL DEL DOCUMENTO
+Información del Documento
+Observaciones
+Modificado por
+Fecha
+Creación de ficha de requerimientos detallada.
+Juan Jesus Cordova Echavandi / Bruno Jeanpieer Taype Fajardo.
+INFORMACIÓN DEL PROYECTO
+Situación actual
+La empresa Noble Step S.A.C. realiza la gestión de sus ventas y almacén de calzado de forma manual o mediante herramientas de escritorio limitadas. No cuenta con un canal de ventas digital (E-commerce), lo que restringe su alcance al público local. Existe una falta de sincronización en tiempo real entre las ventas realizadas y el stock disponible, lo que genera errores en los pedidos y dificultades en la generación de reportes financieros.
+DEFINICIÓN DE REQUERIMIENTOS
+REQUERIMIENTO DE USUARIO
+Requerimiento funcional (Desarrollo de Prototipo)
+Requerimiento Funcional
+Descripción
+RF01
+Gestión de Catálogo: El sistema debe permitir registrar, editar y eliminar productos (calzado), incluyendo fotos, tallas y colores.
+RF02
+Carrito de Compras: Los clientes deben poder seleccionar productos, gestionar cantidades y procesar pedidos en línea.
+RF03
+Control de Inventario: Actualización automática del stock disponible inmediatamente después de confirmada una venta (POS o E-commerce).
+RF04
+Panel Administrativo: Interfaz para que el dueño gestione usuarios, pedidos pendientes y visualice el histórico de ventas.
+RF05
+Generación de Reportes: Capacidad de exportar reportes de ventas diarias y mensuales en formatos legibles (PDF/Excel).
+Requerimientos de Validación (Pruebas)
+Requerimiento de Validación
+Descripción
+RV01
+Prueba de Stress de Stock: Validar que el sistema impida la venta si el stock llega a cero durante una compra simultánea.
+RV02
+Prueba de Interfaz: Verificar que el diseño sea 100% responsivo en dispositivos Android e iOS.
+Requerimientos de Entrenamiento al Usuario
+Nivel Administrador: Manejo del dashboard, carga de productos y gestión de reportes financieros.
+Nivel Operativo: Procesamiento de pedidos y atención de ventas por el canal E-commerce.
+REQUERIMIENTO TECNICO
+3.2.1 Requerimientos de interfaz
+Requerimiento de interfaz
+Descripción
+RI01
+Navegación intuitiva con un máximo de 3 clics para llegar al proceso de pago.
+RI02
+Paleta de colores alineada a la identidad visual de Noble Step (según logo).
+RI03
+Uso de tipografías legibles y carga de imágenes optimizadas para no ralentizar la web.
+RI04
+Notificaciones visuales claras tras completar una acción (ej: "Producto agregado").
+3.2.2 Requerimientos de carga inicial de datos y/o Migración de Datos
+Requerimiento de Carga
+Descripción
+RCI01
+Carga masiva del inventario actual desde el Excel de la empresa a la base de datos MySQL.
+RCI02
+Subida de activos digitales (fotos de calzado) al repositorio de imágenes (GitHub API).
+Requerimiento de Migración
+Descripción
+RM01
+Migración de la base de datos local de pruebas al servidor de producción (Hosting).
+3.2.3 Requerimientos de infraestructura
+Requerimiento de
+Infraestructura
+Descripción
+RIF01
+Servidor de Hosting con soporte para PHP y MySQL.
+RIF02
+Registro de dominio propio (.com o .pe) a nombre de Noble Step S.A.C.
+RIF03
+Conexión a internet mínima de 20 Mbps para operación en tienda.
+RIF04
+Almacenamiento SSD para garantizar velocidad de respuesta de la base de datos.
+3.2.4 Requerimientos de seguridad
+Requerimiento de Seguridad
+Descripción
+RS01
+Implementación de certificado SSL (HTTPS) para cifrar datos del cliente.
+RS02
+Encriptación de contraseñas de usuarios mediante algoritmos de hash (Bcrypt).
+RS03
+Copias de seguridad (Backups) semanales automáticas de la base de datos.
+RS04
+Niveles de acceso restringidos por roles (Admin vs. Vendedor).
+3.2.5 Requerimientos de documentación
+Requerimiento de
+documentación
+Descripción
+RD01
+Manual de usuario final para el personal de Noble Step.
+RD02
+Diccionario de datos y diagrama Entidad-Relación de la base de datos para mantenimiento técnico.
+3.2.6 Requerimientos de garantía, soporte y mantenimiento
+Requerimiento
+Descripción
+De Garantía
+06 meses contra errores de código o fallos en la lógica de negocio tras el despliegue.
+De Soporte
+Asistencia técnica remota en horario de oficina (Lunes a Sábado).
+De
+Mantenimiento
+Actualizaciones de seguridad mensuales y optimización de base de datos cada trimestre.
+3.2.7 Requerimientos adicionales y/o especiales deproducto
+Requerimiento adicional/especial
+Descripción
+RA-E01
+Integración con API de mapas para ubicación de la tienda física.
+RA-E02
+Implementación de un "Botón de WhatsApp" para atención directa al cliente desde el catálogo.

@@ -1,0 +1,104 @@
+FPIPS-102 - VISION DE NEGOCIO (BORRADOR FINAL)
+Proyecto: Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+Version: 1.0
+Fecha: 14/04/2026
+
+1. INTRODUCCION
+1.1 Proposito
+Definir una vision clara del proyecto NobleStep, alineando objetivos comerciales, operativos y tecnologicos para asegurar una implementacion orientada a resultados de negocio.
+
+1.2 Alcance
+Incluye:
+- Canal ecommerce para venta online.
+- Modulo administrativo para gestion comercial y operativa.
+- Control de inventario en tiempo real.
+- Gestion de pedidos, usuarios y reportes.
+No incluye:
+- App movil nativa.
+- Integracion con ERP externo.
+
+1.3 Objetivos
+- O-01 Incrementar ventas por canal digital.
+- O-02 Reducir errores por gestion manual del stock.
+- O-03 Mejorar tiempos de respuesta en pedidos.
+- O-04 Fortalecer la toma de decisiones con reportes.
+
+1.4 Definiciones, acronimos y abreviaturas
+- Ecommerce: comercio electronico para venta online.
+- POS: punto de venta y operacion administrativa.
+- Stock: existencias disponibles por producto/variante.
+- UI/UX: interfaz y experiencia de usuario.
+
+2. PERFIL DEL PROYECTO
+2.1 Oportunidad de negocio
+Noble Step S.A.C. puede ampliar su alcance comercial y profesionalizar su operacion al digitalizar la venta y la administracion de inventario, reduciendo dependencia de procesos manuales.
+
+2.2 Enunciado del problema
+Problema:
+Procesos manuales y desarticulados entre ventas e inventario.
+
+Afecta a:
+- Ventas
+- Almacen
+- Gerencia
+- Cliente final
+
+Impacto:
+- Perdida de oportunidades comerciales
+- Errores en disponibilidad de productos
+- Retrasos en atencion de pedidos
+- Reporteria tardia o inconsistente
+
+Solucion propuesta:
+Plataforma web centralizada con ecommerce y modulo admin integrados en una misma arquitectura.
+
+3. INTERESADOS Y USUARIOS
+3.1 Resumen de interesados
+- Gerencia General: define lineamientos y valida resultados.
+- Equipo de desarrollo: implementa y evoluciona la solucion.
+- Personal de ventas y operaciones: ejecuta procesos diarios.
+- Almacen: controla stock y reposicion.
+- TI: asegura continuidad y soporte.
+
+3.2 Resumen de usuarios
+- U-01 Cliente Ecommerce: navega catalogo, compra y consulta estado.
+- U-02 Administrador: gestiona catalogo, usuarios, pedidos y reportes.
+- U-03 Operador: atiende pedidos y actualiza estados.
+- U-04 Gestor de inventario: controla entradas/salidas y stock.
+
+4. SOLUCION
+4.1 Perspectiva de la solucion
+Solucion web escalable, basada en API y base de datos relacional, con paneles diferenciados para cliente y administracion, y con controles de seguridad por roles.
+
+4.2 Necesidades principales
+- N-01 Catalogo actualizado y navegable.
+- N-02 Compra en linea con flujo simple.
+- N-03 Actualizacion de inventario en tiempo real.
+- N-04 Gestion eficiente del ciclo de pedido.
+- N-05 Reportes para control y toma de decisiones.
+
+4.3 Caracteristicas principales
+- Catalogo con variantes (talla/color).
+- Carrito y confirmacion de pedido.
+- Panel admin para CRUD operativo.
+- Reportes de ventas y pedidos.
+- Recuperacion de contrasena por correo.
+
+5. REQUERIMIENTOS DE SOLUCION
+5.1 Estandares tecnologicos
+- Frontend: Angular (Ecommerce y Admin).
+- Backend: ASP.NET Core .NET 8 (API REST).
+- Base de datos: MySQL.
+- Infraestructura: VPS Linux + Docker Compose + Nginx.
+- Correo transaccional: servicio externo por API HTTPS.
+
+5.2 Marco legal
+- Ley N. 29733 - Proteccion de Datos Personales (Peru).
+- Buenas practicas de seguridad para autenticacion y control de acceso.
+
+5.3 Restricciones
+- Presupuesto acotado.
+- Dependencia de conectividad a internet.
+- Cronograma academico definido.
+
+Fin del borrador FPIPS-102.

@@ -1,0 +1,113 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -102 Visión del Negocio
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+Juan Jesus Cordova Echavandi
+2
+Luis Alberto Taipe Encarnacion
+3
+Bruno Jeanpieer Taype Fajardo
+ÍNDICE
+INTROCCIÓN
+VISTA GENERAL DEL PROYECTO
+Propósito
+Establecer una visión clara y unificada del desarrollo de la plataforma web y e-commerce para Noble Step S.A.C., alineando los objetivos técnicos con las necesidades comerciales de expansión y control de inventarios de la empresa.
+Alcance
+El proyecto abarca el diseño, desarrollo e implementación de un sistema web integral que incluye un catálogo de ventas en línea para clientes finales y un panel administrativo (POS) para la gestión de productos, stock, ventas y reportes internos.
+Objetivos
+ Automatizar el control de inventarios para reducir errores en un 90%.
+ Implementar un canal de ventas online funcional las 24 horas.
+ Optimizar la gestión de pedidos y la atención al cliente mediante una interfaz intuitiva.
+Definiciones, Acrónimos y Abreviaturas
+E-commerce: Comercio electrónico.
+POS: Point of Sale (Punto de Venta/Gestión administrativa).
+Stock: Existencias de calzado en almacén.
+UI/UX: Diseño de interfaz y experiencia de usuario.
+Perfil del Proyecto
+Oportunidad de Negocio
+Noble Step S.A.C. identifica una oportunidad de crecimiento al digitalizar sus procesos, permitiendo alcanzar clientes fuera de su zona geográfica actual y profesionalizar la gestión de sus existencias mediante tecnología moderna.
+Enunciado del Problema
+El problema de
+Procesos de venta manuales y falta de sincronización en tiempo real del inventario.
+Afecta a
+El área de ventas, almacén y la satisfacción final del cliente.
+Impacto
+Pérdida de oportunidades de venta, errores en pedidos y dificultad para generar reportes financieros precisos.
+Solución
+Una plataforma web centralizada que integre la venta al público con la administración logística.
+Interesados (Participantes del Proyecto y usuarios)
+Resumen de Interesados
+Item
+Interesado
+Descripción
+Responsabilidad
+1
+Gerente General
+Dueño de la empresa Noble Step S.A.C.
+Supervisión y aprobación de metas comerciales.
+2
+Equipo de Desarrollo
+Equipo contratado por la empresa
+Ejecución técnica y arquitectura del sistema.
+3
+Personal de Ventas
+Empleados de la tienda física.
+Proveer información sobre el proceso manual actual y realizar las pruebas de usuario
+Resumen de usuarios
+Item
+Rol
+Descripción
+Usuario
+1
+Administrador
+Acceso total para gestionar stock, precios y ver reportes.
+Gerente de Noble Step / Dueño.
+2
+Vendedor/Operador
+Gestión de pedidos y despacho.
+Personal de atención al cliente de la tienda.
+3
+Cliente Final
+Usuario que navega por la web y realiza compras.
+Persona que hace uso de la plataforma web
+4
+Gestor de Inventario
+Encargado de subir productos y actualizar stock.
+Jefe de Almacén o Asistente Administrativo.
+La solución
+Perspectivas de la solución
+Se presenta como una herramienta escalable basada en entorno web que elimina la dependencia de registros físicos, permitiendo una gestión remota y segura de los activos de la empresa.
+Necesidades
+Ítem
+Descripción- de la Necesidad
+Procedencia
+1
+Visualización de catálogo actualizado
+Área de Ventas
+2
+Seguridad en el manejo de datos de clientes
+Estándares de TI
+Características Principales
+Carrito de compras integrado.
+Generación automática de boletas/reportes.
+Sincronización de stock automática tras cada venta
+Otros Definición de Perfil de Usuario Requerimientos de la solución
+Estándares Tecnológicos
+Base de Datos: MySQL.
+Lenguajes: HTML5, CSS3, JavaScript, PHP (o el stack definido en V6).
+Alojamiento: Hosting con certificado SSL para transacciones seguras.
+Marco Legal
+Cumplimiento con la Ley N° 29733 (Ley de Protección de Datos Personales en Perú) y normativas de comercio electrónico vigentes.
+Restricciones
+Ítem
+Descripción
+1
+El sistema debe ser responsivo
+2
+Dependencia de una conexión a internet estable para la actualización de stock.
+3
+Fecha límite de entrega vinculada al cronograma

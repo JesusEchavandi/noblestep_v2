@@ -1,0 +1,64 @@
+Desarrollo de Sistemas de Información
+(Nombre del Proyecto)
+FPIPS -109 Implementación y Pruebas de Calidad de Software
+Versión 1.0
+Marzo del 2019 – I
+Número
+Apellidos y Nombres
+1
+2
+3
+Índice
+1. Historial del Documento 3
+2. INTRODUCCIÓN 3
+3. oBJETIVOS 3
+4. ALCANCES 3
+5. ESPECIFICACIÓN DE CASO DE USO (ECU) Y SU PROPÓSITO ¡Error! Marcador no definido.
+5.1 Lista de Tablas ¡Error! Marcador no definido.
+5.2 Lista de Tablas ¡Error! Marcador no definido.
+5.3 Lista de Tablas ¡Error! Marcador no definido.
+5.4 Lista de Tablas ¡Error! Marcador no definido.
+5.5 Lista de Tablas ¡Error! Marcador no definido.
+5.6 Lista de Tablas ¡Error! Marcador no definido.
+Historial del Documento
+Información del Documento
+Observaciones
+Modificado por…
+Fecha
+INTRODUCCIÓN
+oBJETIVOS
+ALCANCES
+LISTA DE REQUERIMIENTO FUNCIONAL
+NUM REQ FUNC
+DESCRIPCION
+RF01
+RF02
+RF03
+RF04
+LISTA DE CASO DE USO
+NUM CASO USO
+DESCRIPCION
+CU01
+CU02
+CU03
+CU04
+TRAZABILIDAD DE PRUEBAS
+RF01
+RF02
+RF03
+RF04
+RF05
+RF06
+..
+CU01
+CU02
+CU03
+CU04
+CU05
+..
+TRAZABILIDAD DE PRUEBAS
+NOMBRE DEL CASO DE USO:
+DESCRIPCION:
+PRERREQUISITOS:
+PASOS:
+RESULTADO ESPERADO:

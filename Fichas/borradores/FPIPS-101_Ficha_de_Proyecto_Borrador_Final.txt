@@ -1,0 +1,106 @@
+FPIPS-101 - FICHA DE PROYECTO (BORRADOR FINAL)
+Proyecto: Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+Codigo del Proyecto: NS-2026-001
+Version: 1.0
+Fecha: 14/04/2026
+
+1. HISTORIAL DEL DOCUMENTO
+- Version: 1.0
+- Fecha: 14/04/2026
+- Modificado por: Equipo NobleStep
+- Observacion: Consolidacion final de ficha para cartera de proyectos.
+
+2. FICHA PARA LA CARTERA DE PROYECTOS
+2.1 Codigo del Proyecto
+NS-2026-001
+
+2.2 Nombre del Proyecto
+Plataforma Web y Ecommerce para la gestion y venta de calzado de Noble Step S.A.C.
+
+2.3 Descripcion
+Desarrollo e implementacion de un sistema web integral que combina un canal ecommerce para clientes finales y un modulo administrativo para gestionar productos, variantes, inventario, pedidos, compras, ventas, usuarios y reportes, con el objetivo de modernizar la operacion comercial de Noble Step S.A.C.
+
+2.4 Direccion / Areas involucradas
+- Gerencia General
+- Area Comercial y Ventas
+- Almacen / Inventario
+- Administracion y Finanzas
+- Area de TI
+
+2.5 Objetivos estrategicos
+- OE-01 Transformacion digital:
+  Automatizar procesos comerciales y de inventario.
+- OE-02 Expansion de mercado:
+  Aumentar el alcance de venta a traves de canal online.
+- OE-03 Eficiencia operativa:
+  Reducir errores de stock y tiempos de atencion de pedidos.
+
+2.6 Beneficios esperados
+Beneficios cuantitativos:
+- BQ-01 Incremento de ventas mensuales entre 20% y 30% por canal digital.
+- BQ-02 Reduccion del tiempo de gestion de pedidos en 50%.
+- BQ-03 Disminucion de incidencias por quiebre de stock en al menos 80%.
+
+Beneficios cualitativos:
+- BC-01 Mejora de experiencia de compra del cliente.
+- BC-02 Mayor control y trazabilidad de operaciones.
+- BC-03 Mejor capacidad de decision por reportes actualizados.
+
+2.7 Supuestos y premisas
+Supuestos:
+- S-01 Disponibilidad de internet estable en puntos de operacion.
+- S-02 Disponibilidad del personal para capacitacion y adopcion.
+- S-03 Disponibilidad de informacion maestra de productos.
+
+Premisas:
+- P-01 El proyecto se ejecuta sobre infraestructura VPS con contenedores.
+- P-02 La base de datos objetivo es MySQL.
+- P-03 El alcance aprobado no incluye aplicacion movil nativa.
+
+2.8 Restricciones
+- R-01 Presupuesto acotado del proyecto.
+- R-02 Tiempo de ejecucion limitado por cronograma academico.
+- R-03 Restriccion tecnologica a stack web actual (Angular + .NET + MySQL).
+
+2.9 Costos y recursos estimados (referencial)
+Recursos humanos:
+- Jefe de proyecto: 480 h x 5.25 = 2,520
+- Analista: 480 h x 4.00 = 1,920
+- Programador: 480 h x 4.75 = 2,280
+- Soporte/QA: 480 h x 3.50 = 1,680
+Subtotal recursos humanos: 8,400
+
+Otros costos:
+- Software/licencias: 300
+- Pruebas y validacion: 700
+- Capacitacion: 500
+Subtotal otros: 1,500
+
+Costo total estimado: 9,900
+
+2.10 Riesgos iniciales
+- RI-01 Resistencia al cambio por parte de usuarios operativos.
+- RI-02 Retrasos por datos incompletos de productos y variantes.
+- RI-03 Dependencia de servicios externos (correo, DNS, dominio).
+- RI-04 Errores de despliegue en produccion.
+
+2.11 Prioridad
+Alta
+
+2.12 Tiempos iniciales (referencial)
+- Fase de inicio: 2 semanas
+- Fase de elaboracion: 2 semanas
+- Fase de construccion: 9 semanas
+- Fase de transicion: 4 semanas
+
+2.13 Gestor del proyecto
+Juan Jesus Cordova Echavandi
+
+2.14 Recursos humanos del usuario y de otras areas involucradas
+- Gerencia: validacion funcional y aprobacion.
+- Ventas/Operaciones: validacion de flujo de pedidos.
+- Almacen: validacion de inventario y reposicion.
+- Administracion: validacion de reportes y control.
+- TI: soporte tecnico y continuidad operativa.
+
+Fin del borrador FPIPS-101.
