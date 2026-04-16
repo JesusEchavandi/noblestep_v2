@@ -59,9 +59,17 @@ import { Venta } from '../models/sale.model';
                     <span class="badge bg-success">{{ venta.estado }}</span>
                   </td>
                   <td class="text-end">
-                    <button (click)="verDetalles(venta)" class="btn btn-sm btn-outline-primary">
-                      Ver Detalles
-                    </button>
+                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                      <button (click)="verDetalles(venta)" class="btn btn-sm btn-outline-primary">
+                        Ver Detalles
+                      </button>
+                      <button (click)="verBoleta(venta.id)" class="btn btn-sm btn-outline-dark">
+                        Ver Boleta
+                      </button>
+                      <button (click)="descargarBoleta(venta.id)" class="btn btn-sm btn-outline-success">
+                        Descargar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -154,6 +162,40 @@ import { Venta } from '../models/sale.model';
           </div>
         </div>
       </div>
+
+      <!-- Modal Boleta -->
+      <div *ngIf="mostrarModalBoleta" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Boleta de Venta #{{ boletaVentaId }}</h5>
+              <button type="button" class="btn-close" (click)="cerrarBoleta()"></button>
+            </div>
+            <div class="modal-body">
+              <div *ngIf="cargandoBoleta" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 mb-0 text-muted">Cargando boleta...</p>
+              </div>
+
+              <div *ngIf="!cargandoBoleta && boletaError" class="alert alert-danger mb-0">
+                {{ boletaError }}
+              </div>
+
+              <div *ngIf="!cargandoBoleta && !boletaError" class="border rounded p-3 boleta-preview">
+                <pre class="mb-0">{{ contenidoBoleta }}</pre>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-success" (click)="descargarBoletaActual()" [disabled]="!boletaBlob">
+                Descargar
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cerrarBoleta()">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -198,6 +240,18 @@ import { Venta } from '../models/sale.model';
       font-size: var(--font-size-sm);
       color: var(--color-dark);
     }
+
+    .boleta-preview {
+      max-height: 380px;
+      overflow: auto;
+      background: #fcfcfc;
+    }
+
+    .boleta-preview pre {
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
   `]
 })
 export class SaleListComponent implements OnInit {
@@ -207,6 +261,14 @@ export class SaleListComponent implements OnInit {
   ventasPaginadas: Venta[] = [];
   ventaSeleccionada: Venta | null = null;
   loading = true;
+
+  // Boleta
+  mostrarModalBoleta = false;
+  cargandoBoleta = false;
+  boletaError = '';
+  contenidoBoleta = '';
+  boletaBlob: Blob | null = null;
+  boletaVentaId: number | null = null;
 
   // Paginación
   paginaActual = 1;
@@ -273,5 +335,68 @@ export class SaleListComponent implements OnInit {
 
   cerrarDetalles(): void {
     this.ventaSeleccionada = null;
+  }
+
+  verBoleta(ventaId: number): void {
+    this.mostrarModalBoleta = true;
+    this.cargandoBoleta = true;
+    this.boletaError = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+    this.boletaVentaId = ventaId;
+
+    this.saleService.obtenerBoletaVenta(ventaId).subscribe({
+      next: (blob) => {
+        this.boletaBlob = blob;
+        blob.text().then((texto) => {
+          this.contenidoBoleta = texto;
+          this.cargandoBoleta = false;
+        });
+      },
+      error: () => {
+        this.boletaError = 'No se pudo cargar la boleta de esta venta.';
+        this.cargandoBoleta = false;
+      }
+    });
+  }
+
+  descargarBoleta(ventaId: number): void {
+    this.saleService.descargarBoletaVenta(ventaId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `boleta-venta-${ventaId}.txt`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: () => {
+        alert('No se pudo descargar la boleta. Intenta nuevamente.');
+      }
+    });
+  }
+
+  descargarBoletaActual(): void {
+    if (!this.boletaBlob || !this.boletaVentaId) return;
+
+    const url = URL.createObjectURL(this.boletaBlob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `boleta-venta-${this.boletaVentaId}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  cerrarBoleta(): void {
+    this.mostrarModalBoleta = false;
+    this.cargandoBoleta = false;
+    this.boletaError = '';
+    this.contenidoBoleta = '';
+    this.boletaBlob = null;
+    this.boletaVentaId = null;
   }
 }
