@@ -40,7 +40,7 @@ import { Venta } from '../models/sale.model';
                   <th class="text-end">Total</th>
                   <th>Método de Pago</th>
                   <th>Estado</th>
-                  <th class="text-end">Acciones</th>
+                  <th class="text-end actions-col">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,8 +58,8 @@ import { Venta } from '../models/sale.model';
                   <td>
                     <span class="badge bg-success">{{ venta.estado }}</span>
                   </td>
-                  <td class="text-end">
-                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                  <td class="text-end actions-cell">
+                    <div class="actions-wrap">
                       <button (click)="verDetalles(venta)" class="btn btn-sm btn-outline-primary">
                         Ver Detalles
                       </button>
@@ -251,6 +251,20 @@ import { Venta } from '../models/sale.model';
       white-space: pre-wrap;
       font-family: 'Courier New', monospace;
       font-size: 0.9rem;
+    }
+
+    .actions-col,
+    .actions-cell {
+      width: 1%;
+      white-space: nowrap;
+    }
+
+    .actions-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      width: 100%;
     }
   `]
 })
