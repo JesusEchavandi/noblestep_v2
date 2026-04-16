@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://104.131.62.116:5000/api'
+  apiUrl: 'https://api.noblestep.tech/api'
 };
