@@ -92,9 +92,10 @@ export class CartService {
     if (stockDisponible <= 0) {
       return { success: false, message: 'No hay stock disponible para esta talla' };
     }
+    const varianteId = variante?.varianteId;
     const itemExistente = this.itemsCarrito.find(item =>
       item.producto.id === producto.id &&
-      (variante ? item.varianteId === variante.varianteId : !item.varianteId)
+      item.varianteId === varianteId
     );
     if (itemExistente) {
       const nuevaCantidad = itemExistente.cantidad + cantidad;
@@ -120,7 +121,7 @@ export class CartService {
   quitarDelCarrito(productoId: number, varianteId?: number): void {
     this.itemsCarrito = this.itemsCarrito.filter(item =>
       !(item.producto.id === productoId &&
-        (varianteId ? item.varianteId === varianteId : !item.varianteId))
+        item.varianteId === varianteId)
     );
     this.guardarCarritoLean();
   }
@@ -128,7 +129,7 @@ export class CartService {
   actualizarCantidad(productoId: number, cantidad: number, varianteId?: number): void {
     const item = this.itemsCarrito.find(item =>
       item.producto.id === productoId &&
-      (varianteId ? item.varianteId === varianteId : !item.varianteId)
+      item.varianteId === varianteId
     );
     if (item) {
       if (cantidad <= 0) {

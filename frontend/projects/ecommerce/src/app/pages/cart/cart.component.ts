@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
+import { ShopService } from '../../services/shop.service';
 import { ItemCarrito, Producto } from '../../models/product.model';
 
 @Component({
@@ -16,13 +17,30 @@ export class CartComponent implements OnInit {
 
   constructor(
     private cartService: CartService,
+    private shopService: ShopService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.cargarCarrito();
+
+    // Rehidrata productos desde API para evitar placeholders incompletos del localStorage.
+    this.rehidratarCarrito();
+
     this.cartService.carrito$.subscribe(() => {
       this.cargarCarrito();
+    });
+  }
+
+  private rehidratarCarrito() {
+    this.shopService.obtenerProductos(undefined, undefined, undefined, undefined, 1, 200).subscribe({
+      next: (resp) => {
+        this.cartService.rehidratarCarrito(resp.items || []);
+        this.cargarCarrito();
+      },
+      error: () => {
+        // Si falla la rehidratación, se mantiene el estado local actual.
+      }
     });
   }
 

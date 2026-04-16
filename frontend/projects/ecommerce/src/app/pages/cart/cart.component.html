@@ -66,11 +66,11 @@
           <!-- Qty + precio -->
           <div class="item-actions">
             <div class="item-qty">
-              <button class="qty-btn" (click)="actualizarCantidad(item.producto.id, item.cantidad - 1)" [disabled]="item.cantidad <= 1">
+              <button class="qty-btn" (click)="actualizarCantidad(item.producto.id, item.cantidad - 1, item.varianteId)" [disabled]="item.cantidad <= 1">
                 <i class="fi fi-rr-minus-small"></i>
               </button>
               <span class="qty-val">{{ item.cantidad }}</span>
-              <button class="qty-btn" (click)="actualizarCantidad(item.producto.id, item.cantidad + 1)" [disabled]="item.cantidad >= item.producto.stock">
+              <button class="qty-btn" (click)="actualizarCantidad(item.producto.id, item.cantidad + 1, item.varianteId)" [disabled]="item.cantidad >= item.producto.stock">
                 <i class="fi fi-rr-plus-small"></i>
               </button>
             </div>
@@ -81,7 +81,7 @@
           </div>
 
           <!-- Eliminar -->
-          <button class="btn-remove" (click)="quitarItem(item.producto.id)" title="Eliminar producto">
+          <button class="btn-remove" (click)="quitarItem(item.producto.id, item.varianteId)" title="Eliminar producto">
             <i class="fi fi-rr-cross-small"></i>
           </button>
 
