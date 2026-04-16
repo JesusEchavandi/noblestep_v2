@@ -157,17 +157,17 @@ interface DetallePedido {
               </td>
               <td>
                 <div class="actions">
-                  <button (click)="verPedido(pedido)" class="btn-view" title="Ver Detalles">
-                    👁️
+                  <button (click)="verPedido(pedido)" class="btn-action btn-view" title="Ver Detalles" aria-label="Ver Detalles">
+                    <i class="bi bi-eye-fill"></i>
                   </button>
-                  <button (click)="actualizarEstadoPago(pedido)" class="btn-payment" title="Confirmar Pago">
-                    💳
+                  <button (click)="actualizarEstadoPago(pedido)" class="btn-action btn-payment" title="Confirmar Pago" aria-label="Confirmar Pago">
+                    <i class="bi bi-credit-card-2-front-fill"></i>
                   </button>
-                  <button (click)="verBoleta(pedido)" class="btn-receipt" title="Ver Boleta">
-                    🧾
+                  <button (click)="verBoleta(pedido)" class="btn-action btn-receipt" title="Ver Boleta" aria-label="Ver Boleta">
+                    <i class="bi bi-receipt-cutoff"></i>
                   </button>
-                  <button (click)="descargarBoleta(pedido)" class="btn-download" title="Descargar Boleta">
-                    ⬇️
+                  <button (click)="descargarBoleta(pedido)" class="btn-action btn-download" title="Descargar Boleta" aria-label="Descargar Boleta">
+                    <i class="bi bi-download"></i>
                   </button>
                 </div>
               </td>
@@ -568,30 +568,49 @@ interface DetallePedido {
       gap: 0.5rem;
     }
 
-    .btn-view, .btn-payment {
-      padding: 0.5rem;
+    .btn-action {
+      width: 2.2rem;
+      height: 2.2rem;
+      padding: 0;
       border: none;
       background: #f3f4f6;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 1.25rem;
-      transition: background 0.3s;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
     }
 
     .btn-view:hover {
-      background: #e5e7eb;
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+      color: #0369a1;
     }
 
     .btn-payment:hover {
-      background: #dbeafe;
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #15803d;
     }
 
     .btn-receipt:hover {
-      background: #fef3c7;
+      background: #fef9c3;
+      border-color: #fde047;
+      color: #a16207;
     }
 
     .btn-download:hover {
-      background: #d1fae5;
+      background: #ede9fe;
+      border-color: #c4b5fd;
+      color: #6d28d9;
     }
 
     /* Modal */
