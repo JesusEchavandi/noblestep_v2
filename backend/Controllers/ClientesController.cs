@@ -87,9 +87,35 @@ public class ClientesController : ControllerBase
         if (string.IsNullOrWhiteSpace(numeroDocumento))
             return BadRequest(new { message = "El número de documento es requerido" });
 
-        // Verificar si el número de documento ya existe
-        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == numeroDocumento))
-            return BadRequest(new { message = "El número de documento ya existe" });
+        // Si existe y está inactivo, se reactiva para no bloquear la venta.
+        var existente = await _context.Clientes
+            .FirstOrDefaultAsync(c => c.NumeroDocumento == numeroDocumento);
+
+        if (existente != null)
+        {
+            if (existente.Activo)
+                return BadRequest(new { message = "El número de documento ya existe" });
+
+            existente.NombreCompleto = crearDto.NombreCompleto;
+            existente.Telefono = crearDto.Telefono;
+            existente.Correo = crearDto.Correo;
+            existente.Activo = true;
+            existente.FechaActualizacion = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var reactivadoDto = new ClienteDto
+            {
+                Id = existente.Id,
+                NombreCompleto = existente.NombreCompleto,
+                NumeroDocumento = existente.NumeroDocumento,
+                Telefono = existente.Telefono,
+                Correo = existente.Correo,
+                Activo = existente.Activo
+            };
+
+            return Ok(reactivadoDto);
+        }
 
         var cliente = new Cliente
         {
