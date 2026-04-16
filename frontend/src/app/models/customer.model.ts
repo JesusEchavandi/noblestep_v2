@@ -3,7 +3,7 @@ export interface Cliente {
   nombreCompleto: string;
   numeroDocumento: string;
   telefono: string;
-  correo: string;
+  correo?: string | null;
   activo: boolean;
 }
 
@@ -11,5 +11,5 @@ export interface CrearCliente {
   nombreCompleto: string;
   numeroDocumento: string;
   telefono: string;
-  correo: string;
+  correo?: string | null;
 }

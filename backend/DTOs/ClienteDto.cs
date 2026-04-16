@@ -8,7 +8,7 @@ public class ClienteDto
     public string NombreCompleto { get; set; } = string.Empty;
     public string NumeroDocumento { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
-    public string Correo { get; set; } = string.Empty;
+    public string? Correo { get; set; }
     public bool Activo { get; set; }
 }
 
@@ -27,5 +27,5 @@ public class CrearClienteDto
 
     [MaxLength(100, ErrorMessage = "El email no puede superar 100 caracteres")]
     [EmailAddress(ErrorMessage = "El formato de email no es válido")]
-    public string Correo { get; set; } = string.Empty;
+    public string? Correo { get; set; }
 }

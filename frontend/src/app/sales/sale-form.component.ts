@@ -1259,7 +1259,15 @@ export class SaleFormComponent implements OnInit {
   crearYSeleccionarCliente(): void {
     if (!this.nuevoCliente.nombreCompleto || !this.nuevoCliente.numeroDocumento || !this.nuevoCliente.telefono) return;
     this.guardandoCliente = true;
-    this.customerService.crearCliente(this.nuevoCliente).subscribe({
+    const payloadCliente = {
+      ...this.nuevoCliente,
+      nombreCompleto: (this.nuevoCliente.nombreCompleto || '').trim(),
+      numeroDocumento: (this.nuevoCliente.numeroDocumento || '').trim(),
+      telefono: (this.nuevoCliente.telefono || '').trim(),
+      correo: (this.nuevoCliente.correo || '').trim() || null
+    };
+
+    this.customerService.crearCliente(payloadCliente).subscribe({
       next: (creado: Cliente) => {
         this.clientes.push(creado);
         this.clientesFiltrados = [...this.clientes];
@@ -1274,7 +1282,11 @@ export class SaleFormComponent implements OnInit {
       error: (err: any) => {
         this.guardandoCliente = false;
 
-        const backendMessage = (err?.error?.message || '').toString();
+        const validationErrors = err?.error?.errors;
+        const validationMessage = validationErrors
+          ? Object.values(validationErrors).flat().join(' | ')
+          : '';
+        const backendMessage = (err?.error?.message || validationMessage || '').toString();
         const esDuplicado = backendMessage.toLowerCase().includes('documento')
           || backendMessage.toLowerCase().includes('dni')
           || backendMessage.toLowerCase().includes('existe');
@@ -1309,16 +1321,16 @@ export class SaleFormComponent implements OnInit {
                 return;
               }
 
-              alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+              alert(backendMessage || 'Error al crear el cliente. Verifica los datos ingresados.');
             },
             error: () => {
-              alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+              alert(backendMessage || 'Error al crear el cliente. Verifica los datos ingresados.');
             }
           });
           return;
         }
 
-        alert(backendMessage || 'Error al crear el cliente. El DNI puede ya estar registrado.');
+        alert(backendMessage || 'Error al crear el cliente. Verifica los datos ingresados.');
       }
     });
   }

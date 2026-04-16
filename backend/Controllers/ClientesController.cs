@@ -83,7 +83,11 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ClienteDto>> CrearCliente([FromBody] CrearClienteDto crearDto)
     {
+        var nombreCompleto = (crearDto.NombreCompleto ?? string.Empty).Trim();
         var numeroDocumento = (crearDto.NumeroDocumento ?? string.Empty).Trim();
+        var telefono = (crearDto.Telefono ?? string.Empty).Trim();
+        var correo = (crearDto.Correo ?? string.Empty).Trim();
+
         if (string.IsNullOrWhiteSpace(numeroDocumento))
             return BadRequest(new { message = "El número de documento es requerido" });
 
@@ -101,13 +105,13 @@ public class ClientesController : ControllerBase
                 existente.FechaActualizacion = DateTime.UtcNow;
 
                 if (!string.IsNullOrWhiteSpace(crearDto.NombreCompleto))
-                    existente.NombreCompleto = crearDto.NombreCompleto;
+                    existente.NombreCompleto = nombreCompleto;
 
                 if (!string.IsNullOrWhiteSpace(crearDto.Telefono))
-                    existente.Telefono = crearDto.Telefono;
+                    existente.Telefono = telefono;
 
                 if (!string.IsNullOrWhiteSpace(crearDto.Correo))
-                    existente.Correo = crearDto.Correo;
+                    existente.Correo = correo;
 
                 await _context.SaveChangesAsync();
             }
@@ -127,10 +131,10 @@ public class ClientesController : ControllerBase
 
         var cliente = new Cliente
         {
-            NombreCompleto = crearDto.NombreCompleto,
+            NombreCompleto = nombreCompleto,
             NumeroDocumento = numeroDocumento,
-            Telefono = crearDto.Telefono,
-            Correo = crearDto.Correo,
+            Telefono = telefono,
+            Correo = correo,
             Activo = true
         };
 
@@ -185,14 +189,19 @@ public class ClientesController : ControllerBase
         if (cliente == null)
             return NotFound();
 
+        var nombreCompleto = (actualizarDto.NombreCompleto ?? string.Empty).Trim();
+        var numeroDocumento = (actualizarDto.NumeroDocumento ?? string.Empty).Trim();
+        var telefono = (actualizarDto.Telefono ?? string.Empty).Trim();
+        var correo = (actualizarDto.Correo ?? string.Empty).Trim();
+
         // Verificar si el número de documento ya lo tiene otro cliente
-        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == actualizarDto.NumeroDocumento && c.Id != id))
+        if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == numeroDocumento && c.Id != id))
             return BadRequest(new { message = "El número de documento ya existe" });
 
-        cliente.NombreCompleto = actualizarDto.NombreCompleto;
-        cliente.NumeroDocumento = actualizarDto.NumeroDocumento;
-        cliente.Telefono = actualizarDto.Telefono;
-        cliente.Correo = actualizarDto.Correo;
+        cliente.NombreCompleto = nombreCompleto;
+        cliente.NumeroDocumento = numeroDocumento;
+        cliente.Telefono = telefono;
+        cliente.Correo = correo;
 
         await _context.SaveChangesAsync();
 
