@@ -103,6 +103,30 @@ public class VentasController : ControllerBase
         return Ok(ventaDto);
     }
 
+    [HttpGet("{id}/receipt")]
+    public async Task<IActionResult> GetBoletaVenta(int id, [FromQuery] bool download = false)
+    {
+        var venta = await _context.Ventas
+            .Include(v => v.Cliente)
+            .Include(v => v.Usuario)
+            .Include(v => v.DetallesVenta)
+            .ThenInclude(d => d.Producto)
+            .FirstOrDefaultAsync(v => v.Id == id);
+
+        if (venta == null)
+            return NotFound(new { message = "Venta no encontrada" });
+
+        var filePath = BoletaHelper.GenerarBoletaVenta(venta);
+        var fileName = Path.GetFileName(filePath);
+        var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+        if (download)
+            return File(bytes, "text/plain; charset=utf-8", fileName);
+
+        Response.Headers.ContentDisposition = $"inline; filename=\"{fileName}\"";
+        return File(bytes, "text/plain; charset=utf-8");
+    }
+
     [HttpPost]
     public async Task<ActionResult<VentaDto>> CrearVenta([FromBody] CrearVentaDto crearDto)
     {

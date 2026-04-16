@@ -32,6 +32,14 @@ export class SaleService {
     return this.http.post<Venta>(this.API_URL, venta);
   }
 
+  obtenerBoletaVenta(id: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/${id}/receipt`, { responseType: 'blob' });
+  }
+
+  descargarBoletaVenta(id: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/${id}/receipt?download=true`, { responseType: 'blob' });
+  }
+
   obtenerVentasPorFecha(fechaInicio?: string, fechaFin?: string): Observable<any> {
     let url = `${this.API_URL}/reports/by-date`;
     const params = [];

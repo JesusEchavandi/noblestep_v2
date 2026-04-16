@@ -458,9 +458,35 @@ import { environment } from '../../environments/environment';
       </div>
     </div>
 
+    <!-- Modal Boleta de Venta -->
+    <div class="modal fade" [class.show]="mostrarModalBoleta" [style.display]="mostrarModalBoleta ? 'block' : 'none'" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header" style="background: var(--color-dark); color: white;">
+            <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Boleta de Venta #{{ ventaCreadaId }}</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="cerrarModalBoleta()"></button>
+          </div>
+          <div class="modal-body p-4">
+            <p class="mb-2 text-muted">La venta se registró correctamente. Puedes visualizar y descargar la boleta.</p>
+            <div class="border rounded p-3" style="max-height: 360px; overflow: auto; background: #fcfcfc;">
+              <pre class="mb-0" style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.9rem;">{{ contenidoBoleta }}</pre>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="descargarBoletaActual()">
+              <i class="bi bi-download me-2"></i>Descargar
+            </button>
+            <button type="button" class="btn btn-primary" (click)="finalizarYVolverAVentas()">
+              Continuar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" [class.show]="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia" 
-         *ngIf="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia"></div>
+    <div class="modal-backdrop fade" [class.show]="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia || mostrarModalBoleta" 
+         *ngIf="mostrarModalYape || mostrarModalTarjeta || mostrarModalTransferencia || mostrarModalBoleta"></div>
   `,
   styles: [`
     /* ===== CUSTOMER SECTION STYLES ===== */
@@ -1181,6 +1207,12 @@ export class SaleFormComponent implements OnInit {
   procesandoPago = false;
   numeroOperacion = '';
 
+  // Boleta
+  mostrarModalBoleta = false;
+  contenidoBoleta = '';
+  boletaBlob: Blob | null = null;
+  ventaCreadaId: number | null = null;
+
   ngOnInit(): void {
     this.cargarClientes();
     this.cargarProductos();
@@ -1440,6 +1472,48 @@ export class SaleFormComponent implements OnInit {
     this.procesandoPago = false;
   }
 
+  private abrirBoletaPostVenta(ventaId: number): void {
+    this.ventaCreadaId = ventaId;
+
+    this.saleService.obtenerBoletaVenta(ventaId).subscribe({
+      next: (blob) => {
+        this.boletaBlob = blob;
+        blob.text().then((texto) => {
+          this.contenidoBoleta = texto;
+          this.mostrarModalBoleta = true;
+          this.guardando = false;
+        });
+      },
+      error: () => {
+        this.guardando = false;
+        alert('Venta registrada, pero no se pudo obtener la boleta.');
+        this.router.navigate(['/sales']);
+      }
+    });
+  }
+
+  descargarBoletaActual(): void {
+    if (!this.boletaBlob || !this.ventaCreadaId) return;
+
+    const url = URL.createObjectURL(this.boletaBlob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `boleta-venta-${this.ventaCreadaId}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  cerrarModalBoleta(): void {
+    this.mostrarModalBoleta = false;
+  }
+
+  finalizarYVolverAVentas(): void {
+    this.mostrarModalBoleta = false;
+    this.router.navigate(['/sales']);
+  }
+
   onSubmit(): void {
     // Validate payment for digital methods
     if ((this.metodoPagoSeleccionado === 'Yape' || this.metodoPagoSeleccionado === 'Tarjeta' || this.metodoPagoSeleccionado === 'Transferencia') && !this.pagoConfirmado) {
@@ -1456,8 +1530,8 @@ export class SaleFormComponent implements OnInit {
     }));
 
     this.saleService.crearVenta(this.venta).subscribe({
-      next: () => {
-        this.router.navigate(['/sales']);
+      next: (ventaCreada) => {
+        this.abrirBoletaPostVenta(ventaCreada.id);
       },
       error: (err: any) => {
         this.mensajeError = err.error?.message || 'Error al crear la venta. Por favor intente nuevamente.';
