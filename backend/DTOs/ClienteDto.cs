@@ -26,6 +26,5 @@ public class CrearClienteDto
     public string Telefono { get; set; } = string.Empty;
 
     [MaxLength(100, ErrorMessage = "El email no puede superar 100 caracteres")]
-    [EmailAddress(ErrorMessage = "El formato de email no es válido")]
     public string? Correo { get; set; }
 }

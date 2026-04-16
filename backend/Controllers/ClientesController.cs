@@ -91,6 +91,9 @@ public class ClientesController : ControllerBase
         if (string.IsNullOrWhiteSpace(numeroDocumento))
             return BadRequest(new { message = "El número de documento es requerido" });
 
+        if (!string.IsNullOrWhiteSpace(correo) && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(correo))
+            return BadRequest(new { message = "El formato de email no es válido" });
+
         // Flujo idempotente por DNI para no bloquear la venta:
         // - Si existe y está activo: devolver cliente existente.
         // - Si existe y está inactivo: reactivar y devolver.
@@ -193,6 +196,9 @@ public class ClientesController : ControllerBase
         var numeroDocumento = (actualizarDto.NumeroDocumento ?? string.Empty).Trim();
         var telefono = (actualizarDto.Telefono ?? string.Empty).Trim();
         var correo = (actualizarDto.Correo ?? string.Empty).Trim();
+
+        if (!string.IsNullOrWhiteSpace(correo) && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(correo))
+            return BadRequest(new { message = "El formato de email no es válido" });
 
         // Verificar si el número de documento ya lo tiene otro cliente
         if (await _context.Clientes.AnyAsync(c => c.NumeroDocumento == numeroDocumento && c.Id != id))
