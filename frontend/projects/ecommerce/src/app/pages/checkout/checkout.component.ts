@@ -252,7 +252,7 @@ export class CheckoutComponent implements OnInit {
     let comprobanteBase64: string | undefined = undefined;
     if (this.archivoComprobante) {
       try {
-        comprobanteBase64 = await this.archivoABase64(this.archivoComprobante);
+        comprobanteBase64 = await this.archivoABase64Optimizado(this.archivoComprobante);
       } catch (error) {
         this.procesando = false;
         this.notificationService.error('Error al procesar el comprobante de pago');
@@ -270,7 +270,7 @@ export class CheckoutComponent implements OnInit {
       distritoCliente: this.datosCliente.distrito,
       referenciaCliente: this.datosCliente.referencia,
       metodoPago: this.metodoPago,
-      comprobantePagoBase64: comprobanteBase64,
+      comprobanteBase64: comprobanteBase64,
       tipoComprobante: this.tipoComprobante,
       nombreEmpresa: this.tipoComprobante === 'Factura' ? this.datosFactura.razonSocial : undefined,
       rucEmpresa: this.tipoComprobante === 'Factura' ? this.datosFactura.ruc : undefined,
@@ -318,6 +318,50 @@ export class CheckoutComponent implements OnInit {
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
+    });
+  }
+
+  private async archivoABase64Optimizado(file: File): Promise<string> {
+    const dataUrl = await this.archivoABase64(file);
+
+    // Si no es imagen, enviar tal cual.
+    if (!file.type.startsWith('image/')) {
+      return dataUrl;
+    }
+
+    const img = await this.cargarImagen(dataUrl);
+    const maxSide = 1400;
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.floor(img.width * scale));
+    canvas.height = Math.max(1, Math.floor(img.height * scale));
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return dataUrl;
+    }
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    let quality = 0.82;
+    let optimized = canvas.toDataURL('image/jpeg', quality);
+
+    // Reducir más si sigue muy grande (~1.6 MB en base64).
+    while (optimized.length > 1_600_000 && quality > 0.5) {
+      quality -= 0.08;
+      optimized = canvas.toDataURL('image/jpeg', quality);
+    }
+
+    return optimized;
+  }
+
+  private cargarImagen(dataUrl: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = dataUrl;
     });
   }
 

@@ -21,7 +21,7 @@ export interface DatosCrearPedido {
   documentoCliente?: string;
   metodoPago: string;
   detallePago?: string;
-  comprobantePagoBase64?: string;
+  comprobanteBase64?: string;
   tipoComprobante: string;
   nombreEmpresa?: string;
   rucEmpresa?: string;
