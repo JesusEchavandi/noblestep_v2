@@ -223,7 +223,7 @@ export class ReportsComponent implements OnInit {
         }]},
         { name: 'Detalle Ventas', data: this.reporteVentas.items.map(item => ({
           ID: item.ventaId,
-          Fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE'),
+          Fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
           Cliente: item.nombreCliente,
           Documento: item.documentoCliente,
           Items: item.cantidadItems,
@@ -244,7 +244,7 @@ export class ReportsComponent implements OnInit {
           'Total Compras': c.totalCompras,
           'Total Gastado (S/)': c.totalGastado.toFixed(2),
           'Ticket Promedio (S/)': c.ticketPromedio.toFixed(2),
-          'Última Compra': new Date(c.ultimaFechaCompra).toLocaleDateString('es-PE')
+          'Última Compra': new Date(c.ultimaFechaCompra).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })
         }))}
       ];
       this.exportService.exportarMultiplesHojasAExcel(hojas, 'reporte-ventas-completo');
@@ -262,7 +262,7 @@ export class ReportsComponent implements OnInit {
         }]},
         { name: 'Detalle Compras', data: this.reporteCompras.items.map(item => ({
           ID: item.compraId,
-          Fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE'),
+          Fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
           Proveedor: item.nombreProveedor,
           Documento: item.documentoProveedor,
           Items: item.cantidadItems,
@@ -273,7 +273,7 @@ export class ReportsComponent implements OnInit {
           Documento: p.numeroDocumento,
           'Total Compras': p.totalCompras,
           'Total Gastado (S/)': p.totalGastado.toFixed(2),
-          'Última Compra': new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE')
+          'Última Compra': new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })
         }))}
       ];
       this.exportService.exportarMultiplesHojasAExcel(hojas, 'reporte-compras-completo');
@@ -352,7 +352,7 @@ export class ReportsComponent implements OnInit {
     const rv = this.reporteVentas;
     await this.exportService.exportarPDFProfesional({
       titulo: 'Reporte de Ventas',
-      subtitulo: `Período: ${new Date(rv.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(rv.fechaFin).toLocaleDateString('es-PE')}`,
+      subtitulo: `Período: ${new Date(rv.fechaInicio).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })} — ${new Date(rv.fechaFin).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}`,
       resumen: [
         { etiqueta: 'Total Ventas', valor: `S/ ${rv.totalVentas.toFixed(2)}` },
         { etiqueta: 'Transacciones', valor: rv.totalTransacciones.toString() },
@@ -372,7 +372,7 @@ export class ReportsComponent implements OnInit {
           ],
           datos: rv.items.map(item => ({
             id: `#${item.ventaId}`,
-            fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE'),
+            fecha: new Date(item.fechaVenta).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
             cliente: item.nombreCliente,
             items: item.cantidadItems,
             total: `S/ ${item.total.toFixed(2)}`
@@ -424,7 +424,7 @@ export class ReportsComponent implements OnInit {
     const rc = this.reporteCompras;
     await this.exportService.exportarPDFProfesional({
       titulo: 'Reporte de Compras',
-      subtitulo: `Período: ${new Date(rc.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(rc.fechaFin).toLocaleDateString('es-PE')}`,
+      subtitulo: `Período: ${new Date(rc.fechaInicio).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })} — ${new Date(rc.fechaFin).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}`,
       resumen: [
         { etiqueta: 'Total Compras', valor: `S/ ${rc.totalCompras.toFixed(2)}` },
         { etiqueta: 'Transacciones', valor: rc.totalTransacciones.toString() },
@@ -443,7 +443,7 @@ export class ReportsComponent implements OnInit {
           ],
           datos: rc.items.map(item => ({
             id: `#${item.compraId}`,
-            fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE'),
+            fecha: new Date(item.fechaCompra).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
             proveedor: item.nombreProveedor,
             items: item.cantidadItems,
             total: `S/ ${item.total.toFixed(2)}`
@@ -462,7 +462,7 @@ export class ReportsComponent implements OnInit {
             proveedor: p.nombreProveedor,
             compras: p.totalCompras,
             gastado: `S/ ${p.totalGastado.toFixed(2)}`,
-            ultima: new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE')
+            ultima: new Date(p.ultimaFechaCompra).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })
           }))
         }
       ],
@@ -487,7 +487,7 @@ export class ReportsComponent implements OnInit {
 
     await this.exportService.exportarPDFProfesional({
       titulo: 'Reporte de Inventario',
-      subtitulo: `Fecha: ${new Date().toLocaleDateString('es-PE')}`,
+      subtitulo: `Fecha: ${new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}`,
       resumen,
       secciones: [
         {
@@ -524,7 +524,7 @@ export class ReportsComponent implements OnInit {
     const gp = this.reporteGananciaPerdida;
     await this.exportService.exportarPDFProfesional({
       titulo: 'Reporte de Rentabilidad',
-      subtitulo: `Período: ${new Date(gp.fechaInicio).toLocaleDateString('es-PE')} — ${new Date(gp.fechaFin).toLocaleDateString('es-PE')}`,
+      subtitulo: `Período: ${new Date(gp.fechaInicio).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })} — ${new Date(gp.fechaFin).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}`,
       resumen: [
         { etiqueta: 'Ingresos', valor: `S/ ${gp.totalVentas.toFixed(2)}` },
         { etiqueta: 'Egresos', valor: `S/ ${gp.totalCompras.toFixed(2)}` },

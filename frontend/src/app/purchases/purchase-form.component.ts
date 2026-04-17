@@ -243,13 +243,13 @@ export class PurchaseFormComponent implements OnInit {
 
   compra: CrearCompra = {
     proveedorId: 0,
-    fechaCompra: new Date(),
+    fechaCompra: this.convertirFechaHoraLimaAFecha(this.obtenerFechaHoraLimaLocal()),
     numeroFactura: '',
     notas: '',
     detalles: []
   };
 
-  fechaCompraStr: string = new Date().toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+  fechaCompraStr: string = this.obtenerFechaHoraLimaLocal(); // yyyy-MM-ddTHH:mm en America/Lima
 
   itemsCompra: Array<{
     productoId: number;
@@ -380,7 +380,7 @@ export class PurchaseFormComponent implements OnInit {
     this.mensajeError = '';
     this.guardando = true;
 
-    this.compra.fechaCompra = new Date(this.fechaCompraStr);
+    this.compra.fechaCompra = this.convertirFechaHoraLimaAFecha(this.fechaCompraStr);
     this.compra.detalles = this.itemsCompra.map(item => ({
       productoId: item.productoId,
       varianteId: item.varianteId ?? undefined,
@@ -401,5 +401,26 @@ export class PurchaseFormComponent implements OnInit {
 
   cancelar(): void {
     this.router.navigate(['/purchases']);
+  }
+
+  private obtenerFechaHoraLimaLocal(): string {
+    const ahora = new Date();
+    const partes = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'America/Lima',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).formatToParts(ahora);
+
+    const map = Object.fromEntries(partes.map(p => [p.type, p.value]));
+    return `${map['year']}-${map['month']}-${map['day']}T${map['hour']}:${map['minute']}`;
+  }
+
+  private convertirFechaHoraLimaAFecha(fechaHoraLima: string): Date {
+    const isoConZona = `${fechaHoraLima}:00-05:00`;
+    return new Date(isoConZona);
   }
 }

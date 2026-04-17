@@ -1,3 +1,5 @@
+using NobleStep.Api.Helpers;
+
 namespace NobleStep.Api.Models;
 
 /// <summary>
@@ -84,7 +86,7 @@ public class Pedido
 
     // Fechas
     /// <summary>Fecha del pedido.</summary>
-    public DateTime FechaPedido { get; set; } = DateTime.UtcNow;
+    public DateTime FechaPedido { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     /// <summary>Fecha en que se procesó el pedido.</summary>
     public DateTime? FechaProcesado { get; set; }
@@ -96,10 +98,10 @@ public class Pedido
     public DateTime? FechaEntregado { get; set; }
 
     /// <summary>Fecha y hora de creación del registro.</summary>
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     /// <summary>Fecha y hora de la última actualización.</summary>
-    public DateTime FechaActualizacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaActualizacion { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     // Soft delete — no se elimina físicamente, se marca como eliminado
     /// <summary>Indica si el pedido fue eliminado (soft delete).</summary>

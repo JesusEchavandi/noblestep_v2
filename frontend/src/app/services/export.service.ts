@@ -35,7 +35,7 @@ export class ExportService {
 
   private obtenerFechaFormateada(): string {
     return new Date().toLocaleDateString('es-PE', {
-      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima'
     });
   }
 
@@ -534,7 +534,7 @@ export class ExportService {
 
     if (recentSales?.length > 0) {
       hojas.push({ name: 'Ventas Recientes', data: recentSales.map(s => ({
-        ID: s.id, Fecha: new Date(s.fechaVenta).toLocaleDateString('es-PE'),
+        ID: s.id, Fecha: new Date(s.fechaVenta).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
         Cliente: s.nombreCliente, Items: s.cantidadItems,
         'Total (S/)': (s.total ?? 0).toFixed(2), Estado: s.estado
       }))});

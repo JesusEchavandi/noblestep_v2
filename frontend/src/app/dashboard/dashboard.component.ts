@@ -1195,7 +1195,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const etiquetas = this.datosGraficoVentas.ultimos7Dias.map(d => {
       const fecha = new Date(d.fecha);
-      return fecha.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short' });
+      return fecha.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'America/Lima' });
     });
 
     const datos = this.datosGraficoVentas.ultimos7Dias.map(d => d.total);

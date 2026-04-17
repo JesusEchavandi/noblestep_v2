@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using NobleStep.Api.Helpers;
 
 namespace NobleStep.Api.Models;
 
@@ -22,7 +23,7 @@ public class Compra
 
     /// <summary>Fecha y hora de la compra.</summary>
     [Required]
-    public DateTime FechaCompra { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCompra { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     /// <summary>Número de factura del proveedor.</summary>
     [Required]
@@ -39,7 +40,7 @@ public class Compra
     public string Estado { get; set; } = "Completada";
 
     /// <summary>Fecha y hora de creación del registro.</summary>
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     /// <summary>Notas adicionales sobre la compra.</summary>
     public string? Notas { get; set; }

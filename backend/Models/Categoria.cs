@@ -1,3 +1,5 @@
+using NobleStep.Api.Helpers;
+
 namespace NobleStep.Api.Models;
 
 /// <summary>
@@ -18,7 +20,7 @@ public class Categoria
     public bool Activo { get; set; } = true;
 
     /// <summary>Fecha y hora de creación del registro.</summary>
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     // Propiedad de navegación
     /// <summary>Productos que pertenecen a esta categoría.</summary>

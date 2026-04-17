@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 using NobleStep.Api.Models;
 using NobleStep.Api.Services;
 
@@ -86,8 +87,8 @@ public class AutenticacionEcommerceController : ControllerBase
                 Telefono = dto.Telefono,
                 Activo = true,
                 CorreoVerificado = false,
-                FechaCreacion = DateTime.UtcNow,
-                FechaActualizacion = DateTime.UtcNow
+                FechaCreacion = DateTimeHelper.GetPeruDateTime(),
+                FechaActualizacion = DateTimeHelper.GetPeruDateTime()
             };
 
             _context.ClientesEcommerce.Add(cliente);
@@ -202,7 +203,7 @@ public class AutenticacionEcommerceController : ControllerBase
 
             cliente.HashTokenRefresco = refreshHash;
             cliente.ExpiracionTokenRefresco = refreshExpires;
-            cliente.FechaActualizacion = DateTime.UtcNow;
+            cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
             await _context.SaveChangesAsync();
 
             var response = new RespuestaAutenticacionEcommerceDto
@@ -263,7 +264,7 @@ public class AutenticacionEcommerceController : ControllerBase
 
             cliente.HashTokenRefresco = nuevoRefreshHash;
             cliente.ExpiracionTokenRefresco = nuevaExpiracion;
-            cliente.FechaActualizacion = DateTime.UtcNow;
+            cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
             await _context.SaveChangesAsync();
 
             var response = new RespuestaAutenticacionEcommerceDto
@@ -314,7 +315,7 @@ public class AutenticacionEcommerceController : ControllerBase
             {
                 cliente.HashTokenRefresco = null;
                 cliente.ExpiracionTokenRefresco = null;
-                cliente.FechaActualizacion = DateTime.UtcNow;
+                cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
                 await _context.SaveChangesAsync();
             }
 
@@ -356,7 +357,7 @@ public class AutenticacionEcommerceController : ControllerBase
 
                 cliente.TokenRecuperacion = tokenHash;
                 cliente.ExpiracionRecuperacion = DateTime.UtcNow.AddMinutes(minutosExpiracion);
-                cliente.FechaActualizacion = DateTime.UtcNow;
+                cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
                 await _context.SaveChangesAsync();
 
@@ -430,7 +431,7 @@ public class AutenticacionEcommerceController : ControllerBase
             cliente.HashContrasena = BCrypt.Net.BCrypt.HashPassword(dto.NuevaContrasena);
             cliente.TokenRecuperacion = null;
             cliente.ExpiracionRecuperacion = null;
-            cliente.FechaActualizacion = DateTime.UtcNow;
+            cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
             await _context.SaveChangesAsync();
 
@@ -517,7 +518,7 @@ public class AutenticacionEcommerceController : ControllerBase
             cliente.Direccion = dto.Direccion;
             cliente.Ciudad = dto.Ciudad;
             cliente.Distrito = dto.Distrito;
-            cliente.FechaActualizacion = DateTime.UtcNow;
+            cliente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
             await _context.SaveChangesAsync();
 

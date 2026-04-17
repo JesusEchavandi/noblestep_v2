@@ -221,7 +221,7 @@ public class ComprasController : ControllerBase
             {
                 ProveedorId = dto.ProveedorId,
                 UsuarioId = usuarioId,
-                FechaCompra = dto.FechaCompra,
+                FechaCompra = DateTimeHelper.ConvertToPeruTime(dto.FechaCompra),
                 NumeroFactura = numeroCompra,
                 Total = total,
                 Estado = "Completada",

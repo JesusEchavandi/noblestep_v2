@@ -1,3 +1,5 @@
+using NobleStep.Api.Helpers;
+
 namespace NobleStep.Api.Models;
 
 /// <summary>
@@ -24,7 +26,7 @@ public class Cliente
     public bool Activo { get; set; } = true;
 
     /// <summary>Fecha y hora de creación del registro.</summary>
-    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public DateTime FechaCreacion { get; set; } = DateTimeHelper.GetPeruDateTime();
 
     /// <summary>Fecha y hora de la última actualización.</summary>
     public DateTime? FechaActualizacion { get; set; }
