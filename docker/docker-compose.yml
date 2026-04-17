@@ -30,17 +30,21 @@ services:
       dockerfile: ../docker/Dockerfile
     container_name: noblestep-api
     restart: unless-stopped
+    networks:
+      - default
+      - noblestep-net
     depends_on:
       db:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      NOBLESTEP_DB_CONNECTION: "Server=db;Port=3306;Database=noblestep_db;User=noblestep;Password=${MYSQL_PASSWORD:-noblestep_dev_2026};"
+      ASPNETCORE_ENVIRONMENT: Production
+      NOBLESTEP_DB_CONNECTION: "Server=db;Port=3306;Database=noblestep_db;User=noblestep_user;Password=N0bl3St3p_Us3r_2026!;"
       NOBLESTEP_JWT_SECRET: "DEV-SECRET-KEY-CHANGE-IN-PRODUCTION-MIN-32-CHARS!!"
+      NOBLESTEP_CORS_ORIGINS: "https://admin.noblestep.tech,https://noblestep.tech,https://www.noblestep.tech"
     ports:
-      - "5000:5000"
+      - "5000:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -49,3 +53,8 @@ services:
 volumes:
   db_data:
     driver: local
+
+networks:
+  noblestep-net:
+    external: true
+    name: noblestep_noblestep-net
