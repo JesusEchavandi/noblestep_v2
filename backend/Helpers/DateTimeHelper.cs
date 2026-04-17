@@ -5,8 +5,30 @@ namespace NobleStep.Api.Helpers;
 public static class DateTimeHelper
 {
     // Zona horaria de Perú (UTC-5)
-    private static readonly TimeZoneInfo PeruTimeZone = 
-        TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+    private static readonly TimeZoneInfo PeruTimeZone = ResolvePeruTimeZone();
+
+    private static TimeZoneInfo ResolvePeruTimeZone()
+    {
+        var timezoneIds = new[] { "America/Lima", "SA Pacific Standard Time" };
+
+        foreach (var timezoneId in timezoneIds)
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                // Intentar con el siguiente ID.
+            }
+            catch (InvalidTimeZoneException)
+            {
+                // Intentar con el siguiente ID.
+            }
+        }
+
+        throw new TimeZoneNotFoundException("No se pudo resolver la zona horaria de Lima (Perú).");
+    }
 
     /// <summary>
     /// Obtiene la fecha y hora actual en zona horaria de Perú
@@ -21,10 +43,15 @@ public static class DateTimeHelper
     /// </summary>
     public static DateTime ConvertToPeruTime(DateTime utcDateTime)
     {
-        if (utcDateTime.Kind != DateTimeKind.Utc)
+        if (utcDateTime.Kind == DateTimeKind.Local)
+        {
+            utcDateTime = utcDateTime.ToUniversalTime();
+        }
+        else if (utcDateTime.Kind == DateTimeKind.Unspecified)
         {
             utcDateTime = DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc);
         }
+
         return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, PeruTimeZone);
     }
 

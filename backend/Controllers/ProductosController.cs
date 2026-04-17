@@ -183,7 +183,7 @@ public class ProductosController : ControllerBase
         producto.UrlImagen = actualizarDto.UrlImagen;
         producto.Descripcion = actualizarDto.Descripcion;
         producto.Activo = actualizarDto.Activo;
-        producto.FechaActualizacion = DateTime.UtcNow;
+        producto.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
         await _context.SaveChangesAsync();
 

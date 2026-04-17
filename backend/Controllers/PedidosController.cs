@@ -94,7 +94,7 @@ public class PedidosController : ControllerBase
                         return BadRequest(new { message = $"Stock insuficiente para {producto.Nombre} talla {variante.Talla} (disponible: {variante.Stock})" });
 
                     variante.Stock -= item.Cantidad;
-                    variante.FechaActualizacion = DateTime.UtcNow;
+                    variante.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
                     tallaSnapshot = variante.Talla;
                 }
                 else
@@ -106,7 +106,7 @@ public class PedidosController : ControllerBase
                     tallaSnapshot = producto.Talla;
                 }
 
-                producto.FechaActualizacion = DateTime.UtcNow;
+                producto.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
                 var precioUnitario = (producto.PrecioOferta > 0) ? producto.PrecioOferta : producto.Precio;
                 var subtotalItem = precioUnitario * item.Cantidad;
@@ -130,7 +130,7 @@ public class PedidosController : ControllerBase
             decimal total = subtotal + costoEnvio;
 
             // Generar número de orden
-            var numeroPedido = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
+            var numeroPedido = $"ORD-{DateTimeHelper.GetPeruDateTime():yyyyMMdd}-{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
 
             // Crear pedido
             var pedido = new Pedido
@@ -156,9 +156,9 @@ public class PedidosController : ControllerBase
                 RazonSocialEmpresa = dto.NombreEmpresa,
                 RucEmpresa = dto.RucEmpresa,
                 DireccionEmpresa = dto.DireccionEmpresa,
-                FechaPedido = DateTime.UtcNow,
-                FechaCreacion = DateTime.UtcNow,
-                FechaActualizacion = DateTime.UtcNow,
+                FechaPedido = DateTimeHelper.GetPeruDateTime(),
+                FechaCreacion = DateTimeHelper.GetPeruDateTime(),
+                FechaActualizacion = DateTimeHelper.GetPeruDateTime(),
                 DetallesPedido = detallesPedido
             };
 

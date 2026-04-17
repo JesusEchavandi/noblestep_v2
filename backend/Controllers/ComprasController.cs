@@ -155,7 +155,7 @@ public class ComprasController : ControllerBase
 
             decimal total = 0;
             var detallesCompra = new List<DetalleCompra>();
-            var ahora = DateTime.UtcNow;
+            var ahora = DateTimeHelper.GetPeruDateTime();
 
             foreach (var detalle in dto.Detalles)
             {

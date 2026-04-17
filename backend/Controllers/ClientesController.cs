@@ -105,7 +105,7 @@ public class ClientesController : ControllerBase
             if (!existente.Activo)
             {
                 existente.Activo = true;
-                existente.FechaActualizacion = DateTime.UtcNow;
+                existente.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
                 if (!string.IsNullOrWhiteSpace(crearDto.NombreCompleto))
                     existente.NombreCompleto = nombreCompleto;

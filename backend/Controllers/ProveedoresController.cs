@@ -94,7 +94,7 @@ public class ProveedoresController : ControllerBase
             Ciudad = dto.Ciudad,
             Pais = dto.Pais,
             Activo = true,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTimeHelper.GetPeruDateTime()
         };
 
         _context.Proveedores.Add(proveedor);
@@ -145,7 +145,7 @@ public class ProveedoresController : ControllerBase
         proveedor.Ciudad = dto.Ciudad;
         proveedor.Pais = dto.Pais;
         proveedor.Activo = dto.Activo;
-        proveedor.FechaActualizacion = DateTime.UtcNow;
+        proveedor.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
         await _context.SaveChangesAsync();
 

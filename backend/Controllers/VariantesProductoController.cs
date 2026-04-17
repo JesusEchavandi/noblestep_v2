@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 using NobleStep.Api.Models;
 
 namespace NobleStep.Api.Controllers;
@@ -93,7 +94,7 @@ public class VariantesProductoController : ControllerBase
             Talla = dto.Talla.Trim(),
             Stock = dto.Stock,
             Activo = true,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTimeHelper.GetPeruDateTime()
         };
 
         _context.VariantesProducto.Add(variante);
@@ -148,7 +149,7 @@ public class VariantesProductoController : ControllerBase
                 Talla = d.Talla.Trim(),
                 Stock = d.Stock,
                 Activo = true,
-                FechaCreacion = DateTime.UtcNow
+                FechaCreacion = DateTimeHelper.GetPeruDateTime()
             }).ToList();
 
         _context.VariantesProducto.AddRange(nuevasVariantes);
@@ -178,7 +179,7 @@ public class VariantesProductoController : ControllerBase
 
         var stockAnterior = variante.Stock;
         variante.Stock = dto.Stock;
-        variante.FechaActualizacion = DateTime.UtcNow;
+        variante.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
 
         await _context.SaveChangesAsync();
 
@@ -206,7 +207,7 @@ public class VariantesProductoController : ControllerBase
             return NotFound(new { message = "Variante no encontrada" });
 
         variante.Activo = false;
-        variante.FechaActualizacion = DateTime.UtcNow;
+        variante.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
         await _context.SaveChangesAsync();
 
         return Ok(new { message = $"Talla '{variante.Talla}' desactivada correctamente" });

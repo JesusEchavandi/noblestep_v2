@@ -174,8 +174,8 @@ public class VentasController : ControllerBase
             {
                 ClienteId = crearDto.ClienteId,
                 UsuarioId = usuarioId,
-                FechaVenta = DateTime.UtcNow,
-                FechaCreacion = DateTime.UtcNow,
+                FechaVenta = DateTimeHelper.GetPeruDateTime(),
+                FechaCreacion = DateTimeHelper.GetPeruDateTime(),
                 Estado = "Completada"
             };
 
@@ -202,14 +202,14 @@ public class VentasController : ControllerBase
                 {
                     var variante = producto.Variantes.First(v => v.Id == detalle.VarianteId.Value);
                     variante.Stock -= detalle.Cantidad;
-                    variante.FechaActualizacion = DateTime.UtcNow;
+                    variante.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
                     producto.Stock = producto.Variantes.Sum(v => v.Stock);
                 }
                 else
                 {
                     producto.Stock -= detalle.Cantidad;
                 }
-                producto.FechaActualizacion = DateTime.UtcNow;
+                producto.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
             }
 
             venta.Total = total;

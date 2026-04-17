@@ -40,7 +40,7 @@ public static class BoletaHelper
         sb.AppendLine(new string('-', 48));
         sb.AppendLine($"TOTAL: S/ {venta.Total:F2}");
 
-        var fileName = $"venta-{venta.Id:D6}-{DateTime.UtcNow:yyyyMMddHHmmss}.txt";
+        var fileName = $"venta-{venta.Id:D6}-{DateTimeHelper.GetPeruDateTime():yyyyMMddHHmmss}.txt";
         var filePath = Path.Combine(ObtenerDirectorioBoletas(), fileName);
 
         File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
@@ -80,7 +80,7 @@ public static class BoletaHelper
             ? $"pedido-{pedido.Id:D6}"
             : pedido.NumeroPedido.Replace("/", "-").Replace("\\", "-");
 
-        var fileName = $"ecommerce-{safeOrder}-{DateTime.UtcNow:yyyyMMddHHmmss}.txt";
+        var fileName = $"ecommerce-{safeOrder}-{DateTimeHelper.GetPeruDateTime():yyyyMMddHHmmss}.txt";
         var filePath = Path.Combine(ObtenerDirectorioBoletas(), fileName);
 
         File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);

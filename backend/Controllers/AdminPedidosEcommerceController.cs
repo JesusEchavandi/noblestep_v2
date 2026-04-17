@@ -137,15 +137,15 @@ public class AdminPedidosEcommerceController : ControllerBase
 
                 if (dto.EstadoPedido == Helpers.EstadoPedido.EnProceso && pedido.FechaProcesado == null)
                 {
-                    pedido.FechaProcesado = DateTime.UtcNow;
+                    pedido.FechaProcesado = DateTimeHelper.GetPeruDateTime();
                 }
                 else if (dto.EstadoPedido == Helpers.EstadoPedido.Enviado && pedido.FechaEnviado == null)
                 {
-                    pedido.FechaEnviado = DateTime.UtcNow;
+                    pedido.FechaEnviado = DateTimeHelper.GetPeruDateTime();
                 }
                 else if (dto.EstadoPedido == Helpers.EstadoPedido.Entregado && pedido.FechaEntregado == null)
                 {
-                    pedido.FechaEntregado = DateTime.UtcNow;
+                    pedido.FechaEntregado = DateTimeHelper.GetPeruDateTime();
                 }
             }
 
@@ -159,7 +159,7 @@ public class AdminPedidosEcommerceController : ControllerBase
                 pedido.NotasAdmin = dto.NotasAdmin;
             }
 
-            pedido.FechaActualizacion = DateTime.UtcNow;
+            pedido.FechaActualizacion = DateTimeHelper.GetPeruDateTime();
             await _context.SaveChangesAsync();
 
             // Enviar email de notificación al cliente
@@ -333,7 +333,7 @@ public class AdminPedidosEcommerceController : ControllerBase
             }
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
-            return File(bytes, "text/csv", $"orders_{DateTime.UtcNow:yyyyMMdd}.csv");
+            return File(bytes, "text/csv", $"orders_{DateTimeHelper.GetPeruDateTime():yyyyMMdd}.csv");
         }
         catch (Exception ex)
         {

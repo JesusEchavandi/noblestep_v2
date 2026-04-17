@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 
 namespace NobleStep.Api.Controllers;
 
@@ -22,8 +23,8 @@ public class ReportesController : ControllerBase
     [HttpGet("sales")]
     public async Task<ActionResult<ReporteVentasDto>> GetReporteVentas([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var ventas = await _context.Ventas
             .Include(s => s.Cliente)
@@ -68,8 +69,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? endDate,
         [FromQuery] int? categoryId)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var query = _context.DetallesVenta
             .Include(sd => sd.Venta)
@@ -113,8 +114,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var reporte = await _context.Ventas
             .Include(s => s.Cliente)
@@ -142,8 +143,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var compras = await _context.Compras
             .Include(p => p.Proveedor)
@@ -179,8 +180,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var reporte = await _context.Compras
             .Include(p => p.Proveedor)
@@ -287,8 +288,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var ventas = await _context.Ventas
             .Include(s => s.DetallesVenta)
@@ -331,8 +332,8 @@ public class ReportesController : ControllerBase
         [FromQuery] DateTime? endDate,
         [FromQuery] int limit = 10)
     {
-        var inicio = startDate ?? DateTime.UtcNow.AddMonths(-1);
-        var fin = endDate ?? DateTime.UtcNow;
+        var inicio = startDate ?? DateTimeHelper.GetPeruDateTime().AddMonths(-1);
+        var fin = endDate ?? DateTimeHelper.GetPeruDateTime();
 
         var datosVentas = await _context.DetallesVenta
             .Include(sd => sd.Venta)

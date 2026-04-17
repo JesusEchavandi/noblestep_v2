@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NobleStep.Api.Helpers;
 
 namespace NobleStep.Api.Controllers;
 
@@ -83,7 +84,7 @@ public class EventosController : ControllerBase
         {
             type = "test",
             message = "SSE funcionando correctamente",
-            timestamp = DateTime.UtcNow
+            timestamp = DateTimeHelper.GetPeruDateTime()
         };
 
         var json = System.Text.Json.JsonSerializer.Serialize(testEvent);

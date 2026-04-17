@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NobleStep.Api.Data;
 using NobleStep.Api.DTOs;
+using NobleStep.Api.Helpers;
 using System.Globalization;
 
 namespace NobleStep.Api.Controllers;
@@ -26,7 +27,7 @@ public class PanelControlController : ControllerBase
     {
         try
         {
-            var ahora = DateTime.UtcNow;
+            var ahora = DateTimeHelper.GetPeruDateTime();
 
             // Total ventas
             var totalVentas = await _context.Ventas
@@ -109,7 +110,7 @@ public class PanelControlController : ControllerBase
     {
         try
         {
-            var ahora = DateTime.UtcNow;
+            var ahora = DateTimeHelper.GetPeruDateTime();
             var inicio7Dias = ahora.Date.AddDays(-6);
             var inicio6Meses = ahora.Date.AddMonths(-5).AddDays(1 - ahora.Day);
 
