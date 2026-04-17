@@ -117,7 +117,7 @@
             <tbody>
               <tr *ngFor="let item of reporteVentas.items">
                 <td>#{{ item.ventaId }}</td>
-                <td>{{ item.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ item.fechaVenta | date:'dd/MM/yyyy HH:mm':'-0500' }}</td>
                 <td>{{ item.nombreCliente }}</td>
                 <td>{{ item.cantidadItems }}</td>
                 <td class="text-end"><strong>{{ item.total | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
@@ -233,7 +233,7 @@
                 <td><strong>{{ item.nombreProveedor }}</strong></td>
                 <td class="text-center">{{ item.totalCompras }}</td>
                 <td class="text-end"><strong>{{ item.totalGastado | currency:'PEN':'symbol':'1.2-2' }}</strong></td>
-                <td>{{ item.ultimaFechaCompra | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.ultimaFechaCompra | date:'dd/MM/yyyy':'-0500' }}</td>
               </tr>
             </tbody>
           </table>

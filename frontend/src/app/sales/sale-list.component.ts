@@ -46,7 +46,7 @@ import { Venta } from '../models/sale.model';
               <tbody>
                 <tr *ngFor="let venta of ventasPaginadas">
                   <td>{{ venta.id }}</td>
-                  <td>{{ venta.fechaVenta | date:'short' }}</td>
+                  <td>{{ venta.fechaVenta | date:'short':'-0500' }}</td>
                   <td>{{ venta.nombreCliente }}</td>
                   <td class="text-end">{{ venta.total | currency }}</td>
                   <td>
@@ -110,7 +110,7 @@ import { Venta } from '../models/sale.model';
                   <strong>Cliente:</strong> {{ ventaSeleccionada.nombreCliente }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Fecha:</strong> {{ ventaSeleccionada.fechaVenta | date:'medium' }}
+                  <strong>Fecha:</strong> {{ ventaSeleccionada.fechaVenta | date:'medium':'-0500' }}
                 </div>
               </div>
               

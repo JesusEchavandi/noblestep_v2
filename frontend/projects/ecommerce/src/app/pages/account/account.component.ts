@@ -153,7 +153,8 @@ export class AccountComponent implements OnInit {
     return new Date(fecha).toLocaleDateString('es-PE', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'America/Lima'
     });
   }
 

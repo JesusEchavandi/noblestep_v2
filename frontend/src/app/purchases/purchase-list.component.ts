@@ -46,7 +46,7 @@ import { Compra } from '../models/purchase.model';
               <tbody>
                 <tr *ngFor="let compra of comprasPaginadas">
                   <td>{{ compra.id }}</td>
-                  <td>{{ compra.fechaCompra | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ compra.fechaCompra | date:'dd/MM/yyyy HH:mm':'-0500' }}</td>
                   <td>{{ compra.nombreProveedor }}</td>
                   <td>{{ compra.numeroFactura }}</td>
                   <td class="text-end">{{ compra.total | currency }}</td>
@@ -95,7 +95,7 @@ import { Compra } from '../models/purchase.model';
                   <strong>Proveedor:</strong> {{ compraSeleccionada.nombreProveedor }}
                 </div>
                 <div class="col-md-6">
-                  <strong>Fecha:</strong> {{ compraSeleccionada.fechaCompra | date:'dd/MM/yyyy HH:mm:ss' }}
+                  <strong>Fecha:</strong> {{ compraSeleccionada.fechaCompra | date:'dd/MM/yyyy HH:mm:ss':'-0500' }}
                 </div>
               </div>
               <div class="row mb-3">

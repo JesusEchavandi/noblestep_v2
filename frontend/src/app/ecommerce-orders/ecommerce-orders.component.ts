@@ -970,7 +970,9 @@ export class EcommerceOrdersComponent implements OnInit {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'America/Lima'
     });
   }
 

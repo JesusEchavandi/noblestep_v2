@@ -309,7 +309,7 @@ Chart.register(...registerables);
                     <tbody>
                       <tr *ngFor="let venta of ventasRecientes">
                         <td>
-                          <small>{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</small>
+                          <small>{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm':'-0500' }}</small>
                         </td>
                         <td>
                           <i class="bi bi-person-circle"></i> {{ venta.nombreCliente }}
